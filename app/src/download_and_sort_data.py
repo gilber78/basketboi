@@ -7,6 +7,8 @@ import pandas as pd
 
 with open("app/data/config.json", "r") as file:
     config = json.load(file)
+with open("app\\data\\name_to_id.json", "r") as file:
+    ids = json.load(file)
 with open(config["KAGGLE_API_TOKEN_PATH"], "r") as file:
     KAGGLE_API_TOKEN = file.read()
 os.environ["KAGGLE_API_TOKEN"] = KAGGLE_API_TOKEN
@@ -70,7 +72,9 @@ def download_and_sort_data():
     print("Sorting game data by season")
     raw_df = pd.read_csv(os.path.join(config["DATA_DOWNLOAD_PATH"], config["DATA_FILE_NAME"]), low_memory=False)[COLUMNS_TO_KEEP]
     raw_df = raw_df[(raw_df["gameType"] != "Preseason") & (raw_df["gameType"] != "Play-in Tournament")]
+    id_list = list(ids.values())
+    raw_df = raw_df.query("(hometeamId in @id_list) & (awayteamId in @id_list)")
     sort_data_by_season(raw_df)
-    # TODO ^^^expand sorting logic to eliminate games that don't count toward standings, particularly NBA Cup Finals and Global Games
+    # TODO ^^^expand sorting logic to eliminate teams and games that don't count toward standings, particularly NBA Cup Finals and Global Games
 
-    # thread each season folder, do simultaneiously, then wait
+    # thread each season folder, do the rest of preprocessing in parallel, then wait and return
