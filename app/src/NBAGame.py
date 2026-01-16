@@ -20,4 +20,4 @@ class NBAGame:
     def pretty_print(self):  # TODO expand NBAGame pretty print
         print(f"{self.gameDate} {self.gameTime} - {self.gameType}")
         print(f"    {self.awayTeam:<26} | {self.awayScore:>3d}  {self.awayScore + self.homeScore:>3d}")
-        print(f"    {self.homeTeam:<26} | {self.homeScore:>3d}  {"+" + str(self.awayScore - self.homeScore):>3d}")
+        print(f"    {self.homeTeam:<26} | {self.homeScore:>3d}  {self.awayScore - self.homeScore:>3d}")
