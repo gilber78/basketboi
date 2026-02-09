@@ -7,7 +7,7 @@ from NBASeason import NBASeason
 
 # from constants import MAXSIZE
 from sys import maxsize as MAXSIZE
-from functions import DATA_DATE_FORMAT_STRING, DATA_TIME_FORMAT_STRING
+from functions import DATA_DATE_FORMAT_STRING, DATA_TIME_FORMAT_STRING, get_current_season_year
 
 with open("app/data/config.json", "r") as file:
     config = json.load(file)
@@ -47,7 +47,8 @@ def download_csv(path=config["DATA_DOWNLOAD_PATH"], quiet=False):
 def sort_data_by_season(df: pd.DataFrame, path=SEASON_PATH, full=False):
     # loop throught raw dataframe, save raw data to a folder named after the year(s) in question
     os.makedirs(path, exist_ok=True)
-    for year in range(config["MIN_SEASON_YEAR"] if full else datetime.date.today().year - 2, datetime.date.today().year + 1):
+    current_season_year = get_current_season_year()
+    for year in range(config["MIN_SEASON_YEAR"] if full else current_season_year, current_season_year + 1):
         # assumes the first day of the season occurs after August 1st of that year, and concludes before August 1st the following year, split to avoid dataframe lock
         season_df = df[(df["gameDateTimeEst"] > f"{year}-08-01 00:00:00") & (df["gameDateTimeEst"] < f"{year+1}-08-01 00:00:00")]
         if not season_df.empty:
@@ -74,11 +75,11 @@ def download_and_sort_data():
     if os.path.isfile(DOWNLOAD_TIME_FILEPATH):
         with open(DOWNLOAD_TIME_FILEPATH) as file:
             last_download_time = datetime.datetime.fromisoformat(file.read())
-            download_time_delta_hrs = (datetime.datetime.now(datetime.timezone.utc) - last_download_time).seconds // 3600
+            download_time_delta_hrs = (datetime.datetime.now(datetime.timezone.utc) - last_download_time).total_seconds() // 3600
     else:
         download_time_delta_hrs = MAXSIZE
     skip_download = download_time_delta_hrs < config["MAX_FILE_AGE_HRS"] and os.path.isdir(config["DATA_DOWNLOAD_PATH"])
-    full_download = config["FORCE_FILE_UPDATE"] or not os.path.isdir(config["DATA_DOWNLOAD_PATH"])
+    full_download = config["FORCE_FILE_UPDATE"] or not os.path.isdir(config["DATA_DOWNLOAD_PATH"])  # TODO add if it's been a REALLY long time
     print("SKIP?          ", skip_download)
     print("FULL?          ", full_download)
     print("HRS SINCE LAST:", download_time_delta_hrs)
@@ -106,4 +107,8 @@ def download_and_sort_data():
             & (raw_df["gameType"] != "Playoffs")  # TODO configify playoffs exclusion
         ]
         raw_df = raw_df.query("(hometeamId in @id_list) & (awayteamId in @id_list)")
+        if full_download:
+            print("Performing full data update")
+        else:
+            print("Updating current season only")
         sort_data_by_season(raw_df, full=full_download)

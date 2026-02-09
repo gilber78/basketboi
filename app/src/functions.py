@@ -1,4 +1,4 @@
-from datetime import datetime, timedelta
+import datetime
 
 DATA_DATE_FORMAT_STRING = "%Y-%m-%d"
 DATA_TIME_FORMAT_STRING = "%H:%M:%S"
@@ -12,10 +12,18 @@ def get_time_from_full_time(start_time):
     return start_time.split(" ")[1]
 
 
+def get_current_season_year():
+    today = datetime.date.today()
+    if today.month >= 8:
+        return today.year
+    else:
+        return today.year - 1
+
+
 def increment_day(start_day: str, inc: int = 1):
-    start_day_object = datetime.strptime(start_day, DATA_DATE_FORMAT_STRING)
-    end_day_object = start_day_object + timedelta(days=inc)
-    end_day = datetime.strftime(end_day_object, DATA_DATE_FORMAT_STRING)
+    start_day_object = datetime.datetime.strptime(start_day, DATA_DATE_FORMAT_STRING)
+    end_day_object = start_day_object + datetime.timedelta(days=inc)
+    end_day = datetime.datetime.strftime(end_day_object, DATA_DATE_FORMAT_STRING)
     return end_day
 
 
