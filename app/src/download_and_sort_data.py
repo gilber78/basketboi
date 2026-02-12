@@ -64,7 +64,6 @@ def sort_data_by_season(df: pd.DataFrame, path, min_season_year, full=False):
 ### MAIN FUNCTION/PROCESS FOR THIS FILE
 def download_and_sort_data(config):
     # read from config
-    SEASON_PATH = os.path.join(config["DATA_DOWNLOAD_PATH"], "seasons")
     DOWNLOAD_TIME_FILEPATH = os.path.join(config["DATA_DOWNLOAD_PATH"], "last_download")
     LAST_DOWNLOAD_TIME_FORMAT_STRING = DATA_DATE_FORMAT_STRING + " " + DATA_TIME_FORMAT_STRING
 
@@ -111,4 +110,4 @@ def download_and_sort_data(config):
             print("Performing full data update")
         else:
             print("Updating current season only")
-        sort_data_by_season(raw_df, path=SEASON_PATH, min_season_year=config["MIN_SEASON_YEAR"], full=full_download)
+        sort_data_by_season(raw_df, path=os.environ["SEASON_PATH"], min_season_year=config["MIN_SEASON_YEAR"], full=full_download)
