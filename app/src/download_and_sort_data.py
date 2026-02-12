@@ -1,5 +1,6 @@
 import os
 import json
+import kaggle
 import pickle
 import datetime
 import pandas as pd
@@ -9,14 +10,8 @@ from NBASeason import NBASeason
 from sys import maxsize as MAXSIZE
 from functions import DATA_DATE_FORMAT_STRING, DATA_TIME_FORMAT_STRING, get_current_season_year
 
-with open("app/data/config.json", "r") as file:
-    config = json.load(file)
 with open("app\\data\\name_to_id.json", "r") as file:
     ids = json.load(file)
-with open(config["KAGGLE_API_TOKEN_PATH"], "r") as file:
-    os.environ["KAGGLE_API_TOKEN"] = file.read()
-
-import kaggle
 
 COLUMNS_TO_KEEP = [
     "gameDateTimeEst",
@@ -33,22 +28,19 @@ COLUMNS_TO_KEEP = [
     # "seriesGameNumber",
     # TODO do playoffs influence the stats/models? Do we treat them as a separate data set? Do we include them in the data set?
 ]
-SEASON_PATH = os.path.join(config["DATA_DOWNLOAD_PATH"], "seasons")
-DOWNLOAD_TIME_FILEPATH = os.path.join(config["DATA_DOWNLOAD_PATH"], "last_download")
-LAST_DOWNLOAD_TIME_FORMAT_STRING = DATA_DATE_FORMAT_STRING + " " + DATA_TIME_FORMAT_STRING
 
 
-def download_csv(path=config["DATA_DOWNLOAD_PATH"], quiet=False):
-    kaggle.api.dataset_download_file(dataset=config["DATASET_NAME"], file_name=config["DATA_FILE_NAME"], path=path, force=True, quiet=quiet)
-    with open(DOWNLOAD_TIME_FILEPATH, "w") as file:
+def download_csv(path, file_name, download_time_filepath, dataset, quiet=False):
+    kaggle.api.dataset_download_file(dataset=dataset, file_name=file_name, path=path, force=True, quiet=quiet)
+    with open(download_time_filepath, "w") as file:
         file.write(datetime.datetime.now(datetime.timezone.utc).isoformat())
 
 
-def sort_data_by_season(df: pd.DataFrame, path=SEASON_PATH, full=False):
+def sort_data_by_season(df: pd.DataFrame, path, min_season_year, full=False):
     # loop throught raw dataframe, save raw data to a folder named after the year(s) in question
     os.makedirs(path, exist_ok=True)
     current_season_year = get_current_season_year()
-    for year in range(config["MIN_SEASON_YEAR"] if full else current_season_year, current_season_year + 1):
+    for year in range(min_season_year if full else current_season_year, current_season_year + 1):
         # assumes the first day of the season occurs after August 1st of that year, and concludes before August 1st the following year, split to avoid dataframe lock
         season_df = df[(df["gameDateTimeEst"] > f"{year}-08-01 00:00:00") & (df["gameDateTimeEst"] < f"{year+1}-08-01 00:00:00")]
         if not season_df.empty:
@@ -70,7 +62,12 @@ def sort_data_by_season(df: pd.DataFrame, path=SEASON_PATH, full=False):
 
 
 ### MAIN FUNCTION/PROCESS FOR THIS FILE
-def download_and_sort_data():
+def download_and_sort_data(config):
+    # read from config
+    SEASON_PATH = os.path.join(config["DATA_DOWNLOAD_PATH"], "seasons")
+    DOWNLOAD_TIME_FILEPATH = os.path.join(config["DATA_DOWNLOAD_PATH"], "last_download")
+    LAST_DOWNLOAD_TIME_FORMAT_STRING = DATA_DATE_FORMAT_STRING + " " + DATA_TIME_FORMAT_STRING
+
     # determine if we should request kaggle and get a new set of data
     if os.path.isfile(DOWNLOAD_TIME_FILEPATH):
         with open(DOWNLOAD_TIME_FILEPATH) as file:
@@ -79,10 +76,8 @@ def download_and_sort_data():
     else:
         download_time_delta_hrs = MAXSIZE
     skip_download = download_time_delta_hrs < config["MAX_FILE_AGE_HRS"] and os.path.isdir(config["DATA_DOWNLOAD_PATH"])
-    full_download = config["FORCE_FILE_UPDATE"] or not os.path.isdir(config["DATA_DOWNLOAD_PATH"])  # TODO add if it's been a REALLY long time
-    print("SKIP?          ", skip_download)
-    print("FULL?          ", full_download)
-    print("HRS SINCE LAST:", download_time_delta_hrs)
+    full_download = config["FORCE_FILE_UPDATE"] or not os.path.isdir(config["DATA_DOWNLOAD_PATH"])
+    # TODO add that if it's been a REALLY long time that we force an update, maybe once a month we do this
 
     # download and sorting logic
     os.makedirs(config["DATA_DOWNLOAD_PATH"], exist_ok=True)
@@ -92,7 +87,12 @@ def download_and_sort_data():
         )
         return
     else:
-        download_csv()
+        download_csv(
+            path=config["DATA_DOWNLOAD_PATH"],
+            file_name=config["DATA_FILE_NAME"],
+            download_time_filepath=DOWNLOAD_TIME_FILEPATH,
+            dataset=config["DATASET_NAME"],
+        )
         print(f"Downloaded {config['DATA_FILE_NAME']}")
 
         # trim data to only needed columns, season sort by year
@@ -111,4 +111,4 @@ def download_and_sort_data():
             print("Performing full data update")
         else:
             print("Updating current season only")
-        sort_data_by_season(raw_df, full=full_download)
+        sort_data_by_season(raw_df, path=SEASON_PATH, min_season_year=config["MIN_SEASON_YEAR"], full=full_download)
