@@ -13,7 +13,6 @@ from download_and_sort_data import download_and_sort_data  # this import has to 
 
 # DEBUG IMPORTS
 import pickle
-import numpy as np
 import pandas as pd
 
 # TODO delete debug imports
