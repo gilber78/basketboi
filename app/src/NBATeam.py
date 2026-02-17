@@ -158,7 +158,7 @@ class NBATeam:
             + f"{self.away_wins:>2d}-{self.away_losses:<2d}   "
             + f"{0 if self.games_played == 0 else self.points_for/self.games_played:>5.1f}   "
             + f"{0 if self.games_played == 0 else self.points_against/self.games_played:>5.1f}   "
-            + f"{0 if self.away_games_played == 0 else (self.points_for - self.points_against)/self.games_played:>+5.1f}     "
-            + f"{'W' if self.streak >= 0 else 'L'}{abs(self.streak):<2d}  "  # this may not work for streaks longer than 10, but we'll see...
+            + f"{0 if self.away_games_played == 0 else (self.points_for - self.points_against)/self.games_played:>+5.1f}    "
+            + f"{' ' if abs(self.streak) < 10 else ''}{'W' if self.streak >= 0 else 'L'}{abs(self.streak):<2d}  "
             + f"{last10[0]:>2d}-{last10[1]:<2d}"
         )

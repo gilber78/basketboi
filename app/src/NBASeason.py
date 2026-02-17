@@ -4,7 +4,7 @@ from NBATeam import NBATeam
 from functions import get_day_from_full_time, increment_day, get_list_wins_and_losses
 
 
-def create_game_data_series(game: NBAGame, awayTeam: NBATeam, homeTeam: NBATeam):
+def create_game_data_series(awayTeam: NBATeam, homeTeam: NBATeam, game: NBAGame = None):
     # TODO expand this to percentages, ratios, etc that get used in modeling to save space
     HOME_last10 = get_list_wins_and_losses(homeTeam.last10)
     HOME_home_last10 = get_list_wins_and_losses(homeTeam.home_last10)
@@ -85,13 +85,24 @@ def create_game_data_series(game: NBAGame, awayTeam: NBATeam, homeTeam: NBATeam)
         "AWAY_awaywin_points_against": awayTeam.awaywin_points_against,
         "AWAY_awayloss_points_for": awayTeam.awayloss_points_for,
         "AWAY_awayloss_points_against": awayTeam.awayloss_points_against,
-        "GAME_homeScore": game.homeScore,
-        "GAME_awayScore": game.awayScore,
-        "GAME_total": game.total,
-        "GAME_spread": game.spread,
-        "GAME_homeWin": 1 if game.winner == homeTeam.teamId else 0,
     }
-    return pd.DataFrame([series_dict])
+    if game != None:
+        game_dict = {
+            "GAME_homeScore": game.homeScore,
+            "GAME_awayScore": game.awayScore,
+            "GAME_total": game.total,
+            "GAME_spread": game.spread,
+            "GAME_homeWin": 1 if game.winner == homeTeam.teamId else 0,
+        }
+    else:
+        game_dict = {
+            "GAME_homeScore": None,
+            "GAME_awayScore": None,
+            "GAME_total": None,
+            "GAME_spread": None,
+            "GAME_homeWin": None,
+        }
+    return pd.DataFrame([series_dict | game_dict])
 
 
 class NBASeason:
@@ -119,7 +130,7 @@ class NBASeason:
             for game in current_game_list:
                 awayTeam = next(team for team in self.teamList if team.teamId == game.awayTeamId)
                 homeTeam = next(team for team in self.teamList if team.teamId == game.homeTeamId)
-                df = pd.concat([df, create_game_data_series(game, awayTeam, homeTeam)], ignore_index=True)
+                df = pd.concat([df, create_game_data_series(awayTeam=awayTeam, homeTeam=homeTeam, game=game)], ignore_index=True)
                 awayTeam.update_game(game)
                 homeTeam.update_game(game)
             # to move to the next day in the sequence
