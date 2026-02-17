@@ -45,11 +45,14 @@ def build_models(config):
         print("data sizes:", len(ref_data), len(test_data), len(ref_data) + len(test_data), 61043)
 
         # plotting
-        plotting.plot_2d_histogram(pred_total, true_total, "Total Score of all NBA Games")
-        plotting.plot_2d_histogram(pred_spread, true_spread, "Home Team Spread of all NBA Games")
-        plotting.plot_pdf_function(pred_win, true_win, "Home vs Away all NBA games")
+        plotting.plot_2d_histogram(pred_total, true_total, "Predicted vs Actual Total Score of NBA Games")
+        plotting.plot_2d_histogram(pred_spread, true_spread, "Predicted vs Actual Home Team Spread of NBA Games")
+        plotting.plot_pdf_function(pred_win, true_win, "Predicted vs Actual Home Team Win % of NBA games")
 
-    # DEBUG -- TODO delete when this is a stable part of the program, getting current year standings
+        # extra plots, for refining the model performance
+
+    # DEBUG
+    # TODO delete when this is a stable part of the program, getting current year standings
     test_year = "2025-2026"  # "1946-1947" "1995-1996" "2025-2026"
     with open(f"app\\data\\games\\seasons\\{test_year}\\{test_year}_season.pkl", "rb") as file:
         test_season = pickle.load(file)

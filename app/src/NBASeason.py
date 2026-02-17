@@ -5,7 +5,7 @@ from functions import get_day_from_full_time, increment_day, get_list_wins_and_l
 
 
 def create_game_data_series(awayTeam: NBATeam, homeTeam: NBATeam, game: NBAGame = None):
-    # TODO expand this to percentages, ratios, etc that get used in modeling to save space
+    # TODO reduce these to minimum amount of items stored, since we may only need a certain number of values in the models
     HOME_last10 = get_list_wins_and_losses(homeTeam.last10)
     HOME_home_last10 = get_list_wins_and_losses(homeTeam.home_last10)
     # HOME_away_last10 = get_list_wins_and_losses(homeTeam.away_last10)

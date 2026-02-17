@@ -76,7 +76,7 @@ def download_and_sort_data(config):
         download_time_delta_hrs = MAXSIZE
     skip_download = download_time_delta_hrs < config["MAX_FILE_AGE_HRS"] and os.path.isdir(config["DATA_DOWNLOAD_PATH"])
     full_download = config["FORCE_FILE_UPDATE"] or not os.path.isdir(config["DATA_DOWNLOAD_PATH"])
-    # TODO add that if it's been a REALLY long time that we force an update, maybe once a month we do this
+    # TODO add that if it's been a REALLY long time that we force an update
 
     # download and sorting logic
     os.makedirs(config["DATA_DOWNLOAD_PATH"], exist_ok=True)

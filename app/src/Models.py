@@ -4,6 +4,7 @@ import pandas as pd
 np.set_printoptions(linewidth=np.inf)
 
 
+# TODO allow Term class to accept model as constant value
 class Term:
     def __init__(self, constant_names, num_names, den_names):
         # class that holds how to calculate a model term from either the reference dataframe or a team object
@@ -60,7 +61,11 @@ class Model:
         self.bounds = bounds
 
     def calculate_model(self, ref_data: pd.DataFrame):
-        vandermode = np.nan_to_num(np.vstack([term.value(ref_data).to_numpy() for term in self.terms]).T)
+        vandermode = np.vstack([term.value(ref_data).to_numpy() for term in self.terms]).T
+        # TODO configure how to handle zeros/NaN in the model data (ie first games of the season)
+        # How should these values these values be set to and/or removed?
+        # make sure yvals matches in size if applicable
+        vandermode = np.nan_to_num(vandermode)
         yvals = ref_data[self.target].to_numpy().reshape(-1, 1)
         self.coeffs = np.linalg.pinv(vandermode) @ yvals
         SS_res = sum((yvals - vandermode @ self.coeffs) ** 2)[0]
@@ -75,6 +80,8 @@ class Model:
 
 
 # model bank, these get exported to the other file(s) that want them
+# TODO expand the available terms to home/away/win/loss combos, since those may make a difference too
+# TODO add line of best fit mask
 MODEL_HOME_WIN_PR = Model(
     [
         # constant
