@@ -119,7 +119,7 @@ class NBASeason:
                 teamList.append((game.homeTeam, game.homeTeamId))
             if (game.awayTeam, game.awayTeamId) not in teamList:
                 teamList.append((game.awayTeam, game.awayTeamId))
-        return [NBATeam(*args) for args in teamList]
+        return [NBATeam(args[0]) for args in teamList]
 
     def generate_and_save_full_season_data(self):
         current_day = self.startDate

@@ -10,8 +10,8 @@ from NBASeason import NBASeason
 from sys import maxsize as MAXSIZE
 from functions import DATA_DATE_FORMAT_STRING, DATA_TIME_FORMAT_STRING, get_current_season_year
 
-with open("app\\data\\name_to_id.json", "r") as file:
-    ids = json.load(file)
+with open("app\\data\\team_data.json", "r") as file:
+    id_list = [v["id"] for v in json.load(file).values()]
 
 COLUMNS_TO_KEEP = [
     "gameDateTimeEst",
@@ -107,7 +107,6 @@ def download_and_sort_data(config):
 
         # trim data to only needed columns, season sort by year
         print("Sorting game data by season")
-        id_list = list(ids.values())  # TODO combine abbreviations and ids into one lookup json
         raw_df = pd.read_csv(os.path.join(config["DATA_DOWNLOAD_PATH"], config["DATA_FILE_NAME"]), low_memory=False)[COLUMNS_TO_KEEP]
         raw_df = raw_df[(raw_df["homeScore"] != 0) & (raw_df["awayScore"] != 0) & (raw_df["gameType"] != "Preseason")]
         if not config["INCLUDE_PLAYOFFS"]:

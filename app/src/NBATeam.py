@@ -1,13 +1,17 @@
+import json
 from NBAGame import NBAGame
 from functions import get_list_wins_and_losses
 
+with open("app\\data\\team_data.json", "r") as file:
+    team_data = json.load(file)
+
 
 class NBATeam:
-    def __init__(self, teamName, teamId):
+    def __init__(self, teamName):
         # immutable instance variables, these never change
         self.teamName = teamName
-        self.teamId = teamId
-        self.teamAbbreviation = None  # TODO pull abbreviation from json/pass as arg
+        self.teamId = team_data[teamName]["id"]
+        self.teamAbbreviation = team_data[teamName]["abv"]
         self.reset_statistics()
 
     def reset_statistics(self):
