@@ -9,6 +9,7 @@ with open(config["KAGGLE_API_TOKEN_PATH"], "r") as file:
 
 import matplotlib.pyplot as plt
 from build_models import build_models
+from functions import print_current_season
 from download_and_sort_data import download_and_sort_data  # this import has to come last
 
 
@@ -22,3 +23,4 @@ def main():
 
 if __name__ == "__main__":
     main()
+    print_current_season()

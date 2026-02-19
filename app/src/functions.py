@@ -1,3 +1,4 @@
+import pickle
 import datetime
 
 DATA_DATE_FORMAT_STRING = "%Y-%m-%d"
@@ -20,6 +21,10 @@ def get_current_season_year():
         return today.year - 1
 
 
+def get_list_wins_and_losses(data: list):
+    return sum(data), len(data) - sum(data)
+
+
 def increment_day(start_day: str, inc: int = 1):
     start_day_object = datetime.datetime.strptime(start_day, DATA_DATE_FORMAT_STRING)
     end_day_object = start_day_object + datetime.timedelta(days=inc)
@@ -27,5 +32,9 @@ def increment_day(start_day: str, inc: int = 1):
     return end_day
 
 
-def get_list_wins_and_losses(data: list):
-    return sum(data), len(data) - sum(data)
+def print_current_season():
+    year = get_current_season_year()
+    with open(f"app\\data\\games\\seasons\\{year}-{year+1}\\{year}-{year+1}_season.pkl", "rb") as file:
+        test_season = pickle.load(file)
+    print()
+    test_season.pretty_print()

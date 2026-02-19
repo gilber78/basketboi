@@ -5,6 +5,7 @@ np.set_printoptions(linewidth=np.inf)
 
 
 # TODO allow Term class to accept model as constant value
+# TODO create polynomial Term class to handle higher degrees
 class Term:
     def __init__(self, constant_names, num_names, den_names):
         # class that holds how to calculate a model term from either the reference dataframe or a team object
@@ -61,11 +62,7 @@ class Model:
         self.bounds = bounds
 
     def calculate_model(self, ref_data: pd.DataFrame):
-        vandermode = np.vstack([term.value(ref_data).to_numpy() for term in self.terms]).T
-        # TODO configure how to handle zeros/NaN in the model data (ie first games of the season)
-        # How should these values these values be set to and/or removed?
-        # make sure yvals matches in size if applicable
-        vandermode = np.nan_to_num(vandermode)
+        vandermode = np.nan_to_num(np.vstack([term.value(ref_data).to_numpy() for term in self.terms]).T)
         yvals = ref_data[self.target].to_numpy().reshape(-1, 1)
         self.coeffs = np.linalg.pinv(vandermode) @ yvals
         SS_res = sum((yvals - vandermode @ self.coeffs) ** 2)[0]

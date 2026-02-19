@@ -1,5 +1,4 @@
 import os
-import pickle
 import pandas as pd
 
 import plotting
@@ -17,6 +16,7 @@ def build_models(config):
         ],
         ignore_index=True,
     )
+    ref_data = ref_data[(ref_data["HOME_games_played"] != 0) & (ref_data["AWAY_games_played"] != 0)].reset_index()
     if config["DEBUG"]:
         test_data = pd.concat(
             [
@@ -26,6 +26,7 @@ def build_models(config):
             ],
             ignore_index=True,
         )
+        test_data = test_data[(test_data["HOME_games_played"] != 0) & (test_data["AWAY_games_played"] != 0)].reset_index()
 
     # calculate out all the models
     MODEL_HOME_WIN_PR.calculate_model(ref_data)
@@ -42,7 +43,6 @@ def build_models(config):
         print("HOME WIN % MODEL  -", MODEL_HOME_WIN_PR.coeffs.T[0], MODEL_HOME_WIN_PR.ref_Rsquared)
         print("SPREAD MODEL      -", MODEL_HOME_SPREAD.coeffs.T[0], MODEL_HOME_SPREAD.ref_Rsquared)
         print("TOTAL SCORE MODEL -", MODEL_TOTAL_SCORE.coeffs.T[0], MODEL_TOTAL_SCORE.ref_Rsquared)
-        print("data sizes:", len(ref_data), len(test_data), len(ref_data) + len(test_data), 61043)
 
         # plotting
         plotting.plot_2d_histogram(pred_total, true_total, "Predicted vs Actual Total Score of NBA Games")
@@ -50,11 +50,4 @@ def build_models(config):
         plotting.plot_pdf_function(pred_win, true_win, "Predicted vs Actual Home Team Win % of NBA games")
 
         # extra plots, for refining the model performance
-
-    # DEBUG
-    # TODO delete when this is a stable part of the program, getting current year standings
-    test_year = "2025-2026"  # "1946-1947" "1995-1996" "2025-2026"
-    with open(f"app\\data\\games\\seasons\\{test_year}\\{test_year}_season.pkl", "rb") as file:
-        test_season = pickle.load(file)
-    print()
-    test_season.pretty_print()
+        # asdfasdfasdf
