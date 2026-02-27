@@ -164,5 +164,5 @@ class NBATeam:
             + f"{0 if self.games_played == 0 else self.points_against/self.games_played:>5.1f}   "
             + f"{0 if self.away_games_played == 0 else (self.points_for - self.points_against)/self.games_played:>+5.1f}    "
             + f"{' ' if abs(self.streak) < 10 else ''}{'W' if self.streak >= 0 else 'L'}{abs(self.streak):<2d}  "
-            + f"{last10[0]:>2d}-{last10[1]:<2d}"
+            + f"{' ' if abs(last10[0]) >= 10 else ''}{last10[0]:>2d}-{last10[1]:<2d}"
         )

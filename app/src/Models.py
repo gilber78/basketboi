@@ -4,8 +4,7 @@ import pandas as pd
 np.set_printoptions(linewidth=np.inf)
 
 
-# TODO allow Term class to accept model as constant value
-# TODO create polynomial Term class to handle higher degrees
+# TODO allow Term class to accept model as a value
 class Term:
     def __init__(self, constant_names, num_names, den_names):
         # class that holds how to calculate a model term from either the reference dataframe or a team object
@@ -13,12 +12,13 @@ class Term:
         self.constant_names = constant_names
         self.num_names = num_names
         self.den_names = den_names
+        self.degree = int(1)
 
     def value(self, ref_series: pd.Series):
         constant = self._sub_value(self.constant_names, ref_series)
         num = self._sub_value(self.num_names, ref_series)
         den = self._sub_value(self.den_names, ref_series)
-        return constant * num / den
+        return (constant * num / den) ** self.degree
 
     def _sub_value(self, item_list, ref_series=pd.DataFrame):
         if item_list == []:
@@ -36,23 +36,8 @@ class Term:
                     subval += ref_series[item]
             return subval
 
-
-# term bank, mostly for use inside this file
-CONSTANT = Term([], [], [])
-
-HOME_WIN_PERCENTAGE = Term([], ["HOME_wins"], ["HOME_games_played"])
-HOME_POINTS_FOR_PER_GAME = Term([], ["HOME_points_for"], ["HOME_games_played"])
-HOME_POINTS_AGAINST_PER_GAME = Term([], ["HOME_points_against"], ["HOME_games_played"])
-HOME_STREAK = Term([], ["HOME_streak"], [])
-HOME_LAST10_W = Term([], ["HOME_last10_w"], [])
-HOME_LAST10_L = Term([], ["HOME_last10_l"], [])
-
-AWAY_WIN_PERCENTAGE = Term([], ["AWAY_wins"], ["AWAY_games_played"])
-AWAY_POINTS_FOR_PER_GAME = Term([], ["AWAY_points_for"], ["AWAY_games_played"])
-AWAY_POINTS_AGAINST_PER_GAME = Term([], ["AWAY_points_against"], ["AWAY_games_played"])
-AWAY_STREAK = Term([], ["AWAY_streak"], [])
-AWAY_LAST10_W = Term([], ["AWAY_last10_w"], [])
-AWAY_LAST10_L = Term([], ["AWAY_last10_l"], [])
+    def set_degree(self, val):
+        self.degree = int(np.max(1, val))
 
 
 class Model:
@@ -62,10 +47,20 @@ class Model:
         self.bounds = bounds
 
     def calculate_model(self, ref_data: pd.DataFrame):
-        vandermode = np.nan_to_num(np.vstack([term.value(ref_data).to_numpy() for term in self.terms]).T)
+        # create values
+        vandermonde = np.vstack([term.value(ref_data).to_numpy() for term in self.terms]).T
         yvals = ref_data[self.target].to_numpy().reshape(-1, 1)
-        self.coeffs = np.linalg.pinv(vandermode) @ yvals
-        SS_res = sum((yvals - vandermode @ self.coeffs) ** 2)[0]
+
+        # straight up remove rows with any nan
+        nanmask = ~np.isnan(vandermonde).any(axis=1)
+        infmask = ~np.isinf(vandermonde).any(axis=1)
+        mask = np.logical_and(nanmask, infmask)
+        vandermonde = vandermonde[mask]
+        yvals = yvals[mask]
+
+        # calculate, SVD on vandermonde
+        self.coeffs = np.linalg.pinv(vandermonde) @ yvals
+        SS_res = sum((yvals - vandermonde @ self.coeffs) ** 2)[0]
         SS_tot = sum((yvals - np.mean(yvals)) ** 2)[0]
         self.ref_Rsquared = 1 - SS_res / SS_tot
 
@@ -76,8 +71,53 @@ class Model:
         return vals
 
 
+# term bank, mostly for use inside this file
+CONSTANT = Term([], [], [])
+
+HOME_WIN_PERCENTAGE = Term([], ["HOME_wins"], ["HOME_games_played"])
+HOME_POINTS_FOR_PER_GAME = Term([], ["HOME_points_for"], ["HOME_games_played"])
+HOME_POINTS_AGAINST_PER_GAME = Term([], ["HOME_points_against"], ["HOME_games_played"])
+HOME_STREAK = Term([], ["HOME_streak"], [])
+HOME_LAST10_W = Term([], ["HOME_last10_w"], [])
+HOME_LAST10_L = Term([], ["HOME_last10_l"], [])
+HOME_HOME_WIN_PERCENTAGE = Term([], ["HOME_home_wins"], ["HOME_home_games_played"])
+HOME_HOME_POINTS_FOR_PER_GAME = Term([], ["HOME_home_points_for"], ["HOME_home_games_played"])
+HOME_HOME_POINTS_AGAINST_PER_GAME = Term([], ["HOME_home_points_against"], ["HOME_home_games_played"])
+HOME_HOME_STREAK = Term([], ["HOME_home_streak"], [])
+HOME_HOME_LAST10_W = Term([], ["HOME_home_last10_w"], [])
+HOME_HOME_LAST10_L = Term([], ["HOME_home_last10_l"], [])
+HOME_WIN_POINTS_FOR_PER_GAME = Term([], ["HOME_points_for"], ["HOME_wins"])
+HOME_WIN_POINTS_AGAINST_PER_GAME = Term([], ["HOME_points_against"], ["HOME_wins"])
+HOME_LOSS_POINTS_FOR_PER_GAME = Term([], ["HOME_points_for"], ["HOME_losses"])
+HOME_LOSS_POINTS_AGAINST_PER_GAME = Term([], ["HOME_points_against"], ["HOME_losses"])
+HOME_HOMEWIN_POINTS_FOR_PER_GAME = Term([], ["HOME_home_points_for"], ["HOME_home_wins"])
+HOME_HOMEWIN_POINTS_AGAINST_PER_GAME = Term([], ["HOME_home_points_against"], ["HOME_home_wins"])
+HOME_HOMELOSS_POINTS_FOR_PER_GAME = Term([], ["HOME_home_points_for"], ["HOME_home_losses"])
+HOME_HOMELOSS_POINTS_AGAINST_PER_GAME = Term([], ["HOME_home_points_against"], ["HOME_home_losses"])
+
+AWAY_WIN_PERCENTAGE = Term([], ["AWAY_wins"], ["AWAY_games_played"])
+AWAY_POINTS_FOR_PER_GAME = Term([], ["AWAY_points_for"], ["AWAY_games_played"])
+AWAY_POINTS_AGAINST_PER_GAME = Term([], ["AWAY_points_against"], ["AWAY_games_played"])
+AWAY_STREAK = Term([], ["AWAY_streak"], [])
+AWAY_LAST10_W = Term([], ["AWAY_last10_w"], [])
+AWAY_LAST10_L = Term([], ["AWAY_last10_l"], [])
+AWAY_AWAY_WIN_PERCENTAGE = Term([], ["AWAY_away_wins"], ["AWAY_away_games_played"])
+AWAY_AWAY_POINTS_FOR_PER_GAME = Term([], ["AWAY_away_points_for"], ["AWAY_away_games_played"])
+AWAY_AWAY_POINTS_AGAINST_PER_GAME = Term([], ["AWAY_away_points_against"], ["AWAY_away_games_played"])
+AWAY_AWAY_STREAK = Term([], ["AWAY_away_streak"], [])
+AWAY_AWAY_LAST10_W = Term([], ["AWAY_away_last10_w"], [])
+AWAY_AWAY_LAST10_L = Term([], ["AWAY_away_last10_l"], [])
+AWAY_WIN_POINTS_FOR_PER_GAME = Term([], ["AWAY_points_for"], ["AWAY_wins"])
+AWAY_WIN_POINTS_AGAINST_PER_GAME = Term([], ["AWAY_points_against"], ["AWAY_wins"])
+AWAY_LOSS_POINTS_FOR_PER_GAME = Term([], ["AWAY_points_for"], ["AWAY_losses"])
+AWAY_LOSS_POINTS_AGAINST_PER_GAME = Term([], ["AWAY_points_against"], ["AWAY_losses"])
+AWAY_AWAYWIN_POINTS_FOR_PER_GAME = Term([], ["AWAY_away_points_for"], ["AWAY_away_wins"])
+AWAY_AWAYWIN_POINTS_AGAINST_PER_GAME = Term([], ["HOME_home_points_against"], ["AWAY_away_wins"])
+AWAY_AWAYLOSS_POINTS_FOR_PER_GAME = Term([], ["AWAY_away_points_for"], ["AWAY_away_losses"])
+AWAY_AWAYLOSS_POINTS_AGAINST_PER_GAME = Term([], ["AWAY_away_points_against"], ["AWAY_away_losses"])
+
 # model bank, these get exported to the other file(s) that want them
-# TODO expand the available terms to home/away/win/loss combos, since those may make a difference too
+# TODO go term by term and graph how these impact the values, whether quadratic or not
 # TODO add line of best fit mask
 MODEL_HOME_WIN_PR = Model(
     [
@@ -90,17 +130,30 @@ MODEL_HOME_WIN_PR = Model(
         HOME_STREAK,
         HOME_LAST10_W,
         HOME_LAST10_L,
+        HOME_HOME_WIN_PERCENTAGE,
+        HOME_HOME_POINTS_FOR_PER_GAME,
+        HOME_HOME_POINTS_AGAINST_PER_GAME,
+        HOME_HOME_STREAK,
+        HOME_HOME_LAST10_W,
+        HOME_HOME_LAST10_L,
         # away team params
-        HOME_WIN_PERCENTAGE,
+        AWAY_WIN_PERCENTAGE,
         AWAY_POINTS_FOR_PER_GAME,
         AWAY_POINTS_AGAINST_PER_GAME,
         AWAY_STREAK,
         AWAY_LAST10_W,
         AWAY_LAST10_L,
+        AWAY_AWAY_WIN_PERCENTAGE,
+        AWAY_AWAY_POINTS_FOR_PER_GAME,
+        AWAY_AWAY_POINTS_AGAINST_PER_GAME,
+        AWAY_AWAY_STREAK,
+        AWAY_AWAY_LAST10_W,
+        AWAY_AWAY_LAST10_L,
     ],
     "GAME_homeWin",
     [0, 1],
 )
+
 MODEL_HOME_SPREAD = Model(
     [
         # constant
@@ -108,12 +161,33 @@ MODEL_HOME_SPREAD = Model(
         # home team params
         HOME_POINTS_FOR_PER_GAME,
         HOME_POINTS_AGAINST_PER_GAME,
+        HOME_HOME_POINTS_FOR_PER_GAME,
+        HOME_HOME_POINTS_AGAINST_PER_GAME,
+        HOME_WIN_POINTS_FOR_PER_GAME,
+        HOME_WIN_POINTS_AGAINST_PER_GAME,
+        HOME_LOSS_POINTS_FOR_PER_GAME,
+        HOME_LOSS_POINTS_AGAINST_PER_GAME,
+        HOME_HOMEWIN_POINTS_FOR_PER_GAME,
+        HOME_HOMEWIN_POINTS_AGAINST_PER_GAME,
+        HOME_HOMELOSS_POINTS_FOR_PER_GAME,
+        HOME_HOMELOSS_POINTS_AGAINST_PER_GAME,
         # away team params
         AWAY_POINTS_FOR_PER_GAME,
         AWAY_POINTS_AGAINST_PER_GAME,
+        AWAY_AWAY_POINTS_FOR_PER_GAME,
+        AWAY_AWAY_POINTS_AGAINST_PER_GAME,
+        AWAY_WIN_POINTS_FOR_PER_GAME,
+        AWAY_WIN_POINTS_AGAINST_PER_GAME,
+        AWAY_LOSS_POINTS_FOR_PER_GAME,
+        AWAY_LOSS_POINTS_AGAINST_PER_GAME,
+        AWAY_AWAYWIN_POINTS_FOR_PER_GAME,
+        AWAY_AWAYWIN_POINTS_AGAINST_PER_GAME,
+        AWAY_AWAYLOSS_POINTS_FOR_PER_GAME,
+        AWAY_AWAYLOSS_POINTS_AGAINST_PER_GAME,
     ],
     "GAME_spread",
 )
+
 MODEL_TOTAL_SCORE = Model(
     [
         # constant
@@ -121,9 +195,29 @@ MODEL_TOTAL_SCORE = Model(
         # home team params
         HOME_POINTS_FOR_PER_GAME,
         HOME_POINTS_AGAINST_PER_GAME,
+        HOME_HOME_POINTS_FOR_PER_GAME,
+        HOME_HOME_POINTS_AGAINST_PER_GAME,
+        HOME_WIN_POINTS_FOR_PER_GAME,
+        HOME_WIN_POINTS_AGAINST_PER_GAME,
+        HOME_LOSS_POINTS_FOR_PER_GAME,
+        HOME_LOSS_POINTS_AGAINST_PER_GAME,
+        HOME_HOMEWIN_POINTS_FOR_PER_GAME,
+        HOME_HOMEWIN_POINTS_AGAINST_PER_GAME,
+        HOME_HOMELOSS_POINTS_FOR_PER_GAME,
+        HOME_HOMELOSS_POINTS_AGAINST_PER_GAME,
         # away team params
         AWAY_POINTS_FOR_PER_GAME,
         AWAY_POINTS_AGAINST_PER_GAME,
+        AWAY_AWAY_POINTS_FOR_PER_GAME,
+        AWAY_AWAY_POINTS_AGAINST_PER_GAME,
+        AWAY_WIN_POINTS_FOR_PER_GAME,
+        AWAY_WIN_POINTS_AGAINST_PER_GAME,
+        AWAY_LOSS_POINTS_FOR_PER_GAME,
+        AWAY_LOSS_POINTS_AGAINST_PER_GAME,
+        AWAY_AWAYWIN_POINTS_FOR_PER_GAME,
+        AWAY_AWAYWIN_POINTS_AGAINST_PER_GAME,
+        AWAY_AWAYLOSS_POINTS_FOR_PER_GAME,
+        AWAY_AWAYLOSS_POINTS_AGAINST_PER_GAME,
     ],
     "GAME_total",
     [0, None],

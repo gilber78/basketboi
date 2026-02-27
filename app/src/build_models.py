@@ -16,7 +16,6 @@ def build_models(config):
         ],
         ignore_index=True,
     )
-    ref_data = ref_data[(ref_data["HOME_games_played"] != 0) & (ref_data["AWAY_games_played"] != 0)].reset_index()
     if config["DEBUG"]:
         test_data = pd.concat(
             [
@@ -26,7 +25,16 @@ def build_models(config):
             ],
             ignore_index=True,
         )
-        test_data = test_data[(test_data["HOME_games_played"] != 0) & (test_data["AWAY_games_played"] != 0)].reset_index()
+        test_data = test_data[
+            (test_data["HOME_games_played"] != 0)
+            & (test_data["AWAY_games_played"] != 0)
+            & (test_data["HOME_wins"] != 0)
+            & (test_data["AWAY_wins"] != 0)
+            & (test_data["HOME_home_wins"] != 0)
+            & (test_data["AWAY_away_wins"] != 0)
+            & (test_data["HOME_home_losses"] != 0)
+            & (test_data["AWAY_away_losses"] != 0)
+        ].reset_index()
 
     # calculate out all the models
     MODEL_HOME_WIN_PR.calculate_model(ref_data)
