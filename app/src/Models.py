@@ -52,9 +52,7 @@ class Model:
         yvals = ref_data[self.target].to_numpy().reshape(-1, 1)
 
         # straight up remove rows with any nan
-        nanmask = ~np.isnan(vandermonde).any(axis=1)
-        infmask = ~np.isinf(vandermonde).any(axis=1)
-        mask = np.logical_and(nanmask, infmask)
+        mask = np.logical_and(~np.isnan(vandermonde).any(axis=1), ~np.isinf(vandermonde).any(axis=1))
         vandermonde = vandermonde[mask]
         yvals = yvals[mask]
 
@@ -86,14 +84,14 @@ HOME_HOME_POINTS_AGAINST_PER_GAME = Term([], ["HOME_home_points_against"], ["HOM
 HOME_HOME_STREAK = Term([], ["HOME_home_streak"], [])
 HOME_HOME_LAST10_W = Term([], ["HOME_home_last10_w"], [])
 HOME_HOME_LAST10_L = Term([], ["HOME_home_last10_l"], [])
-HOME_WIN_POINTS_FOR_PER_GAME = Term([], ["HOME_points_for"], ["HOME_wins"])
-HOME_WIN_POINTS_AGAINST_PER_GAME = Term([], ["HOME_points_against"], ["HOME_wins"])
-HOME_LOSS_POINTS_FOR_PER_GAME = Term([], ["HOME_points_for"], ["HOME_losses"])
-HOME_LOSS_POINTS_AGAINST_PER_GAME = Term([], ["HOME_points_against"], ["HOME_losses"])
-HOME_HOMEWIN_POINTS_FOR_PER_GAME = Term([], ["HOME_home_points_for"], ["HOME_home_wins"])
-HOME_HOMEWIN_POINTS_AGAINST_PER_GAME = Term([], ["HOME_home_points_against"], ["HOME_home_wins"])
-HOME_HOMELOSS_POINTS_FOR_PER_GAME = Term([], ["HOME_home_points_for"], ["HOME_home_losses"])
-HOME_HOMELOSS_POINTS_AGAINST_PER_GAME = Term([], ["HOME_home_points_against"], ["HOME_home_losses"])
+HOME_WIN_POINTS_FOR_PER_GAME = Term([], ["HOME_win_points_for"], ["HOME_wins"])
+HOME_WIN_POINTS_AGAINST_PER_GAME = Term([], ["HOME_win_points_against"], ["HOME_wins"])
+HOME_LOSS_POINTS_FOR_PER_GAME = Term([], ["HOME_loss_points_for"], ["HOME_losses"])
+HOME_LOSS_POINTS_AGAINST_PER_GAME = Term([], ["HOME_loss_points_against"], ["HOME_losses"])
+HOME_HOMEWIN_POINTS_FOR_PER_GAME = Term([], ["HOME_homewin_points_for"], ["HOME_home_wins"])
+HOME_HOMEWIN_POINTS_AGAINST_PER_GAME = Term([], ["HOME_homewin_points_against"], ["HOME_home_wins"])
+HOME_HOMELOSS_POINTS_FOR_PER_GAME = Term([], ["HOME_homeloss_points_for"], ["HOME_home_losses"])
+HOME_HOMELOSS_POINTS_AGAINST_PER_GAME = Term([], ["HOME_homeloss_points_against"], ["HOME_home_losses"])
 
 AWAY_WIN_PERCENTAGE = Term([], ["AWAY_wins"], ["AWAY_games_played"])
 AWAY_POINTS_FOR_PER_GAME = Term([], ["AWAY_points_for"], ["AWAY_games_played"])
@@ -107,14 +105,14 @@ AWAY_AWAY_POINTS_AGAINST_PER_GAME = Term([], ["AWAY_away_points_against"], ["AWA
 AWAY_AWAY_STREAK = Term([], ["AWAY_away_streak"], [])
 AWAY_AWAY_LAST10_W = Term([], ["AWAY_away_last10_w"], [])
 AWAY_AWAY_LAST10_L = Term([], ["AWAY_away_last10_l"], [])
-AWAY_WIN_POINTS_FOR_PER_GAME = Term([], ["AWAY_points_for"], ["AWAY_wins"])
-AWAY_WIN_POINTS_AGAINST_PER_GAME = Term([], ["AWAY_points_against"], ["AWAY_wins"])
-AWAY_LOSS_POINTS_FOR_PER_GAME = Term([], ["AWAY_points_for"], ["AWAY_losses"])
-AWAY_LOSS_POINTS_AGAINST_PER_GAME = Term([], ["AWAY_points_against"], ["AWAY_losses"])
-AWAY_AWAYWIN_POINTS_FOR_PER_GAME = Term([], ["AWAY_away_points_for"], ["AWAY_away_wins"])
-AWAY_AWAYWIN_POINTS_AGAINST_PER_GAME = Term([], ["HOME_home_points_against"], ["AWAY_away_wins"])
-AWAY_AWAYLOSS_POINTS_FOR_PER_GAME = Term([], ["AWAY_away_points_for"], ["AWAY_away_losses"])
-AWAY_AWAYLOSS_POINTS_AGAINST_PER_GAME = Term([], ["AWAY_away_points_against"], ["AWAY_away_losses"])
+AWAY_WIN_POINTS_FOR_PER_GAME = Term([], ["AWAY_win_points_for"], ["AWAY_wins"])
+AWAY_WIN_POINTS_AGAINST_PER_GAME = Term([], ["AWAY_win_points_against"], ["AWAY_wins"])
+AWAY_LOSS_POINTS_FOR_PER_GAME = Term([], ["AWAY_loss_points_for"], ["AWAY_losses"])
+AWAY_LOSS_POINTS_AGAINST_PER_GAME = Term([], ["AWAY_loss_points_against"], ["AWAY_losses"])
+AWAY_AWAYWIN_POINTS_FOR_PER_GAME = Term([], ["AWAY_awaywin_points_for"], ["AWAY_away_wins"])
+AWAY_AWAYWIN_POINTS_AGAINST_PER_GAME = Term([], ["AWAY_awaywin_points_against"], ["AWAY_away_wins"])
+AWAY_AWAYLOSS_POINTS_FOR_PER_GAME = Term([], ["AWAY_awayloss_points_for"], ["AWAY_away_losses"])
+AWAY_AWAYLOSS_POINTS_AGAINST_PER_GAME = Term([], ["AWAY_awayloss_points_against"], ["AWAY_away_losses"])
 
 # model bank, these get exported to the other file(s) that want them
 # TODO go term by term and graph how these impact the values, whether quadratic or not
@@ -136,6 +134,14 @@ MODEL_HOME_WIN_PR = Model(
         HOME_HOME_STREAK,
         HOME_HOME_LAST10_W,
         HOME_HOME_LAST10_L,
+        HOME_WIN_POINTS_FOR_PER_GAME,
+        HOME_WIN_POINTS_AGAINST_PER_GAME,
+        HOME_LOSS_POINTS_FOR_PER_GAME,
+        HOME_LOSS_POINTS_AGAINST_PER_GAME,
+        HOME_HOMEWIN_POINTS_FOR_PER_GAME,
+        HOME_HOMEWIN_POINTS_AGAINST_PER_GAME,
+        HOME_HOMELOSS_POINTS_FOR_PER_GAME,
+        HOME_HOMELOSS_POINTS_AGAINST_PER_GAME,
         # away team params
         AWAY_WIN_PERCENTAGE,
         AWAY_POINTS_FOR_PER_GAME,
@@ -149,6 +155,14 @@ MODEL_HOME_WIN_PR = Model(
         AWAY_AWAY_STREAK,
         AWAY_AWAY_LAST10_W,
         AWAY_AWAY_LAST10_L,
+        AWAY_WIN_POINTS_FOR_PER_GAME,
+        AWAY_WIN_POINTS_AGAINST_PER_GAME,
+        AWAY_LOSS_POINTS_FOR_PER_GAME,
+        AWAY_LOSS_POINTS_AGAINST_PER_GAME,
+        AWAY_AWAYWIN_POINTS_FOR_PER_GAME,
+        AWAY_AWAYWIN_POINTS_AGAINST_PER_GAME,
+        AWAY_AWAYLOSS_POINTS_FOR_PER_GAME,
+        AWAY_AWAYLOSS_POINTS_AGAINST_PER_GAME,
     ],
     "GAME_homeWin",
     [0, 1],

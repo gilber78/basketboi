@@ -1,5 +1,5 @@
 {
-    "DEBUG": false,
+    "DEBUG": true,
     "BASE_DATA_PATH": "app/data/",
     "DATA_DOWNLOAD_PATH": "app/data/games/",
     "KAGGLE_API_TOKEN_PATH": "app/data/access_token",
