@@ -15,16 +15,38 @@ def plot_pdf_function(x, y, title, binwidth=0.05, bounds=(0, 1), xlabel="Predict
     bins = np.linspace(bounds[0], bounds[1], int((bounds[1] - bounds[0]) / binwidth) + 1)
     xvals = [(bins[i] + bins[i - 1]) / 2 for i in range(1, len(bins))]
     yvals = []
+    for i in range(1, len(bins)):
+        y_mask = y[(bins[i - 1] <= x) & (x <= bins[i])]
+        yvals.append(sum(y_mask) / len(y_mask))
+    xvals = np.array(xvals)
+    yvals = np.array(yvals)
+    m, b = np.polyfit(xvals, yvals, 1)
+    liney = m * xvals + b
+    plt.figure()
+    plt.title(title)
+    plt.xlabel(xlabel)
+    plt.ylabel(ylabel)
+    plt.xlim(bounds)
+    plt.ylim((0, 1))
+    plt.scatter(xvals, yvals, alpha=1)
+    plt.plot(xvals, liney, alpha=0.6)
+    plt.plot(xvals, xvals, "k", alpha=0.6)
+    plt.legend([f"m = {m}", f"b = {b}"])
+
+
+def plot_pdf_function_DEBUG(x, y, title, binwidth=0.05, bounds=(0, 1), xlabel="Predicted Probability", ylabel="True Probability"):
+    bins = np.linspace(bounds[0], bounds[1], int((bounds[1] - bounds[0]) / binwidth) + 1)
+    xvals = [(bins[i] + bins[i - 1]) / 2 for i in range(1, len(bins))]
+    yvals = []
     weights = []
     for i in range(1, len(bins)):
         y_mask = y[(bins[i - 1] <= x) & (x <= bins[i])]
         yvals.append(sum(y_mask) / len(y_mask))
-        weights.append(len(y_mask))
+        weights.append(1)
     xvals = np.array(xvals)
     yvals = np.array(yvals)
     weights = np.array(weights)
 
-    # TODO delete this block after troubleshooting first model
     m, b = np.polyfit(xvals, yvals, 1, w=weights)
     a2, a1, a0 = np.polyfit(xvals, yvals, 2, w=weights)
     k3, k2, k1, k0 = np.polyfit(xvals, yvals, 3, w=weights)

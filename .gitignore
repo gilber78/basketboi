@@ -209,4 +209,8 @@ __marimo__/
 ### CUSTOM
 access_token
 games/
+
+# delete these when you're done
 columns.txt
+model_stuff.txt
+window_fit.JPG
