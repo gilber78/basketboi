@@ -37,7 +37,7 @@ def build_models(config):
             & (test_data["HOME_home_losses"] != 0)
             & (test_data["AWAY_away_losses"] != 0)
         ].reset_index()
-        sample_data = pd.concat( # this is identical to ref data when in debug mode, for the additional plots
+        sample_data = pd.concat(  # this is identical to ref data when in debug mode, for the additional plots
             [
                 pd.read_csv(os.path.join(os.environ["SEASON_PATH"], dir, f"{dir}_full.csv"))
                 for dir in os.listdir(os.environ["SEASON_PATH"])
