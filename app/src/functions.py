@@ -1,6 +1,8 @@
 import pickle
 import datetime
 
+from constants import DAYS_PER_YEAR
+
 DATA_DATE_FORMAT_STRING = "%Y-%m-%d"
 DATA_TIME_FORMAT_STRING = "%H:%M:%S"
 
@@ -30,6 +32,12 @@ def increment_day(start_day: str, inc: int = 1):
     end_day_object = start_day_object + datetime.timedelta(days=inc)
     end_day = datetime.datetime.strftime(end_day_object, DATA_DATE_FORMAT_STRING)
     return end_day
+
+
+def fractional_year_since(x_date, ref_date):
+    x_date_object = datetime.datetime.strptime(x_date, DATA_DATE_FORMAT_STRING)
+    ref_date_object = datetime.datetime.strptime(ref_date, DATA_DATE_FORMAT_STRING)
+    return (x_date_object - ref_date_object).days / DAYS_PER_YEAR
 
 
 def print_current_season():

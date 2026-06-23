@@ -6,8 +6,7 @@ import datetime
 import pandas as pd
 from NBASeason import NBASeason
 
-# from constants import MAXSIZE
-from sys import maxsize as MAXSIZE
+from constants import MAXSIZE
 from functions import DATA_DATE_FORMAT_STRING, DATA_TIME_FORMAT_STRING, get_current_season_year
 
 with open("app\\data\\team_data.json", "r") as file:

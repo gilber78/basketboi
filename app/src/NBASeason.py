@@ -87,6 +87,7 @@ def create_game_data_series(awayTeam: NBATeam, homeTeam: NBATeam, game: NBAGame 
     }
     if game != None:
         game_dict = {
+            "GAME_gameDate": game.gameDate,
             "GAME_homeScore": game.homeScore,
             "GAME_awayScore": game.awayScore,
             "GAME_total": game.total,
@@ -95,6 +96,7 @@ def create_game_data_series(awayTeam: NBATeam, homeTeam: NBATeam, game: NBAGame 
         }
     else:
         game_dict = {
+            "GAME_gameDate": None,
             "GAME_homeScore": None,
             "GAME_awayScore": None,
             "GAME_total": None,

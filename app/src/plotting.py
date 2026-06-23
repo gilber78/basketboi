@@ -1,6 +1,8 @@
 import numpy as np
 import matplotlib.pyplot as plt
 
+from statistics import calc_ROC_curve, calc_brier_score
+
 
 def plot_2d_histogram(x, y, title, binwidth=1, xlabel="Predicted values", ylabel="True values"):
     plt.figure()
@@ -16,7 +18,7 @@ def plot_pdf_function(x, y, title, binwidth=0.05, bounds=(0, 1), xlabel="Predict
     xvals = [(bins[i] + bins[i - 1]) / 2 for i in range(1, len(bins))]
     yvals = []
     for i in range(1, len(bins)):
-        y_mask = y[(bins[i - 1] <= x) & (x <= bins[i])]
+        y_mask = y[(bins[i - 1] <= x) & (x < bins[i])]
         yvals.append(sum(y_mask) / len(y_mask))
     xvals = np.array(xvals)
     yvals = np.array(yvals)
@@ -30,8 +32,24 @@ def plot_pdf_function(x, y, title, binwidth=0.05, bounds=(0, 1), xlabel="Predict
     plt.ylim((0, 1))
     plt.scatter(xvals, yvals, alpha=1)
     plt.plot(xvals, liney, alpha=0.6)
+    plt.plot(xvals, xvals + 0.05, "k", alpha=0.24)
+    plt.plot(xvals, xvals - 0.05, "k", alpha=0.24)
     plt.plot(xvals, xvals, "k", alpha=0.6)
     plt.legend([f"m = {m}", f"b = {b}"])
+
+
+def plot_ROC_curve(x, y, title, binwidth=0.01, bounds=(0, 1), xlabel="FPR", ylabel="TPR"):
+    TPR, FPR, AUC = calc_ROC_curve(x, y, binwidth, bounds)
+    print("AREA UNDER ROC:", AUC)
+    print("BRIER SCORE:", calc_brier_score(x, y))
+    plt.figure()
+    plt.title(title)
+    plt.xlabel(xlabel)
+    plt.ylabel(ylabel)
+    plt.xlim(bounds)
+    plt.ylim((0, 1))
+    plt.plot(FPR, TPR, "g", alpha=1)
+    plt.plot(FPR, FPR, "k", alpha=0.6)
 
 
 def plot_pdf_function_DEBUG(x, y, title, binwidth=0.05, bounds=(0, 1), xlabel="Predicted Probability", ylabel="True Probability"):

@@ -68,11 +68,11 @@ def build_models(config):
         pred_win = []
         count = 0
         for _, row in test_data.iterrows():
+            print("COUNT -", count)
             pred_win.append(MODEL_HOME_WIN_PR.value(row, apply_mask=True)[0])
-            pd.concat([ref_data, row], ignore_index=True)
+            ref_data.loc[len(ref_data)] = row
             MODEL_HOME_WIN_PR.calculate_model(ref_data)
             count += 1
-            print("COUNT -", count)
         pred_win = np.array(pred_win)
         """
 
@@ -89,86 +89,88 @@ def build_models(config):
 
         # plotting full models
         plotting.plot_pdf_function(pred_win, true_win, "Predicted vs Actual Home Team Win % of NBA games")
+        plotting.plot_ROC_curve(pred_win, true_win, "ROC curve for Home Team Win % of NBA games%")
         # plotting.plot_2d_histogram(pred_total, true_total, "Predicted vs Actual Total Score of NBA Games")
         # plotting.plot_2d_histogram(pred_spread, true_spread, "Predicted vs Actual Home Team Spread of NBA Games")
 
         # intermediate plotting and term valuation
-        test_terms = [
-            # home team params
-            HOME_WIN_PERCENTAGE,
-            HOME_POINTS_FOR_PER_GAME,
-            HOME_POINTS_AGAINST_PER_GAME,
-            HOME_STREAK,
-            HOME_LAST10_W,
-            HOME_LAST10_L,
-            HOME_HOME_WIN_PERCENTAGE,
-            HOME_HOME_POINTS_FOR_PER_GAME,
-            HOME_HOME_POINTS_AGAINST_PER_GAME,
-            HOME_HOME_STREAK,
-            HOME_HOME_LAST10_W,
-            HOME_HOME_LAST10_L,
-            HOME_WIN_POINTS_FOR_PER_GAME,
-            HOME_WIN_POINTS_AGAINST_PER_GAME,
-            HOME_LOSS_POINTS_FOR_PER_GAME,
-            HOME_LOSS_POINTS_AGAINST_PER_GAME,
-            HOME_HOMEWIN_POINTS_FOR_PER_GAME,
-            HOME_HOMEWIN_POINTS_AGAINST_PER_GAME,
-            HOME_HOMELOSS_POINTS_FOR_PER_GAME,
-            HOME_HOMELOSS_POINTS_AGAINST_PER_GAME,
-            # away team params
-            AWAY_WIN_PERCENTAGE,
-            AWAY_POINTS_FOR_PER_GAME,
-            AWAY_POINTS_AGAINST_PER_GAME,
-            AWAY_STREAK,
-            AWAY_LAST10_W,
-            AWAY_LAST10_L,
-            AWAY_AWAY_WIN_PERCENTAGE,
-            AWAY_AWAY_POINTS_FOR_PER_GAME,
-            AWAY_AWAY_POINTS_AGAINST_PER_GAME,
-            AWAY_AWAY_STREAK,
-            AWAY_AWAY_LAST10_W,
-            AWAY_AWAY_LAST10_L,
-            AWAY_WIN_POINTS_FOR_PER_GAME,
-            AWAY_WIN_POINTS_AGAINST_PER_GAME,
-            AWAY_LOSS_POINTS_FOR_PER_GAME,
-            AWAY_LOSS_POINTS_AGAINST_PER_GAME,
-            AWAY_AWAYWIN_POINTS_FOR_PER_GAME,
-            AWAY_AWAYWIN_POINTS_AGAINST_PER_GAME,
-            AWAY_AWAYLOSS_POINTS_FOR_PER_GAME,
-            AWAY_AWAYLOSS_POINTS_AGAINST_PER_GAME,
-        ]
-
-        def find_bounds(terms: list, data: pd.DataFrame):
-            num_bins = 301
-            bins = np.linspace(-100, 200, num_bins)
-            for term in terms:
-                value = term.value(data)
-                sizes = [len(value[(bins[i - 1] <= value) & (value <= bins[i])]) for i in range(1, num_bins)]
-                best = 0
-                current = 0
-                best_i = None
-                best_j = None
-                i = 0
-                j = 1
-                while True:
-                    j += 1
-                    if j >= len(sizes):
-                        break
-                    if sizes[j] == 0:
-                        current = j - i
-                        if current > best:
-                            best = current
-                            best_i = i
-                            best_j = j
-                        i = j
-                if np.sign(bins[best_i]) == -1 and np.sign(bins[best_j]) == -1:
-                    print(0, 1)
-                else:
-                    print(bins[best_i] + 1, bins[best_j])
-
-        # find_bounds(test_terms, sample_data)
         # TODO delete these 40 plots
         if not True:
+            test_terms = [
+                # home team params
+                HOME_WIN_PERCENTAGE,
+                HOME_POINTS_FOR_PER_GAME,
+                HOME_POINTS_AGAINST_PER_GAME,
+                HOME_STREAK,
+                HOME_LAST10_W,
+                HOME_LAST10_L,
+                HOME_HOME_WIN_PERCENTAGE,
+                HOME_HOME_POINTS_FOR_PER_GAME,
+                HOME_HOME_POINTS_AGAINST_PER_GAME,
+                HOME_HOME_STREAK,
+                HOME_HOME_LAST10_W,
+                HOME_HOME_LAST10_L,
+                HOME_WIN_POINTS_FOR_PER_GAME,
+                HOME_WIN_POINTS_AGAINST_PER_GAME,
+                HOME_LOSS_POINTS_FOR_PER_GAME,
+                HOME_LOSS_POINTS_AGAINST_PER_GAME,
+                HOME_HOMEWIN_POINTS_FOR_PER_GAME,
+                HOME_HOMEWIN_POINTS_AGAINST_PER_GAME,
+                HOME_HOMELOSS_POINTS_FOR_PER_GAME,
+                HOME_HOMELOSS_POINTS_AGAINST_PER_GAME,
+                # away team params
+                AWAY_WIN_PERCENTAGE,
+                AWAY_POINTS_FOR_PER_GAME,
+                AWAY_POINTS_AGAINST_PER_GAME,
+                AWAY_STREAK,
+                AWAY_LAST10_W,
+                AWAY_LAST10_L,
+                AWAY_AWAY_WIN_PERCENTAGE,
+                AWAY_AWAY_POINTS_FOR_PER_GAME,
+                AWAY_AWAY_POINTS_AGAINST_PER_GAME,
+                AWAY_AWAY_STREAK,
+                AWAY_AWAY_LAST10_W,
+                AWAY_AWAY_LAST10_L,
+                AWAY_WIN_POINTS_FOR_PER_GAME,
+                AWAY_WIN_POINTS_AGAINST_PER_GAME,
+                AWAY_LOSS_POINTS_FOR_PER_GAME,
+                AWAY_LOSS_POINTS_AGAINST_PER_GAME,
+                AWAY_AWAYWIN_POINTS_FOR_PER_GAME,
+                AWAY_AWAYWIN_POINTS_AGAINST_PER_GAME,
+                AWAY_AWAYLOSS_POINTS_FOR_PER_GAME,
+                AWAY_AWAYLOSS_POINTS_AGAINST_PER_GAME,
+            ]
+
+            def find_bounds(terms: list, data: pd.DataFrame):
+                num_bins = 301
+                bins = np.linspace(-100, 200, num_bins)
+                for term in terms:
+                    value = term.value(data)
+                    sizes = [len(value[(bins[i - 1] <= value) & (value <= bins[i])]) for i in range(1, num_bins)]
+                    best = 0
+                    current = 0
+                    best_i = None
+                    best_j = None
+                    i = 0
+                    j = 1
+                    while True:
+                        j += 1
+                        if j >= len(sizes):
+                            break
+                        if sizes[j] == 0:
+                            current = j - i
+                            if current > best:
+                                best = current
+                                best_i = i
+                                best_j = j
+                            i = j
+                    if np.sign(bins[best_i]) == -1 and np.sign(bins[best_j]) == -1:
+                        print(0, 1)
+                    else:
+                        print(bins[best_i] + 1, bins[best_j])
+
+            find_bounds(test_terms, sample_data)
+
             # HOME
             plotting.plot_pdf_function_DEBUG(
                 HOME_WIN_PERCENTAGE.value(sample_data), sample_data["GAME_homeWin"].to_numpy(), "DEBUG % v HOME_WIN_PERCENTAGE"

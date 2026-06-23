@@ -1,8 +1,28 @@
 import copy
 import numpy as np
 import pandas as pd
+from functools import partial
+
+from functions import fractional_year_since
 
 np.set_printoptions(linewidth=np.inf)
+
+
+def recency_weight_function(x, z, b):
+    if x < z:
+        val = 0
+    elif x < z / 2:
+        val = 2 * ((z - x) / z) ** 2
+    elif x < 0:
+        val = 1 - 2 * (x / z) ** 2
+    else:
+        val = 1
+    return val**b
+
+
+# TODO configify weight function? or use same thing for every one?
+RECENCY_WEIGHT_FUNCTION = partial(recency_weight_function, z=-100, b=5)
+EVEN_WEIGHT_FUNCTION = lambda x: 1
 
 
 # TODO allow Term class to accept model as a value
@@ -42,26 +62,36 @@ class Term:
 
 
 class Model:
-    def __init__(self, terms: list, target: str, bounds=[None, None]):
+    def __init__(self, terms: list, target: str, bounds=[None, None], weight_func=RECENCY_WEIGHT_FUNCTION):
         self.terms = terms
         self.target = target
         self.bounds = bounds
+        self.ref_date = None
+        self.coeffs = None
+        self.ref_Rsquared = None
         self.m = None
         self.b = None
+        self.weight_func = weight_func
 
     def calculate_model(self, ref_data: pd.DataFrame):
         # create values
-        # TODO weight the vandermode by some amount... older data points contribute less than newer ones
+        self.ref_date = np.max(ref_data["GAME_gameDate"])
+        weights = np.array([self.weight_func(fractional_year_since(x["GAME_gameDate"], self.ref_date)) for _, x in ref_data.iterrows()])
         vandermonde = np.vstack([term.value(ref_data).to_numpy() for term in self.terms]).T
         yvals = ref_data[self.target].to_numpy().reshape(-1, 1)
 
-        # straight up remove rows with any nan
+        # straight up remove rows with any nan or inf
         mask = np.logical_and(~np.isnan(vandermonde).any(axis=1), ~np.isinf(vandermonde).any(axis=1))
+        weights = weights[mask]
         vandermonde = vandermonde[mask]
         yvals = yvals[mask]
 
         # calculate, SVD on vandermonde
-        self.coeffs = np.linalg.pinv(vandermonde) @ yvals
+        Wmatrix = np.diag(weights)
+        Amatrix = vandermonde.T @ Wmatrix @ vandermonde
+        Bvector = vandermonde.T @ Wmatrix @ yvals
+        self.coeffs = np.linalg.inv(Amatrix) @ Bvector
+        # self.coeffs = np.linalg.pinv(vandermonde) @ yvals
         SS_res = sum((yvals - vandermonde @ self.coeffs) ** 2)[0]
         SS_tot = sum((yvals - np.mean(yvals)) ** 2)[0]
         self.ref_Rsquared = 1 - SS_res / SS_tot
