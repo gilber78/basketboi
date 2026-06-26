@@ -9,7 +9,7 @@ from NBASeason import NBASeason
 from constants import MAXSIZE
 from functions import DATA_DATE_FORMAT_STRING, DATA_TIME_FORMAT_STRING, get_current_season_year
 
-with open("app\\data\\team_data.json", "r") as file:
+with open(os.path.join("app", "data", "team_data.json"), "r") as file:
     id_list = [v["id"] for v in json.load(file).values()]
 
 COLUMNS_TO_KEEP = [

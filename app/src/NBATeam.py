@@ -1,8 +1,9 @@
+import os
 import json
 from NBAGame import NBAGame
 from functions import get_list_wins_and_losses
 
-with open("app\\data\\team_data.json", "r") as file:
+with open(os.path.join("app", "data", "team_data.json"), "r") as file:
     team_data = json.load(file)
 
 

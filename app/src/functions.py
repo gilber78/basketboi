@@ -1,3 +1,4 @@
+import os
 import pickle
 import datetime
 
@@ -42,7 +43,7 @@ def fractional_year_since(x_date, ref_date):
 
 def print_current_season():
     year = get_current_season_year()
-    with open(f"app\\data\\games\\seasons\\{year}-{year+1}\\{year}-{year+1}_season.pkl", "rb") as file:
+    with open(os.path.join("app", "data", "games", "seasons", f"{year}-{year+1}", f"{year}-{year+1}_season.pkl"), "rb") as file:
         test_season = pickle.load(file)
     print()
     test_season.pretty_print()
