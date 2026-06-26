@@ -1,0 +1,59 @@
+<< coefficients for home win probability >>
+HOME_WIN_PERCENTAGE,                       | 3 1
+HOME_POINTS_FOR_PER_GAME,                  | 2 3
+HOME_POINTS_AGAINST_PER_GAME,              | X 1
+HOME_STREAK,                               | 1 3
+HOME_LAST10_W,                             | 3 1
+HOME_LAST10_L,                             | 1 1
+HOME_HOME_WIN_PERCENTAGE,                  | 1 1
+HOME_HOME_POINTS_FOR_PER_GAME,             | 1 2
+HOME_HOME_POINTS_AGAINST_PER_GAME,         | 1 1
+HOME_HOME_STREAK,                          | 1 3
+HOME_HOME_LAST10_W,                        | 1 1
+HOME_HOME_LAST10_L,                        | 1 1
+HOME_WIN_POINTS_FOR_PER_GAME,              | X 1
+HOME_WIN_POINTS_AGAINST_PER_GAME,          | X 1
+HOME_LOSS_POINTS_AGAINST_PER_GAME,         | X 1
+HOME_HOMEWIN_POINTS_FOR_PER_GAME,          | 1 X
+HOME_HOMEWIN_POINTS_AGAINST_PER_GAME,      | X X
+HOME_HOMELOSS_POINTS_FOR_PER_GAME,         | 1 1
+HOME_HOMELOSS_POINTS_AGAINST_PER_GAME,     | X 2
+
+AWAY_WIN_PERCENTAGE,                       | 1 1
+AWAY_POINTS_FOR_PER_GAME,                  | 1 3
+AWAY_POINTS_AGAINST_PER_GAME,              | 1 1
+AWAY_STREAK,                               | 1 1
+AWAY_LAST10_W,                             | 1 1
+AWAY_LAST10_L,                             | 1 1
+AWAY_AWAY_WIN_PERCENTAGE,                  | 1 1
+AWAY_AWAY_POINTS_FOR_PER_GAME,             | X 2
+AWAY_AWAY_POINTS_AGAINST_PER_GAME,         | X 1
+AWAY_AWAY_STREAK,                          | 1 1
+AWAY_AWAY_LAST10_W,                        | 1 1
+AWAY_AWAY_LAST10_L,                        | 2 1
+AWAY_WIN_POINTS_FOR_PER_GAME,              | X 1
+AWAY_WIN_POINTS_AGAINST_PER_GAME,          | X 1
+AWAY_LOSS_POINTS_FOR_PER_GAME,             | X X
+AWAY_LOSS_POINTS_AGAINST_PER_GAME,         | X 1
+AWAY_AWAYWIN_POINTS_FOR_PER_GAME,          | X X
+AWAY_AWAYWIN_POINTS_AGAINST_PER_GAME,      | X X
+AWAY_AWAYLOSS_POINTS_FOR_PER_GAME,         | X 1
+AWAY_AWAYLOSS_POINTS_AGAINST_PER_GAME,     | X 1
+
+<< Parameters for home win probability to optimize againts >>
+Weight function z
+Weight function b
+Min reference data year
+current parameter vector is -100, 5, 2014 - construct a function that will iteratively optimize these values (in a new branch) then place the configured values inside dev
+maximize ROC, minimize brier score
+
+Current best perforamance stats are:
+- ROC-AUC: 0.7195
+- Brier: 0.2119
+- ECE: 0.0257
+- MCE: 0.075
+- Calibration slope: 1.0292
+- Calibration intercept: -0.02851
+
+
+https://www.kaggle.com/datasets/christophertreasure/nba-odds-data <- dataset of historical odds (limited)
