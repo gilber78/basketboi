@@ -209,6 +209,7 @@ __marimo__/
 ### CUSTOM
 access_token
 games/
+*pat.txt
 
 # delete these when you're done
 *.xlsx
