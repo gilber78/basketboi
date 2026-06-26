@@ -5,7 +5,8 @@ with open("app/data/config.json", "r") as file:
     config = json.load(file)
     os.environ["SEASON_PATH"] = os.path.join(config["DATA_DOWNLOAD_PATH"], "seasons")
 with open(config["KAGGLE_API_TOKEN_PATH"], "r") as file:
-    os.environ["KAGGLE_API_TOKEN"] = file.read()
+    os.environ["KAGGLE_USERNAME"] = file.readline()
+    os.environ["KAGGLE_KEY"] = file.readline()
 
 import matplotlib.pyplot as plt
 from build_models import build_models
