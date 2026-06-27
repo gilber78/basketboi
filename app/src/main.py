@@ -1,7 +1,7 @@
 import os
 import json
 
-with open("app/data/config.json", "r") as file:
+with open(os.path.join("app", "data", "config.json"), "r") as file:
     config = json.load(file)
     os.environ["SEASON_PATH"] = os.path.join(config["DATA_DOWNLOAD_PATH"], "seasons")
 with open(config["KAGGLE_API_TOKEN_PATH"], "r") as file:

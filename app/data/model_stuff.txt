@@ -44,16 +44,15 @@ AWAY_AWAYLOSS_POINTS_AGAINST_PER_GAME,     | X 1
 Weight function z
 Weight function b
 Min reference data year
-current parameter vector is -100, 5, 2014 - construct a function that will iteratively optimize these values (in a new branch) then place the configured values inside dev
-maximize ROC, minimize brier score
+current parameter vector is -100, 5, 2014 - construct a function that will iteratively optimize these values against the five values below in order
 
 Current best perforamance stats are:
-- ROC-AUC: 0.7195
-- Brier: 0.2119
-- ECE: 0.0257
-- MCE: 0.075
 - Calibration slope: 1.0292
 - Calibration intercept: -0.02851
+- ECE: 0.0257
+- ROC-AUC: 0.7195
+- Brier: 0.2119
+- MCE: 0.075
 
 
 https://www.kaggle.com/datasets/christophertreasure/nba-odds-data <- dataset of historical odds (limited)
