@@ -20,8 +20,7 @@ def recency_weight_function(x, z, b):
     return val**b
 
 
-# TODO configify weight function? or use same thing for every one?
-RECENCY_WEIGHT_FUNCTION = partial(recency_weight_function, z=-100, b=5)
+HOME_WIN_WEIGHT_FUNCTION = partial(recency_weight_function, z=-42.03607542, b=50.55652838)
 EVEN_WEIGHT_FUNCTION = lambda x: 1
 
 
@@ -62,7 +61,7 @@ class Term:
 
 
 class Model:
-    def __init__(self, terms: list, target: str, bounds=[None, None], weight_func=RECENCY_WEIGHT_FUNCTION):
+    def __init__(self, terms: list, target: str, bounds=[None, None], weight_func=EVEN_WEIGHT_FUNCTION):
         self.terms = terms
         self.target = target
         self.bounds = bounds
@@ -254,7 +253,8 @@ MODEL_HOME_WIN_PR = Model(
         # AWAY_AWAYLOSS_POINTS_AGAINST_PER_GAME,
     ],
     "GAME_homeWin",
-    [0, 1],
+    [0.05, 0.95],
+    HOME_WIN_WEIGHT_FUNCTION,
 )
 
 MODEL_HOME_SPREAD = Model(

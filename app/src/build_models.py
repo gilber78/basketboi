@@ -4,6 +4,7 @@ import pandas as pd
 import plotting
 
 # from Models import MODEL_HOME_WIN_PR, MODEL_HOME_SPREAD, MODEL_TOTAL_SCORE
+import statistics as stats
 from Models import *
 
 
@@ -59,8 +60,8 @@ def build_models(config):
 
     # calculate out all the models
     MODEL_HOME_WIN_PR.calculate_model(ref_data)
-    MODEL_HOME_SPREAD.calculate_model(ref_data)
-    MODEL_TOTAL_SCORE.calculate_model(ref_data)
+    # MODEL_HOME_SPREAD.calculate_model(ref_data)
+    # MODEL_TOTAL_SCORE.calculate_model(ref_data)
 
     if config["DEBUG"]:
         """
@@ -77,15 +78,28 @@ def build_models(config):
         """
 
         pred_win = MODEL_HOME_WIN_PR.value(test_data, apply_mask=True)
-        pred_spread = MODEL_HOME_SPREAD.value(test_data)
-        pred_total = MODEL_TOTAL_SCORE.value(test_data)
+        # pred_spread = MODEL_HOME_SPREAD.value(test_data)
+        # pred_total = MODEL_TOTAL_SCORE.value(test_data)
         true_win = test_data["GAME_homeWin"].to_numpy()
-        true_spread = test_data["GAME_spread"].to_numpy()
-        true_total = test_data["GAME_total"].to_numpy()
+        # true_spread = test_data["GAME_spread"].to_numpy()
+        # true_total = test_data["GAME_total"].to_numpy()
         print("HOME WIN % MODEL  -", MODEL_HOME_WIN_PR.coeffs.T[0], MODEL_HOME_WIN_PR.ref_Rsquared)
-        print("SPREAD MODEL      -", MODEL_HOME_SPREAD.coeffs.T[0], MODEL_HOME_SPREAD.ref_Rsquared)
-        print("TOTAL SCORE MODEL -", MODEL_TOTAL_SCORE.coeffs.T[0], MODEL_TOTAL_SCORE.ref_Rsquared)
+        # print("SPREAD MODEL      -", MODEL_HOME_SPREAD.coeffs.T[0], MODEL_HOME_SPREAD.ref_Rsquared)
+        # print("TOTAL SCORE MODEL -", MODEL_TOTAL_SCORE.coeffs.T[0], MODEL_TOTAL_SCORE.ref_Rsquared)
         print("HOME WIN % MASK -", MODEL_HOME_WIN_PR.m, MODEL_HOME_WIN_PR.b)
+
+        # print statistics
+        pred_win = MODEL_HOME_WIN_PR.value(test_data, apply_mask=True)
+        true_win = test_data["GAME_homeWin"].to_numpy()
+        _, _, AUC = stats.calc_ROC_curve(pred_win, true_win)
+        BRIER = stats.calc_brier_score(pred_win, true_win)
+        ECE = stats.calc_ECE_score(pred_win, true_win)
+        _, _, M, B = stats.calc_calibrated_slope_intercept(pred_win, true_win)
+        print("Slope:", M)
+        print("Intercept:", B)
+        print("ECE:", ECE)
+        print("AUC: ", AUC)
+        print("Brier:", BRIER)
 
         # plotting full models
         plotting.plot_pdf_function(pred_win, true_win, "Predicted vs Actual Home Team Win % of NBA games")

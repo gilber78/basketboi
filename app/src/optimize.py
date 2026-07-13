@@ -11,19 +11,22 @@ with open(config["KAGGLE_API_TOKEN_PATH"], "r") as file:
 import pandas as pd
 import statistics as stats
 from functools import partial
-from scipy.optimize import minimize
+from scipy.optimize import minimize, differential_evolution
 
 from Models import *
 from functions import print_current_season
 from download_and_sort_data import download_and_sort_data  # this import has to come last
 
 
-def objective_function(x):
+def print_progress(*, intermediate_result):
+    print(">>>", intermediate_result.x, intermediate_result.fun)
+
+
+def objective_function_tuple(x):
     # split the vector into compontnes
     min_reference_data_year = np.round(x[0])
     z = x[1]
     b = x[2]
-    print(min_reference_data_year, z, b)
 
     # get reference data based on min year parameter
     ref_data = pd.concat(
@@ -66,45 +69,109 @@ def objective_function(x):
         BRIER = stats.calc_brier_score(pred_win, true_win)
         ECE = stats.calc_ECE_score(pred_win, true_win)
         _, _, M, B = stats.calc_calibrated_slope_intercept(pred_win, true_win)
-        """
-        print("AUC: ", AUC)
-        print("Brier:", BRIER)
-        print("ECE:", ECE)
-        print("Slope:", M)
-        print("Intercept:", B)
-        """
-        return 100 * (M - 1) ** 2 + 100 * B**2 + 25 * ECE**2 + 9 * AUC**2 + 4 * BRIER**2
+
+        return ECE, M, B, AUC, BRIER
 
 
-def build_models_optim():
-    # setup optimization routine
-    x0 = np.array([2014, -100, 5])  # YEAR, z, b
+def objective_function_scalar(x):
+    ECE, M, B, AUC, BRIER = objective_function_tuple(x)
+    return 4 * ECE**2
+    # return 4 * (M - 1) ** 2 + 4 * B**2
+    # return 4 * (AUC - 1) ** 2
+    # return 4 * BRIER**2
+    # return np.sqrt(55 * ECE**2 + 10 * (M - 1) ** 2 + 10 * B**2 + 5 * (AUC - 1) ** 2 + 20 * BRIER**2)
+    # return np.sqrt(55 * ECE**2 + 5 * (M - 1) ** 2 + 15 * B**2 + 25 * BRIER**2)
+    # return np.sqrt(25 * ECE**2 + 5 * (M - 1) ** 2 + 15 * B**2 + 5 * (AUC - 1) ** 2 + 50 * BRIER**2)
 
-    # perform optimization routine
+
+def optim_models_simplex(grid_search=False, x0=np.array([2014, -100, 5])):
+    if grid_search:
+        year_bound = (config["MIN_SEASON_YEAR"], config["MIN_TEST_DATA_YEAR"] - 1)
+        z_bound = (-250, -5)
+        b_bound = (1, 100)
+        year_values = np.linspace(*year_bound, num=(year_bound[1] - year_bound[0] + 1) // 10)
+        z_values = np.linspace(*z_bound, num=(z_bound[1] - z_bound[0] - 1) // 35)
+        b_values = np.linspace(*b_bound, num=(b_bound[1] - b_bound[0] - 1) // 9)
+        best_f = 100
+        best_x = np.array([])
+        for year in year_values:
+            for z in z_values:
+                for b in b_values:
+                    x_test = np.array([year, z, b])
+                    f_test = objective_function_scalar(x_test)
+                    if f_test <= best_f:
+                        best_x = x_test
+                        best_f = f_test
+                        print(">>>", best_x, best_f)
+    else:
+        year_bound = (config["MIN_SEASON_YEAR"], config["MIN_TEST_DATA_YEAR"] - 1)
+        z_bound = (None, 0)
+        b_bound = (0, None)
+        best_x = x0
+
+    # setup optimization routine - x0 is the winner of grid search
+    print("RUNNING SIMPLEX METHOD...")
     result = minimize(
-        objective_function,
-        x0,
+        objective_function_scalar,
+        best_x,
         method="Nelder-Mead",
         options={
-            "maxiter": 500,
+            "maxiter": 200,
             "disp": True,
             "xatol": 1e-6,
             "fatol": 1e-6,
             "disp": True,
         },
-        bounds=[(config["MIN_SEASON_YEAR"], config["MIN_TEST_DATA_YEAR"] - 1), (None, None), (None, None)],
+        bounds=[year_bound, z_bound, b_bound],
+        callback=print_progress,
     )
     print(result)
 
     # print the final result
-    print("OPTIMUM IN  :::", result.x)
-    print("OPTIMUM OUT :::", objective_function(x=result.x))
+    print("initial point :::", x0)
+    print("Score to beat :::", objective_function_scalar(x0))
+    print("OPTIMUM IN    :::", result.x)
+    print("OPTIMUM OUT   :::", objective_function_scalar(result.x))
+
+
+def optim_models_genetic(x0=np.array([2014, -100, 5])):
+    year_bound = (config["MIN_SEASON_YEAR"], config["MIN_TEST_DATA_YEAR"] - 1)
+    z_bound = (-250, -5)
+    b_bound = (1, 100)
+    print("RUNNING GENETIC ALGORITHM...")
+    result = differential_evolution(
+        func=objective_function_scalar,
+        bounds=[year_bound, z_bound, b_bound],
+        x0=x0,
+        strategy="best1bin",
+        maxiter=500,
+        callback=print_progress,
+        disp=True,
+        # polish=True,
+        integrality=[True, False, False],
+    )
+    print(result)
+
+    # print the final result
+    # print("initial point :::", x0)
+    # print("Score to beat :::", objective_function_scalar(x0))
+    print("OPTIMUM IN    :::", result.x)
+    print("OPTIMUM OUT   :::", objective_function_scalar(result.x))
 
 
 def main():
     print("----- WELCOME TO THE BASKETBALL COMPUTER THINGY -----")
     download_and_sort_data(config)  # donwload/sort raw data, if necessary
-    build_models_optim()  # optimize the three remaining parameters
+    ##### used for counting repeated calls
+    # optim_models_genetic()
+    # optim_models_genetic(np.array([2020, -39.52031343, 44.46480557]))
+    # optim_models_genetic(np.array([2020, -41.90271628, 50.20109658]))
+
+    optim_models_genetic(np.array([2020, -41.90271628, 50.20109658]))
+
+    ##### used for counting repeated calls
+    # optim_models_simplex(True)
+    # optim_models_simplex(False, np.array([]))
 
 
 if __name__ == "__main__":

@@ -44,15 +44,36 @@ AWAY_AWAYLOSS_POINTS_AGAINST_PER_GAME,     | X 1
 Weight function z
 Weight function b
 Min reference data year
-current parameter vector is -100, 5, 2014 - construct a function that will iteratively optimize these values against the five values below in order
 
-Current best perforamance stats are:
+Current Parameter Vector: 2014, -100, 5;
 - Calibration slope: 1.0292
 - Calibration intercept: -0.02851
 - ECE: 0.0257
 - ROC-AUC: 0.7195
 - Brier: 0.2119
-- MCE: 0.075
 
+RUNS CONDUCTED (run # == figure # in optim_plots)
+-> Initial grid search trials:
+0) "by eye" (initial point to beat)
+
+-> repeated seeded simplex runs, bounds removed (no grids)
+13) ECE             | 2010 -55.22903412 56.20097656 | ECE: 0.018224838411819027
+14) slope/intercept | 2010 -102.61376863 58.74988667 | m: 0.9969829631701562 b: -0.005804858209133664 
+15) ROC-AUC         | 1945 -101.552426 4.68875133 | roc-auc: 0.724326798677882
+16) Brier           | 1991 -34189.2602  0.104332859 | brier: 0.21042314547746013
+
+-> grid search followed by some repeated simplex (mostly exploring objective function)
+17) weighted 55, 10/10, 5, 20 | 1997, -154.03056919, 23.08215927
+18) weighted 55, 5/15, 0, 25  | 1997, -152.81647597, 22.67772831
+19) weighted 25, 5/15, 5, 50  | 1991, -106.604573,  1.00216783
+
+-> genetic alg
+20) ECE             | 2020 -42.03607542 50.55652838| ECE: 0.014958448753462614
+20a) ECE, 2025      |
+21) slope/intercept | 
+
+::: consider doing an ECE not weighted by number of points instead
+TODO Genetic Algorithm (scipy.optimize.differential_evolution)
+TODO SHGO (scipy.optimize.shgo)
 
 https://www.kaggle.com/datasets/christophertreasure/nba-odds-data <- dataset of historical odds (limited)
