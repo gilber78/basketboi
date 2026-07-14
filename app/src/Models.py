@@ -20,11 +20,11 @@ def recency_weight_function(x, z, b):
     return val**b
 
 
-HOME_WIN_WEIGHT_FUNCTION = partial(recency_weight_function, z=-42, b=51)
+# TODO place the z/bs for each weight function in the config file
+HOME_WIN_WEIGHT_FUNCTION = partial(recency_weight_function, z=-40, b=55)
 EVEN_WEIGHT_FUNCTION = lambda x: 1
 
 
-# TODO allow Term class to accept model as a value
 class Term:
     def __init__(self, constant_names, num_names, den_names):
         # class that holds how to calculate a model term from either the reference dataframe or a team object
@@ -190,7 +190,6 @@ AWAY_AWAYLOSS_POINTS_FOR_PER_GAME = Term([], ["AWAY_awayloss_points_for"], ["AWA
 AWAY_AWAYLOSS_POINTS_AGAINST_PER_GAME = Term([], ["AWAY_awayloss_points_against"], ["AWAY_away_losses"])
 
 # model bank, these get exported to the other file(s) that want them
-# TODO go term by term and graph how these impact the values, whether quadratic or not
 MODEL_HOME_WIN_PR = Model(
     [
         # constant

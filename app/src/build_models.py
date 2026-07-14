@@ -91,15 +91,13 @@ def build_models(config):
         print("HOME WIN % MASK -", MODEL_HOME_WIN_PR.m, MODEL_HOME_WIN_PR.b)
 
         # print statistics
-        pred_win = MODEL_HOME_WIN_PR.value(test_data, apply_mask=True)
-        true_win = test_data["GAME_homeWin"].to_numpy()
         _, _, AUC = stats.calc_ROC_curve(pred_win, true_win)
         BRIER = stats.calc_brier_score(pred_win, true_win)
         ECE = stats.calc_ECE_score(pred_win, true_win)
         _, _, M, B = stats.calc_calibrated_slope_intercept(pred_win, true_win)
+        print("ECE:", ECE)
         print("Slope:", M)
         print("Intercept:", B)
-        print("ECE:", ECE)
         print("AUC: ", AUC)
         print("Brier:", BRIER)
         print("TIME TO RUN:", time.time() - start_time)

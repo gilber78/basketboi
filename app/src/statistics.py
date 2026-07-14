@@ -71,13 +71,14 @@ def calc_ECE_score_unweighted(x, y, binwidth=0.05, bounds=(0, 1)):
     return np.mean(vals)
 
 
-def calc_calibrated_slope_intercept(x, y, binwidth=0.05, bounds=(0, 1)):
+def calc_calibrated_slope_intercept(x, y, binwidth=0.05, bounds=(0, 1), print_mask=False):
     bins = np.linspace(bounds[0], bounds[1], int((bounds[1] - bounds[0]) / binwidth) + 1)
     xvals = [(bins[i] + bins[i - 1]) / 2 for i in range(1, len(bins))]
     yvals = []
     for i in range(1, len(bins)):
         y_mask = y[(bins[i - 1] < x) & (x <= bins[i])]
-        # print(len(y_mask))
+        if print_mask:
+            print(np.round(bins[i - 1], 2), "-", np.round(bins[i], 2), "|", len(y_mask))
         if len(y_mask) == 0:
             yvals.append((bins[i] + bins[i - 1]) / 2)
         else:

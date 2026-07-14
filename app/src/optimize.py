@@ -159,21 +159,16 @@ def optim_models_genetic(x0=np.array([2014, -100, 5])):
     print("OPTIMUM OUT   :::", objective_function_scalar(result.x))
 
 
+def optim_models_daybyday():
+    pass
+
+
 def main():
     print("----- WELCOME TO THE BASKETBALL COMPUTER THINGY -----")
     download_and_sort_data(config)  # donwload/sort raw data, if necessary
-    ##### used for counting repeated calls
-    # optim_models_genetic()
-    # optim_models_genetic(np.array([2020, -39.52031343, 44.46480557]))
-    # optim_models_genetic(np.array([2020, -41.90271628, 50.20109658]))
-
-    optim_models_genetic()
-    optim_models_genetic(np.array([2007, -41.31218309, 59.70911305]))
-    # optim_models_genetic(np.array([2016, -50.8943151, 95.33051235]))
-
-    ##### used for counting repeated calls
     # optim_models_simplex(True)
     # optim_models_simplex(False, np.array([]))
+    # optim_models_genetic(np.array([]))
 
 
 if __name__ == "__main__":
