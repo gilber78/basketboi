@@ -167,7 +167,9 @@ def main():
     # optim_models_genetic(np.array([2020, -39.52031343, 44.46480557]))
     # optim_models_genetic(np.array([2020, -41.90271628, 50.20109658]))
 
-    optim_models_genetic(np.array([2020, -41.90271628, 50.20109658]))
+    optim_models_genetic()
+    optim_models_genetic(np.array([2007, -41.31218309, 59.70911305]))
+    # optim_models_genetic(np.array([2016, -50.8943151, 95.33051235]))
 
     ##### used for counting repeated calls
     # optim_models_simplex(True)

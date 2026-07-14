@@ -1,5 +1,6 @@
 import os
 import pandas as pd
+import time
 
 import plotting
 
@@ -64,10 +65,12 @@ def build_models(config):
     # MODEL_TOTAL_SCORE.calculate_model(ref_data)
 
     if config["DEBUG"]:
-        """
+        start_time = time.time()
+
         # looping mechanism, to check how we do live with updated models after each game
         pred_win = []
         count = 0
+        # TODO do this day by day, not game by game. That'll be much faster and also better reflect use of the model
         for _, row in test_data.iterrows():
             print("COUNT -", count)
             pred_win.append(MODEL_HOME_WIN_PR.value(row, apply_mask=True)[0])
@@ -75,9 +78,8 @@ def build_models(config):
             MODEL_HOME_WIN_PR.calculate_model(ref_data)
             count += 1
         pred_win = np.array(pred_win)
-        """
 
-        pred_win = MODEL_HOME_WIN_PR.value(test_data, apply_mask=True)
+        # pred_win = MODEL_HOME_WIN_PR.value(test_data, apply_mask=True)
         # pred_spread = MODEL_HOME_SPREAD.value(test_data)
         # pred_total = MODEL_TOTAL_SCORE.value(test_data)
         true_win = test_data["GAME_homeWin"].to_numpy()
@@ -100,6 +102,7 @@ def build_models(config):
         print("ECE:", ECE)
         print("AUC: ", AUC)
         print("Brier:", BRIER)
+        print("TIME TO RUN:", time.time() - start_time)
 
         # plotting full models
         plotting.plot_pdf_function(pred_win, true_win, "Predicted vs Actual Home Team Win % of NBA games")

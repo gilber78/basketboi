@@ -68,9 +68,11 @@ RUNS CONDUCTED (run # == figure # in optim_plots)
 19) weighted 25, 5/15, 5, 50  | 1991, -106.604573,  1.00216783
 
 -> genetic alg
-20) ECE             | 2020 -42.03607542 50.55652838| ECE: 0.014958448753462614
-20a) ECE, 2025      |
+20) ECE             | 2020 -42.03607542 50.55652838 | ECE: 0.014958448753462614
+20a) ECE, 2025      | 2007 -41.31218309 59.70911305 | ECE: 0.03066388115134634
 21) slope/intercept | 
+
+-> stepping through games one at a time
 
 ::: consider doing an ECE not weighted by number of points instead
 TODO Genetic Algorithm (scipy.optimize.differential_evolution)

@@ -20,7 +20,7 @@ def recency_weight_function(x, z, b):
     return val**b
 
 
-HOME_WIN_WEIGHT_FUNCTION = partial(recency_weight_function, z=-42.03607542, b=50.55652838)
+HOME_WIN_WEIGHT_FUNCTION = partial(recency_weight_function, z=-42, b=51)
 EVEN_WEIGHT_FUNCTION = lambda x: 1
 
 
