@@ -67,16 +67,17 @@ def build_models(config):
     if config["DEBUG"]:
         start_time = time.time()
 
-        # looping mechanism, to check how we do live with updated models after each game
+        # looping mechanism, to check how we do live with updated models after each day of the season
         pred_win = []
-        count = 0
-        # TODO do this day by day, not game by game. That'll be much faster and also better reflect use of the model
-        for _, row in test_data.iterrows():
-            print("COUNT -", count)
-            pred_win.append(MODEL_HOME_WIN_PR.value(row, apply_mask=True)[0])
-            ref_data.loc[len(ref_data)] = row
+        test_dates = test_data["GAME_gameDate"].unique()
+        for game_date in test_dates:
+            print(">>>", game_date)
+            for _, row in test_data[test_data["GAME_gameDate"] == game_date].iterrows():
+                pred_win.append(MODEL_HOME_WIN_PR.value(row, apply_mask=True)[0])
+                ref_data.loc[len(ref_data)] = row
             MODEL_HOME_WIN_PR.calculate_model(ref_data)
-            count += 1
+            # TODO add other models to calculate in here, based on the below commented out code
+        print()
         pred_win = np.array(pred_win)
 
         # pred_win = MODEL_HOME_WIN_PR.value(test_data, apply_mask=True)
@@ -88,9 +89,9 @@ def build_models(config):
         print("HOME WIN % MODEL  -", MODEL_HOME_WIN_PR.coeffs.T[0], MODEL_HOME_WIN_PR.ref_Rsquared)
         # print("SPREAD MODEL      -", MODEL_HOME_SPREAD.coeffs.T[0], MODEL_HOME_SPREAD.ref_Rsquared)
         # print("TOTAL SCORE MODEL -", MODEL_TOTAL_SCORE.coeffs.T[0], MODEL_TOTAL_SCORE.ref_Rsquared)
-        print("HOME WIN % MASK -", MODEL_HOME_WIN_PR.m, MODEL_HOME_WIN_PR.b)
+        # print("HOME WIN % MASK -", MODEL_HOME_WIN_PR.m, MODEL_HOME_WIN_PR.b)
 
-        # print statistics
+        # print HOME WIN MODEL performance statistics
         _, _, AUC = stats.calc_ROC_curve(pred_win, true_win)
         BRIER = stats.calc_brier_score(pred_win, true_win)
         ECE = stats.calc_ECE_score(pred_win, true_win)
@@ -100,7 +101,7 @@ def build_models(config):
         print("Intercept:", B)
         print("AUC: ", AUC)
         print("Brier:", BRIER)
-        print("TIME TO RUN:", time.time() - start_time)
+        print("\nTIME TO RUN:", time.time() - start_time, "\n")
 
         # plotting full models
         plotting.plot_pdf_function(pred_win, true_win, "Predicted vs Actual Home Team Win % of NBA games")

@@ -160,6 +160,9 @@ def optim_models_genetic(x0=np.array([2014, -100, 5])):
 
 
 def optim_models_daybyday():
+    # TODO fill out this function with new logic, that can consider multiple models simultaneously without overwriting the same model each time
+    # consider writing your own genetic optimization
+    # as much parallelization you can write (calculate models at each iter) the better
     pass
 
 
