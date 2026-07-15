@@ -47,40 +47,36 @@ Weight function z
 Weight function b
 Min reference data year
 
-Current Parameter Vector: 2014, -100, 5;
-- ECE: 0.0257
-- Calibration slope: 1.0292
-- Calibration intercept: -0.02851
-- ROC-AUC: 0.7195
-- Brier: 0.2119
-
 RUNS CONDUCTED (run # == figure # in optim_plots)
 -> Initial grid search trials:
 0) "by eye" (initial point to beat) | 2014 -100 5 |
 
 2024/2025 for more data:
 25) control 1 | 2014 -100 5 | (0.03483, 0.9952, -0.011661, 0.72212, 0.21135)
-26) new best* | 2020 -42 51 | (0.02218, 1.0072, -0.006325, 0.72070, 0.21184)
+26) new best  | 2020 -42 51 | (0.02218, 1.0072, -0.006325, 0.72070, 0.21184)
 27) control 3 | 2015 -50 50 | (0.02493, 0.9711,  0.002270, 0.72120, 0.21175) 
 28) control 4 | 2018 -40 55 | (0.02251, 0.8535,  0.082857, 0.72108, 0.21182)
-<> control 4 was very good, sans the outlier of 2 points near zero
+    <> control 4 was very good, sans the outlier of 2 points near zero
+29) new best,  just 2025
+30) new best,  just 2025, mask and clip flipped
 
-NEW BEST AS OF 7/14/2026: 2020 -42 51
-- ECE: 0.022183748845798705
-- Slope: 1.0071550155350621
-- Intercept: -0.006325398075340133
-- AUC:  0.7206974215261093
-- Brier: 0.2118443018022767
+31) new best*, 2024/2025, mask and clip flipped
+
+NEW BEST AS OF 7/16/2026: 2020 -42 51
+- ECE: 0.022322
+- Slope: 0.99230
+- Intercept: 0.0021135
+- AUC:  0.72069
+- Brier: 0.21185
 
 **Some observations to this point:
 - likely only necessary to include data points that are weighted >1% (ish)
 - we like the weight function parameters somewhere in the neighborhood of 40/55
+- still better with 2024+2025, but 2025 is still good performance?
+- flipping mask and clip seems to have a small decrease in performance, will keep the current version since it is more logical to enforce bounds at the last second instead of allow bounds to be violated
 
 -> stepping through DAYS one at a time
 # TODO fix the loop in build_models debug to go day by day not game by game
-# CHECK IF APPLY MASK IS STILL BETTER/IF WE NEED TO BOUND POST MASK AS WELL
-    - should not have situations where the extremes are inaccurate
-    - hypothesis is to just switch apply mask and bounds in Model.value()
 # TODO find new way to optimize parameters, slowly but surely
 # TODO after model is optimized, check ROI
 # TODO check parameters remain stable when redownloading all games from scratch

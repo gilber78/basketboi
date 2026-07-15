@@ -21,7 +21,7 @@ def recency_weight_function(x, z, b):
 
 
 # TODO place the z/bs for each weight function in the config file
-HOME_WIN_WEIGHT_FUNCTION = partial(recency_weight_function, z=-40, b=55)
+HOME_WIN_WEIGHT_FUNCTION = partial(recency_weight_function, z=-42, b=51)
 EVEN_WEIGHT_FUNCTION = lambda x: 1
 
 
@@ -103,10 +103,10 @@ class Model:
 
     def value(self, input_data: pd.Series, apply_mask=False):
         vals = (np.nan_to_num(np.vstack([term.value(input_data).to_numpy() for term in self.terms]).T) @ self.coeffs).T[0]
-        if self.bounds[0] or self.bounds[1]:
-            vals = np.clip(vals, a_min=self.bounds[0], a_max=self.bounds[1])
         if apply_mask:
             vals = vals * self.m + self.b
+        if self.bounds[0] or self.bounds[1]:
+            vals = np.clip(vals, a_min=self.bounds[0], a_max=self.bounds[1])
         return vals
 
 
