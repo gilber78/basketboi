@@ -78,5 +78,9 @@ NEW BEST AS OF 7/15/2026*: 2020 -42 51
 
 -> stepping through DAYS one at a time
 # TODO find new way to optimize parameters, slowly but surely
+    - write your own (parallelized) differential evolution
+    - see https://en.wikipedia.org/wiki/Differential_evolution
+    - see https://docs.scipy.org/doc/scipy/reference/generated/scipy.optimize.differential_evolution.html
+    - see https://www.google.com/search?q=rules+of+thumb+of+differential+evolution+algorithm&oq=rules+of+thumb+of+differential+e&gs_lcrp=EgZjaHJvbWUqBwgCECEYoAEyBggAEEUYOTIHCAEQIRigATIHCAIQIRigATIHCAMQIRirAjIHCAQQIRirAjIHCAUQIRifBTIHCAYQIRifBTIHCAcQIRifBTIHCAgQIRifBTIHCAkQIRifBdIBCDQyODhqMGo3qAIAsAIA&sourceid=chrome&source=chrome.ob&ie=UTF-8
 # TODO after model is optimized, check ROI (need a 2024/2025 dataset ideally)
 # TODO check parameters remain stable when redownloading all games from scratch
