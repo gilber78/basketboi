@@ -63,7 +63,14 @@ RUNS CONDUCTED (run # == figure # in optim_plots)
 33) new best,  just 2025, mask then clip, day-by-day
 ========================
 
-NEW BEST AS OF 7/15/2026*: 2020 -42 51
+NEW BEST AS OF 7/18/2026*: 2020 -42 51
+- ECE: 0.026915974145891024
+- Slope: 0.9797155859950308
+- Intercept: 0.010149519711591979
+- AUC:  0.7196125626995964
+- Brier: 0.21215869002334287
+
+THEORETICAL BEST(?) (with bugged input data)
 - ECE: 0.020175
 - Slope: 0.99267
 - Intercept: 0.0022325
@@ -75,12 +82,8 @@ NEW BEST AS OF 7/15/2026*: 2020 -42 51
 - we like the weight function parameters somewhere in the neighborhood of 40/55
 - still better with 2024+2025, but 2025 is still good performance?
 - flipping mask and clip seems to have a small decrease in performance, will keep the current version since it is more logical to enforce bounds at the last second instead of allow bounds to be violated
+- we had a small bug in the date cutoffs for the sample data, which lead to some worse performance on the low end of the chart. This has been addressed since.
 
 -> stepping through DAYS one at a time
-# TODO find new way to optimize parameters, slowly but surely
-    - write your own (parallelized) differential evolution
-    - see https://en.wikipedia.org/wiki/Differential_evolution
-    - see https://docs.scipy.org/doc/scipy/reference/generated/scipy.optimize.differential_evolution.html
-    - see https://www.google.com/search?q=rules+of+thumb+of+differential+evolution+algorithm&oq=rules+of+thumb+of+differential+e&gs_lcrp=EgZjaHJvbWUqBwgCECEYoAEyBggAEEUYOTIHCAEQIRigATIHCAIQIRigATIHCAMQIRirAjIHCAQQIRirAjIHCAUQIRifBTIHCAYQIRifBTIHCAcQIRifBTIHCAgQIRifBTIHCAkQIRifBdIBCDQyODhqMGo3qAIAsAIA&sourceid=chrome&source=chrome.ob&ie=UTF-8
-# TODO after model is optimized, check ROI (need a 2024/2025 dataset ideally)
+# TODO implement Bayesian Optimization using this library: https://github.com/bayesian-optimization/bayesianoptimization
 # TODO check parameters remain stable when redownloading all games from scratch

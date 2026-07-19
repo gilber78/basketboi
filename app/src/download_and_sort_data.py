@@ -43,8 +43,8 @@ def sort_data_by_season(df: pd.DataFrame, path, min_season_year, reset_time_file
         with open(reset_time_filepath, "w") as file:
             file.write(datetime.datetime.now(datetime.timezone.utc).isoformat())
     for year in range(min_season_year if full else current_season_year, current_season_year + 1):
-        # assumes the first day of the season occurs after August 1st of that year, and concludes before August 1st the following year, split to avoid dataframe lock
-        season_df = df[(df["gameDateTimeEst"] > f"{year}-08-01 00:00:00") & (df["gameDateTimeEst"] < f"{year+1}-08-01 00:00:00")]
+        # assumes the first day of the season occurs after September 1st of that year, and concludes before September 1st the following year, split to avoid dataframe lock
+        season_df = df[(df["gameDateTimeEst"] > f"{year}-09-01 00:00:00") & (df["gameDateTimeEst"] < f"{year+1}-09-01 00:00:00")]
         if not season_df.empty:
             # helper nums
             dir_path = os.path.join(path, f"{year}-{year+1}")
