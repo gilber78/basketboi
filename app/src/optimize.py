@@ -11,14 +11,12 @@ with open(config["KAGGLE_API_TOKEN_PATH"], "r") as file:
 import pandas as pd
 import statistics as stats
 from functools import partial
+from bayes_opt import BayesianOptimization
+from bayes_opt.acquisition import ExpectedImprovement
 
 from Models import *
 from functions import print_current_season
 from download_and_sort_data import download_and_sort_data  # this import has to come last
-
-
-def print_progress(*, intermediate_result):
-    print(">>>", intermediate_result.x, intermediate_result.fun)
 
 
 def objective_function_tuple(year, z, b):
@@ -58,6 +56,7 @@ def objective_function_tuple(year, z, b):
     pred_win = []
     test_dates = test_data["GAME_gameDate"].unique()
     for game_date in test_dates:
+        print(">>>", game_date, year, z, b)
         for _, row in test_data[test_data["GAME_gameDate"] == game_date].iterrows():
             pred_win.append(MODEL_HOME_WIN_PR.value(row, apply_mask=True)[0])
             ref_data.loc[len(ref_data)] = row
@@ -74,30 +73,78 @@ def objective_function_tuple(year, z, b):
 
 def objective_function_scalar(year, z, b):
     ECE, M, B, AUC, BRIER = objective_function_tuple(year, z, b)
-    return 4 * ECE**2
-    # return 4 * (M - 1) ** 2 + 4 * B**2
-    # return 4 * (AUC - 1) ** 2
-    # return 4 * BRIER**2
-    # return np.sqrt(55 * ECE**2 + 10 * (M - 1) ** 2 + 10 * B**2 + 5 * (AUC - 1) ** 2 + 20 * BRIER**2)
-    # return np.sqrt(55 * ECE**2 + 5 * (M - 1) ** 2 + 15 * B**2 + 25 * BRIER**2)
-    # return np.sqrt(25 * ECE**2 + 5 * (M - 1) ** 2 + 15 * B**2 + 5 * (AUC - 1) ** 2 + 50 * BRIER**2)
+    return -4 * ECE**2
+    # return -4 * (M - 1) ** 2 + 4 * B**2
+    # return -4 * (AUC - 1) ** 2
+    # return -4 * BRIER**2
+    # return -np.sqrt(55 * ECE**2 + 10 * (M - 1) ** 2 + 10 * B**2 + 5 * (AUC - 1) ** 2 + 20 * BRIER**2)
+    # return -np.sqrt(55 * ECE**2 + 5 * (M - 1) ** 2 + 15 * B**2 + 25 * BRIER**2)
+    # return -np.sqrt(25 * ECE**2 + 5 * (M - 1) ** 2 + 15 * B**2 + 5 * (AUC - 1) ** 2 + 50 * BRIER**2)
 
 
-def optim_models_daybyday(x0):
-    print(x0)
+def optim_models_daybyday(
+    x0=None,
+    year_bounds=(config["MIN_SEASON_YEAR"], config["MIN_TEST_DATA_YEAR"] - 1),
+    z_bounds=(-100, 0),
+    b_bounds=(0, 500),
+    init_points=5,
+    n_iter=5,
+    verbose=2,
+    from_file=None,
+    to_file="optim_data/bo-optimizer.json",
+):
+    # initialize BO object (if from file or from scratch)
+    optimizer = BayesianOptimization(
+        f=objective_function_scalar,
+        acquisition_function=ExpectedImprovement(xi=0.0),  # likely will prever something small and less than 0.1
+        pbounds={
+            "year": (year_bounds[0], year_bounds[1], int),
+            "z": (z_bounds[0], z_bounds[1]),
+            "b": (b_bounds[0], b_bounds[1]),
+        },
+        verbose=verbose,
+        # random_state=1,
+    )
+    if from_file is not None:
+        optimizer.load_state(from_file)
+
+    # probe x0s, if supplied
+    if x0 is not None:
+        for x in x0:
+            optimizer.probe(params={"year": x[0], "z": x[1], "b": x[2]}, lazy=True)  # set lazy to true
+
+    # run minimize/maximize
+    optimizer.maximize(init_points=init_points, n_iter=n_iter)
+
+    # save optimizer to json
+    optimizer.save_state(to_file)
+    # print(optimizer.res)
+
+    # return the suggested next point(s)
+    return optimizer.suggest()
 
 
 def main():
     print("----- WELCOME TO THE BASKETBALL COMPUTER THINGY -----")
     download_and_sort_data(config)  # donwload/sort raw data, if necessary
-    optim_models_daybyday(np.array([2020, -42, 51]))
-    print(objective_function_scalar(2020, -42, 51))
 
-    # optim_models_simplex(True)
-    # optim_models_simplex(False, np.array([]))
-    # optim_models_genetic(np.array([]))
+    # calls of optim_models_daybyday
+    next_point = optim_models_daybyday(
+        [(2020, -42, 51)],
+        [(2014, -100, 5)],
+        [(2015, -50, 50)],
+        [(2018, -40, 55)],
+        # from_file="optim_data/bo-optimizer.json",
+        to_file="optim_data/bo-optimizer.json",
+    )
+    print(next_point)
+
+    # final call of suggested point to the tuple function, print out results of all states
+    print(objective_function_tuple(next_point["year"], next_point["z"], next_point["b"]))
 
 
 if __name__ == "__main__":
     main()
     print_current_season()
+
+# TODO ? eventually put the debug plots here instead of being inside build_models
