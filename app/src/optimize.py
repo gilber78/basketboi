@@ -171,6 +171,7 @@ def main():
     # BEST VALUE: {'target': -0.001017745498508386, 'params': {'year': 2011, 'z': -58.94865674300006, 'b': 61.18379263734984}}
     # NEXT TRIAL: {'year': 1961, 'z': -99.91986182458706, 'b': 156.12590538832936}
     # also sample the current best 2011, -58.9, 61,18
+    # note that the changes need to occur in the json file as well as the code
     print("BEST VALUE:", best_value)
     print("NEXT TRIAL:", next_point)
 
