@@ -20,6 +20,7 @@ from download_and_sort_data import download_and_sort_data  # this import has to 
 
 
 def objective_function_tuple(year, z, b):
+    # print("========= OBJ FOR", year, z, b, "=========")
     # get reference data based on min year parameter
     ref_data = pd.concat(
         [
@@ -56,7 +57,7 @@ def objective_function_tuple(year, z, b):
     pred_win = []
     test_dates = test_data["GAME_gameDate"].unique()
     for game_date in test_dates:
-        print(">>>", game_date, year, z, b)
+        # print(">>>", game_date)
         for _, row in test_data[test_data["GAME_gameDate"] == game_date].iterrows():
             pred_win.append(MODEL_HOME_WIN_PR.value(row, apply_mask=True)[0])
             ref_data.loc[len(ref_data)] = row
@@ -85,8 +86,8 @@ def objective_function_scalar(year, z, b):
 def optim_models_daybyday(
     x0=None,
     year_bounds=(config["MIN_SEASON_YEAR"], config["MIN_TEST_DATA_YEAR"] - 1),
-    z_bounds=(-100, 0),
-    b_bounds=(0, 500),
+    z_bounds=(-100, -1),
+    b_bounds=(1, 250),
     init_points=5,
     n_iter=5,
     verbose=2,
@@ -96,7 +97,7 @@ def optim_models_daybyday(
     # initialize BO object (if from file or from scratch)
     optimizer = BayesianOptimization(
         f=objective_function_scalar,
-        acquisition_function=ExpectedImprovement(xi=0.0),  # likely will prever something small and less than 0.1
+        acquisition_function=ExpectedImprovement(xi=0.05),  # likely will prever something small and less than 0.1
         pbounds={
             "year": (year_bounds[0], year_bounds[1], int),
             "z": (z_bounds[0], z_bounds[1]),
@@ -108,20 +109,24 @@ def optim_models_daybyday(
     if from_file is not None:
         optimizer.load_state(from_file)
 
-    # probe x0s, if supplied
-    if x0 is not None:
-        for x in x0:
-            optimizer.probe(params={"year": x[0], "z": x[1], "b": x[2]}, lazy=True)  # set lazy to true
+    try:
+        # probe x0s, if supplied
+        if x0 is not None:
+            for x in x0:
+                optimizer.probe(params={"year": x[0], "z": x[1], "b": x[2]}, lazy=True)  # set lazy to true
 
-    # run minimize/maximize
-    optimizer.maximize(init_points=init_points, n_iter=n_iter)
+        # run minimize/maximize
+        optimizer.maximize(init_points=init_points, n_iter=n_iter)
 
-    # save optimizer to json
-    optimizer.save_state(to_file)
-    # print(optimizer.res)
+    except Exception as e:
+        print(e)
 
-    # return the suggested next point(s)
-    return optimizer.suggest()
+    finally:
+        # save optimizer to json
+        optimizer.save_state(to_file)
+        # print(optimizer.res)
+        # return the suggested next point(s)
+        return optimizer.max, optimizer.suggest()
 
 
 def main():
@@ -129,15 +134,38 @@ def main():
     download_and_sort_data(config)  # donwload/sort raw data, if necessary
 
     # calls of optim_models_daybyday
+    """ INITIAL CALL TO THE OPTIMIZER
     next_point = optim_models_daybyday(
-        [(2020, -42, 51)],
-        [(2014, -100, 5)],
-        [(2015, -50, 50)],
-        [(2018, -40, 55)],
+        [
+            (2020, -42, 51),
+            (2014, -100, 5),
+            (2015, -50, 50),
+            (2018, -40, 55),
+        ],
         # from_file="optim_data/bo-optimizer.json",
         to_file="optim_data/bo-optimizer.json",
     )
-    print(next_point)
+    # next_point = optim_models_daybyday(from_file="optim_data/bo-optimizer.json", to_file="optim_data/bo-optimizer.json")
+    next_point = optim_models_daybyday(
+        [( 1993, -56.50744606504071, 1.003791234469304)],
+        from_file="optim_data/bo-optimizer.json",
+        to_file="optim_data/bo-optimizer.json",
+        init_points=10,
+        n_iter=10
+    )
+    next_point = optim_models_daybyday(
+        [( 1993, -56.50744606504071, 1.003791234469304)],
+        from_file="optim_data/bo-optimizer.json",
+        to_file="optim_data/bo-optimizer.json",
+        init_points=10,
+        n_iter=10
+    )
+    """
+    best_value, next_point = optim_models_daybyday(
+        [()], from_file="optim_data/bo-optimizer.json", to_file="optim_data/bo-optimizer.json", init_points=10, n_iter=10
+    )  # TODO reset bounds to 10 years and reasonable z/b pairs that put 2020 ~40/60% for dev computer runs. Let desktop keep running over the weekend
+    print("BEST VALUE:", best_value)
+    print("NEXT TRIAL:", next_point)
 
     # final call of suggested point to the tuple function, print out results of all states
     print(objective_function_tuple(next_point["year"], next_point["z"], next_point["b"]))
