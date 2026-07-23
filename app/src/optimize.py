@@ -121,6 +121,9 @@ def optim_models_daybyday(
     except Exception as e:
         print(e)
 
+    except KeyboardInterrupt:
+        print("<<< STOPPING PREMATURELY, DUMPING TO FILE >>>")
+
     finally:
         # save optimizer to json
         optimizer.save_state(to_file)
@@ -163,7 +166,11 @@ def main():
     """
     best_value, next_point = optim_models_daybyday(
         [()], from_file="optim_data/bo-optimizer.json", to_file="optim_data/bo-optimizer.json", init_points=10, n_iter=10
-    )  # TODO reset bounds to 10 years and reasonable z/b pairs that put 2020 ~40/60% for dev computer runs. Let desktop keep running over the weekend
+    )
+    # TODO reset bounds to 20 years and reasonable z/b pairs that put 2020 ~40/60% for dev computer runs. Stop and start runs over the weekend
+    # BEST VALUE: {'target': -0.001017745498508386, 'params': {'year': 2011, 'z': -58.94865674300006, 'b': 61.18379263734984}}
+    # NEXT TRIAL: {'year': 1961, 'z': -99.91986182458706, 'b': 156.12590538832936}
+    # also sample the current best 2011, -58.9, 61,18
     print("BEST VALUE:", best_value)
     print("NEXT TRIAL:", next_point)
 
