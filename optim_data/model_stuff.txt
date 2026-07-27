@@ -77,6 +77,15 @@ THEORETICAL BEST(?) (with bugged input data)
 - AUC:  0.72093
 - Brier: 0.21183
 
+7/23/2026: (FALSE REPORT): 2011. -58.94865674300006, 61.18379263734984
+ECE: 0.026246537396121906
+Slope: 0.9601546788872843
+Intercept: 0.01881149011723287
+AUC:  0.7203913916194224
+Brier: 0.21182163032580334
+
+34) Bayesian opt, ECE only | 2022, -81.04749118441715, 19.26874647968327 | 0.01952908587257618
+
 **Some observations to this point:
 - likely only necessary to include data points that are weighted >1% (ish)
 - we like the weight function parameters somewhere in the neighborhood of 40/55

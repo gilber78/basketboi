@@ -12,7 +12,8 @@ import pandas as pd
 import statistics as stats
 from functools import partial
 from bayes_opt import BayesianOptimization
-from bayes_opt.acquisition import ExpectedImprovement
+
+# from bayes_opt.acquisition import ExpectedImprovement
 
 from Models import *
 from functions import print_current_season
@@ -86,27 +87,37 @@ def objective_function_scalar(year, z, b):
 def optim_models_daybyday(
     x0=None,
     year_bounds=(config["MIN_SEASON_YEAR"], config["MIN_TEST_DATA_YEAR"] - 1),
-    z_bounds=(-100, -1),
-    b_bounds=(1, 250),
+    z_bounds=(-100, -2),
+    b_bounds=(1, 100),
     init_points=5,
     n_iter=5,
+    # xi=0.05,  # likely will prever something small and less than 0.1
     verbose=2,
-    from_file=None,
+    from_register: list | None = None,
+    from_file: str | None = None,
     to_file="optim_data/bo-optimizer.json",
 ):
     # initialize BO object (if from file or from scratch)
     optimizer = BayesianOptimization(
         f=objective_function_scalar,
-        acquisition_function=ExpectedImprovement(xi=0.05),  # likely will prever something small and less than 0.1
         pbounds={
             "year": (year_bounds[0], year_bounds[1], int),
             "z": (z_bounds[0], z_bounds[1]),
             "b": (b_bounds[0], b_bounds[1]),
         },
+        # acquisition_function=ExpectedImprovement(xi=xi),
         verbose=verbose,
-        # random_state=1,
     )
-    if from_file is not None:
+
+    # initial values, if supplied to the function
+    if (from_register is not None) and (from_file is not None):
+        raise Exception("Cannot optimize from both register and file -- pick one arg to pass")
+    elif from_register:
+        param_list = from_register[0]
+        target_list = from_register[1]
+        for i in range(len(param_list)):
+            optimizer.register(params=param_list[i], target=target_list[i])
+    elif from_file is not None:
         optimizer.load_state(from_file)
 
     try:
@@ -127,7 +138,7 @@ def optim_models_daybyday(
     finally:
         # save optimizer to json
         optimizer.save_state(to_file)
-        # print(optimizer.res)
+
         # return the suggested next point(s)
         return optimizer.max, optimizer.suggest()
 
@@ -138,49 +149,51 @@ def main():
 
     # calls of optim_models_daybyday
     """ INITIAL CALL TO THE OPTIMIZER
-    next_point = optim_models_daybyday(
+    best_value, next_point = optim_models_daybyday(
         [
-            (2020, -42, 51),
-            (2014, -100, 5),
-            (2015, -50, 50),
-            (2018, -40, 55),
+            [2020.0, -42.0, 51.0],
+            [2014.0, -100.0, 5.0],
+            [2015.0, -50.0, 50.0],
+            [2018.0, -40.0, 55.0],
+            [2015.0, -9.938280130461578, 207.57401558104257],
+            [2015.0, -47.726784162892166, 127.16320802952134],
+            [2020.0, -83.06723616267027, 13.627768053690975],
+            [2023.0, -25.683363633487495, 1.8667832090860799],
+            [2023.0, -99.97006722859132, 108.3146981686571],
+            [2023.0, -48.03155088986816, 33.20728554104639],
+            [2023.0, -2.7790574605754728, 163.93138543856554],
+            [2008.0, -50.123914859257454, 241.09820776572045],
+            [2011.0, -58.94865674300006, 61.18379263734984],
+            [2014.0, -98.89029785818101, 126.06325536107154],
+            [2023.0, -80.17067449010662, 243.4536899014472],
+            [2023.0, -58.71773885274084, 79.62209292496726],
+            [2023.0, -71.27663648814311, 156.99919535258644],
         ],
-        # from_file="optim_data/bo-optimizer.json",
-        to_file="optim_data/bo-optimizer.json",
-    )
-    # next_point = optim_models_daybyday(from_file="optim_data/bo-optimizer.json", to_file="optim_data/bo-optimizer.json")
-    next_point = optim_models_daybyday(
-        [( 1993, -56.50744606504071, 1.003791234469304)],
-        from_file="optim_data/bo-optimizer.json",
-        to_file="optim_data/bo-optimizer.json",
-        init_points=10,
-        n_iter=10
-    )
-    next_point = optim_models_daybyday(
-        [( 1993, -56.50744606504071, 1.003791234469304)],
-        from_file="optim_data/bo-optimizer.json",
-        to_file="optim_data/bo-optimizer.json",
-        init_points=10,
-        n_iter=10
+        year_bounds=(config["MIN_TEST_DATA_YEAR"] - 20, config["MIN_TEST_DATA_YEAR"] - 1),
+        # from_file="optim_data/bo-optimizer2.json",
+        to_file="optim_data/bo-optimizer2.json",
+        init_points=20,
+        n_iter=20,
     )
     """
     best_value, next_point = optim_models_daybyday(
-        [()], from_file="optim_data/bo-optimizer.json", to_file="optim_data/bo-optimizer.json", init_points=10, n_iter=10
+        year_bounds=(config["MIN_TEST_DATA_YEAR"] - 20, config["MIN_TEST_DATA_YEAR"] - 1),
+        from_file="optim_data/bo-optimizer2.json",
+        to_file="optim_data/bo-optimizer2.json",
+        init_points=10,
+        n_iter=20,
     )
-    # TODO reset bounds to 20 years and reasonable z/b pairs that put 2020 ~40/60% for dev computer runs. Stop and start runs over the weekend
-    # BEST VALUE: {'target': -0.001017745498508386, 'params': {'year': 2011, 'z': -58.94865674300006, 'b': 61.18379263734984}}
-    # NEXT TRIAL: {'year': 1961, 'z': -99.91986182458706, 'b': 156.12590538832936}
-    # also sample the current best 2011, -58.9, 61,18
+
     # note that the changes need to occur in the json file as well as the code
     print("BEST VALUE:", best_value)
     print("NEXT TRIAL:", next_point)
 
     # final call of suggested point to the tuple function, print out results of all states
-    print(objective_function_tuple(next_point["year"], next_point["z"], next_point["b"]))
+    print(objective_function_tuple(best_value["params"]["year"], best_value["params"]["z"], best_value["params"]["b"]))
 
 
 if __name__ == "__main__":
     main()
     print_current_season()
 
-# TODO ? eventually put the debug plots here instead of being inside build_models
+    # TODO ? eventually put the debug plots here instead of being inside build_models
