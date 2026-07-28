@@ -47,23 +47,7 @@ Weight function z
 Weight function b
 Min reference data year
 
-RUNS CONDUCTED (run # == figure # in optim_plots)
-0) "by eye" (initial point to beat) | 2014 -100 5 |
-25) control 1 | 2014 -100 5 | (0.03483, 0.9952, -0.011661, 0.72212, 0.21135)
-26) new best  | 2020 -42 51 | (0.02218, 1.0072, -0.006325, 0.72070, 0.21184)
-27) control 3 | 2015 -50 50 | (0.02493, 0.9711,  0.002270, 0.72120, 0.21175) 
-28) control 4 | 2018 -40 55 | (0.02251, 0.8535,  0.082857, 0.72108, 0.21182)
-    <> control 4 was very good, sans the ou tlier of 2 points near zero
-29) new best, just 2025
-30) new best, just 2025, mask and clip flipped
-31) new best, 2024/2025, mask and clip flipped
-
-========================
-32) new best*, 2024/2025, mask then clip, day-by-day
-33) new best,  just 2025, mask then clip, day-by-day
-========================
-
-NEW BEST AS OF 7/18/2026*: 2020 -42 51
+NEW BEST AS OF 7/18/2026*: 2020 -42 51 (figure 32)
 - ECE: 0.026915974145891024
 - Slope: 0.9797155859950308
 - Intercept: 0.010149519711591979
@@ -77,22 +61,5 @@ THEORETICAL BEST(?) (with bugged input data)
 - AUC:  0.72093
 - Brier: 0.21183
 
-7/23/2026: (FALSE REPORT): 2011. -58.94865674300006, 61.18379263734984
-ECE: 0.026246537396121906
-Slope: 0.9601546788872843
-Intercept: 0.01881149011723287
-AUC:  0.7203913916194224
-Brier: 0.21182163032580334
-
-34) Bayesian opt, ECE only | 2022, -81.04749118441715, 19.26874647968327 | 0.01952908587257618
-
-**Some observations to this point:
-- likely only necessary to include data points that are weighted >1% (ish)
-- we like the weight function parameters somewhere in the neighborhood of 40/55
-- still better with 2024+2025, but 2025 is still good performance?
-- flipping mask and clip seems to have a small decrease in performance, will keep the current version since it is more logical to enforce bounds at the last second instead of allow bounds to be violated
-- we had a small bug in the date cutoffs for the sample data, which lead to some worse performance on the low end of the chart. This has been addressed since.
-
--> stepping through DAYS one at a time
-# TODO implement Bayesian Optimization using this library: https://github.com/bayesian-optimization/bayesianoptimization
-# TODO check parameters remain stable when redownloading all games from scratch
+Currently, I am trying one last method running while keeping the year locked in to 2020 to optimize z and b. Then, we'll run a routine with the optimal value in each year to figure out the best start year.
+Then, possibly iterate again if results improve.

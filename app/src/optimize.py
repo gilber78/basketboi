@@ -144,43 +144,15 @@ def optim_models_daybyday(
 
 
 def main():
-    print("----- WELCOME TO THE BASKETBALL COMPUTER THINGY -----")
+    print("----- WELCOME TO THE BASKETBALL MODEL OPTIMIZER -----")
     download_and_sort_data(config)  # donwload/sort raw data, if necessary
 
     # calls of optim_models_daybyday
-    """ INITIAL CALL TO THE OPTIMIZER
     best_value, next_point = optim_models_daybyday(
-        [
-            [2020.0, -42.0, 51.0],
-            [2014.0, -100.0, 5.0],
-            [2015.0, -50.0, 50.0],
-            [2018.0, -40.0, 55.0],
-            [2015.0, -9.938280130461578, 207.57401558104257],
-            [2015.0, -47.726784162892166, 127.16320802952134],
-            [2020.0, -83.06723616267027, 13.627768053690975],
-            [2023.0, -25.683363633487495, 1.8667832090860799],
-            [2023.0, -99.97006722859132, 108.3146981686571],
-            [2023.0, -48.03155088986816, 33.20728554104639],
-            [2023.0, -2.7790574605754728, 163.93138543856554],
-            [2008.0, -50.123914859257454, 241.09820776572045],
-            [2011.0, -58.94865674300006, 61.18379263734984],
-            [2014.0, -98.89029785818101, 126.06325536107154],
-            [2023.0, -80.17067449010662, 243.4536899014472],
-            [2023.0, -58.71773885274084, 79.62209292496726],
-            [2023.0, -71.27663648814311, 156.99919535258644],
-        ],
-        year_bounds=(config["MIN_TEST_DATA_YEAR"] - 20, config["MIN_TEST_DATA_YEAR"] - 1),
-        # from_file="optim_data/bo-optimizer2.json",
-        to_file="optim_data/bo-optimizer2.json",
+        year_bounds=(2020, 2020),
+        # from_file="optim_data/bo-optimizer3.json",
+        to_file="optim_data/bo-optimizer3.json",
         init_points=20,
-        n_iter=20,
-    )
-    """
-    best_value, next_point = optim_models_daybyday(
-        year_bounds=(config["MIN_TEST_DATA_YEAR"] - 20, config["MIN_TEST_DATA_YEAR"] - 1),
-        from_file="optim_data/bo-optimizer2.json",
-        to_file="optim_data/bo-optimizer2.json",
-        init_points=10,
         n_iter=20,
     )
 
