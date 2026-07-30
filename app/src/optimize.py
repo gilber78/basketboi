@@ -75,7 +75,8 @@ def objective_function_tuple(year, z, b):
 
 def objective_function_scalar(year, z, b):
     ECE, M, B, AUC, BRIER = objective_function_tuple(year, z, b)
-    return -4 * ECE**2
+    # return -4 * ECE**2
+    return (-4 * ECE**2) + (-4 * (M - 1) ** 2) + (-4 * B**2)
     # return -4 * (M - 1) ** 2 + 4 * B**2
     # return -4 * (AUC - 1) ** 2
     # return -4 * BRIER**2
@@ -148,13 +149,27 @@ def main():
     download_and_sort_data(config)  # donwload/sort raw data, if necessary
 
     # calls of optim_models_daybyday
+    """
+        [
+            (2020, -42, 51),
+            (2020, -39.62048, 79.193165),
+            (2020, -39.10584517831557, 78.45754303601926),
+            (2020, -34.96927644039598, 64.49692881215984),
+            (2020, -31.73873, 41.673835),
+            (2020, -33.32630956728241, 61.40157044130502),
+            (2020, -22.949122292006116, 28.682112542279647),
+            (2020, -40.49972745901825, 68.89789705377231),
+        ],
+    """
     best_value, next_point = optim_models_daybyday(
         year_bounds=(2020, 2020),
-        # from_file="optim_data/bo-optimizer3.json",
-        to_file="optim_data/bo-optimizer3.json",
-        init_points=20,
-        n_iter=20,
+        from_file="optim_data/bo-optimizer5.json",
+        to_file="optim_data/bo-optimizer5.json",
+        init_points=10,
+        n_iter=40,
     )
+    # if we ever resume just ECE, use bo-optimizer3.json instead. optimizer5 is due to an error in the objective scalar function. 4 is broken.
+    # 6 should be made in order to better balance ECE with slope/intercept errors (maybe go 8 and 4 instead of 4 and 4 for weights?)
 
     # note that the changes need to occur in the json file as well as the code
     print("BEST VALUE:", best_value)

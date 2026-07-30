@@ -28,8 +28,6 @@ GAMES_COLUMNS_TO_KEEP = [
     # TODO does playoff series length influence the stats/models? Do we treat them as a separate data set? Do we include them in the data set?
 ]
 
-ODDS_COLUMNS_TO_KEEP = []
-
 
 def download_csv(path, file_name, download_time_filepath, dataset, quiet=False):
     kaggle.api.dataset_download_file(dataset=dataset, file_name=file_name, path=path, force=True, quiet=quiet)
@@ -96,7 +94,7 @@ def download_and_sort_data(config):
     os.makedirs(config["DATA_DOWNLOAD_PATH"], exist_ok=True)
     if skip_download and not full_download:
         print(
-            f"Using previously downloaded {config['GAME_DATA_FILE_NAME']} and {config['ODDS_DATA_FILE_NAME']} from {last_download_time.astimezone().strftime(LAST_DOWNLOAD_TIME_FORMAT_STRING)}"
+            f"Using previously downloaded {config['GAME_DATA_FILE_NAME']} from {last_download_time.astimezone().strftime(LAST_DOWNLOAD_TIME_FORMAT_STRING)}"
         )
         return
     else:
@@ -107,15 +105,6 @@ def download_and_sort_data(config):
             dataset=config["GAME_DATASET_NAME"],
         )
         print(f"Downloaded {config['GAME_DATA_FILE_NAME']}")
-        """
-        download_csv(
-            path=config["DATA_DOWNLOAD_PATH"],
-            file_name=config["ODDS_DATA_FILE_NAME"],
-            download_time_filepath=DOWNLOAD_TIME_FILEPATH,
-            dataset=config["ODDS_DATASET_NAME"],
-        )
-        print(f"Downloaded {config['ODDS_DATA_FILE_NAME']}")
-        """
 
         # trim data to only needed columns
         print("Performing batch sort/cleanup on game data")
@@ -124,10 +113,6 @@ def download_and_sort_data(config):
         if not config["INCLUDE_PLAYOFFS"]:
             games_raw_df = games_raw_df[(games_raw_df["gameType"] != "Play-in Tournament") & (games_raw_df["gameType"] != "Playoffs")]
         games_raw_df = games_raw_df.query("(hometeamId in @id_list) & (awayteamId in @id_list)")
-
-        print("Performing batch sort/cleanup on odds data")
-        # odds_raw_df = pd.read_csv(os.path.join(config["DATA_DOWNLOAD_PATH"], config["ODDS_DATA_FILE_NAME"]), low_memory=False)[ODDS_COLUMNS_TO_KEEP]
-        # TODO the odds database doesn't have the data we need for 2024-2026. Put back once you find a suitable dataset.
 
         # season sort by year
         print("Sorting game data by season")
@@ -142,5 +127,4 @@ def download_and_sort_data(config):
             reset_time_filepath=RESET_TIME_FILEPATH,
             full=full_download,
         )
-        # TODO sort data by season here
         # TODO figure out how to pick games back from sorted data...
