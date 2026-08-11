@@ -1,7 +1,7 @@
 import numpy as np
 import matplotlib.pyplot as plt
 
-from statistics import calc_ROC_curve, calc_brier_score
+import statistics as stats
 
 
 def plot_2d_histogram(x, y, title, binwidth=1, xlabel="Predicted values", ylabel="True values"):
@@ -14,15 +14,7 @@ def plot_2d_histogram(x, y, title, binwidth=1, xlabel="Predicted values", ylabel
 
 
 def plot_pdf_function(x, y, title, binwidth=0.05, bounds=(0, 1), xlabel="Predicted Probability", ylabel="True Probability"):
-    bins = np.linspace(bounds[0], bounds[1], int((bounds[1] - bounds[0]) / binwidth) + 1)
-    xvals = [(bins[i] + bins[i - 1]) / 2 for i in range(1, len(bins))]
-    yvals = []
-    for i in range(1, len(bins)):
-        y_mask = y[(bins[i - 1] <= x) & (x < bins[i])]
-        yvals.append(sum(y_mask) / len(y_mask))
-    xvals = np.array(xvals)
-    yvals = np.array(yvals)
-    m, b = np.polyfit(xvals, yvals, 1)
+    xvals, yvals, m, b = stats.calc_calibrated_slope_intercept(x, y, binwidth, bounds, True)
     liney = m * xvals + b
     plt.figure()
     plt.title(title)
@@ -39,9 +31,7 @@ def plot_pdf_function(x, y, title, binwidth=0.05, bounds=(0, 1), xlabel="Predict
 
 
 def plot_ROC_curve(x, y, title, binwidth=0.01, bounds=(0, 1), xlabel="FPR", ylabel="TPR"):
-    TPR, FPR, AUC = calc_ROC_curve(x, y, binwidth, bounds)
-    print("AREA UNDER ROC:", AUC)
-    print("BRIER SCORE:", calc_brier_score(x, y))
+    TPR, FPR, _ = stats.calc_ROC_curve(x, y, binwidth, bounds)
     plt.figure()
     plt.title(title)
     plt.xlabel(xlabel)
@@ -59,7 +49,10 @@ def plot_pdf_function_DEBUG(x, y, title, binwidth=0.05, bounds=(0, 1), xlabel="P
     weights = []
     for i in range(1, len(bins)):
         y_mask = y[(bins[i - 1] <= x) & (x <= bins[i])]
-        yvals.append(sum(y_mask) / len(y_mask))
+        if len(y_mask) == 0:
+            yvals.append((bins[i] + bins[i - 1]) / 2)
+        else:
+            yvals.append(sum(y_mask) / len(y_mask))
         weights.append(1)
     xvals = np.array(xvals)
     yvals = np.array(yvals)

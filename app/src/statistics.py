@@ -39,3 +39,51 @@ def calc_brier_score(x, y):
         brier_score += (x[i] - y[i]) ** 2
     brier_score /= len(x)
     return brier_score
+
+
+def calc_ECE_score(x, y, binwidth=0.05, bounds=(0, 1)):
+    bins = np.linspace(bounds[0], bounds[1], int((bounds[1] - bounds[0]) / binwidth) + 1)
+    vals = []
+    N = len(x)
+    for i in range(1, len(bins)):
+        y_mask = y[(bins[i - 1] < x) & (x <= bins[i])]
+        n_k = len(y_mask)
+        if len(y_mask) == 0:
+            p_k = (bins[i] + bins[i - 1]) / 2
+        else:
+            p_k = sum(y_mask) / len(y_mask)
+        c_k = np.mean([bins[i - 1], bins[i]])
+        vals.append((n_k / N) * np.abs(p_k - c_k))
+    return sum(vals)
+
+
+def calc_ECE_score_unweighted(x, y, binwidth=0.05, bounds=(0, 1)):
+    bins = np.linspace(bounds[0], bounds[1], int((bounds[1] - bounds[0]) / binwidth) + 1)
+    vals = []
+    for i in range(1, len(bins)):
+        y_mask = y[(bins[i - 1] < x) & (x <= bins[i])]
+        if len(y_mask) == 0:
+            p_k = (bins[i] + bins[i - 1]) / 2
+        else:
+            p_k = sum(y_mask) / len(y_mask)
+        c_k = np.mean([bins[i - 1], bins[i]])
+        vals.append(np.abs(p_k - c_k))
+    return np.mean(vals)
+
+
+def calc_calibrated_slope_intercept(x, y, binwidth=0.05, bounds=(0, 1), print_mask=False):
+    bins = np.linspace(bounds[0], bounds[1], int((bounds[1] - bounds[0]) / binwidth) + 1)
+    xvals = [(bins[i] + bins[i - 1]) / 2 for i in range(1, len(bins))]
+    yvals = []
+    for i in range(1, len(bins)):
+        y_mask = y[(bins[i - 1] < x) & (x <= bins[i])]
+        if print_mask:
+            print(np.round(bins[i - 1], 2), "-", np.round(bins[i], 2), "|", len(y_mask))
+        if len(y_mask) == 0:
+            yvals.append((bins[i] + bins[i - 1]) / 2)
+        else:
+            yvals.append(sum(y_mask) / len(y_mask))
+    xvals = np.array(xvals)
+    yvals = np.array(yvals)
+    m, b = np.polyfit(xvals, yvals, 1)
+    return xvals, yvals, m, b

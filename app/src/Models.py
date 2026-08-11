@@ -20,12 +20,11 @@ def recency_weight_function(x, z, b):
     return val**b
 
 
-# TODO configify weight function? or use same thing for every one?
-RECENCY_WEIGHT_FUNCTION = partial(recency_weight_function, z=-100, b=5)
+# TODO place the z/bs for each weight function in the config file if necessary
+HOME_WIN_WEIGHT_FUNCTION = partial(recency_weight_function, z=-40.49972745901825, b=68.89789705377231)
 EVEN_WEIGHT_FUNCTION = lambda x: 1
 
 
-# TODO allow Term class to accept model as a value
 class Term:
     def __init__(self, constant_names, num_names, den_names):
         # class that holds how to calculate a model term from either the reference dataframe or a team object
@@ -62,7 +61,7 @@ class Term:
 
 
 class Model:
-    def __init__(self, terms: list, target: str, bounds=[None, None], weight_func=RECENCY_WEIGHT_FUNCTION):
+    def __init__(self, terms: list, target: str, bounds=[None, None], weight_func=EVEN_WEIGHT_FUNCTION):
         self.terms = terms
         self.target = target
         self.bounds = bounds
@@ -104,10 +103,10 @@ class Model:
 
     def value(self, input_data: pd.Series, apply_mask=False):
         vals = (np.nan_to_num(np.vstack([term.value(input_data).to_numpy() for term in self.terms]).T) @ self.coeffs).T[0]
-        if self.bounds[0] or self.bounds[1]:
-            vals = np.clip(vals, a_min=self.bounds[0], a_max=self.bounds[1])
         if apply_mask:
             vals = vals * self.m + self.b
+        if self.bounds[0] or self.bounds[1]:
+            vals = np.clip(vals, a_min=self.bounds[0], a_max=self.bounds[1])
         return vals
 
 
@@ -191,7 +190,6 @@ AWAY_AWAYLOSS_POINTS_FOR_PER_GAME = Term([], ["AWAY_awayloss_points_for"], ["AWA
 AWAY_AWAYLOSS_POINTS_AGAINST_PER_GAME = Term([], ["AWAY_awayloss_points_against"], ["AWAY_away_losses"])
 
 # model bank, these get exported to the other file(s) that want them
-# TODO go term by term and graph how these impact the values, whether quadratic or not
 MODEL_HOME_WIN_PR = Model(
     [
         # constant
@@ -254,7 +252,8 @@ MODEL_HOME_WIN_PR = Model(
         # AWAY_AWAYLOSS_POINTS_AGAINST_PER_GAME,
     ],
     "GAME_homeWin",
-    [0, 1],
+    [0.05, 0.95],
+    HOME_WIN_WEIGHT_FUNCTION,
 )
 
 MODEL_HOME_SPREAD = Model(
