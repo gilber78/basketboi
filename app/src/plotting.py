@@ -49,7 +49,10 @@ def plot_pdf_function_DEBUG(x, y, title, binwidth=0.05, bounds=(0, 1), xlabel="P
     weights = []
     for i in range(1, len(bins)):
         y_mask = y[(bins[i - 1] <= x) & (x <= bins[i])]
-        yvals.append(sum(y_mask) / len(y_mask))
+        if len(y_mask) == 0:
+            yvals.append((bins[i] + bins[i - 1]) / 2)
+        else:
+            yvals.append(sum(y_mask) / len(y_mask))
         weights.append(1)
     xvals = np.array(xvals)
     yvals = np.array(yvals)

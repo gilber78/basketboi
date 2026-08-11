@@ -20,7 +20,7 @@ def recency_weight_function(x, z, b):
     return val**b
 
 
-# TODO place the z/bs for each weight function in the config file
+# TODO place the z/bs for each weight function in the config file if necessary
 HOME_WIN_WEIGHT_FUNCTION = partial(recency_weight_function, z=-40.49972745901825, b=68.89789705377231)
 EVEN_WEIGHT_FUNCTION = lambda x: 1
 

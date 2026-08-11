@@ -127,4 +127,3 @@ def download_and_sort_data(config):
             reset_time_filepath=RESET_TIME_FILEPATH,
             full=full_download,
         )
-        # TODO figure out how to pick games back from sorted data...

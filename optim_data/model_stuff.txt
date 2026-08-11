@@ -54,51 +54,16 @@ THEORETICAL BEST(?) (with bugged input data)
 - AUC:  0.72093
 - Brier: 0.21183
 
-CURRENT SETTINGS 7/18/2026*: 2020 -42 51 (figure 32)
-- ECE: 0.026915974145891024
-- Slope: 0.9797155859950308
-- Intercept: 0.010149519711591979
-- AUC:  0.7196125626995964
-- Brier: 0.21215869002334287
-0.0 - 0.05 | 6
-0.05 - 0.1 | 7
-0.1 - 0.15 | 17
-0.15 - 0.2 | 30
-0.2 - 0.25 | 51
-0.25 - 0.3 | 90
-0.3 - 0.35 | 103
-0.35 - 0.4 | 144
-0.4 - 0.45 | 192
-0.45 - 0.5 | 206
-0.5 - 0.55 | 248
-0.55 - 0.6 | 237
-0.6 - 0.65 | 203
-0.65 - 0.7 | 189
-0.7 - 0.75 | 155
-0.75 - 0.8 | 119
-0.8 - 0.85 | 72
-0.85 - 0.9 | 44
-0.9 - 0.95 | 53
-0.95 - 1.0 | 0
-
 Currently, I am trying one last method running while keeping the year locked in to 2020 to optimize z and b. Then, we'll run a routine with the optimal value in each year to figure out the best start year.
 Then, possibly iterate again if results improve.
 
-NEW CANDIDATE 7/28/2026: 2020, -33.32630956728241, 61.40157044130502 (154 steps), ECE+Slope, evenly weighted (Fig 35)
-- ECE: 0.02029085872576178
-- Slope: 0.9896097194826029
-- Intercept: 0.003906024585728129
-- AUC: 0.7198597076382829
-- Brier: 0.2122019929543792
-
-NEW CANDIDATE 7/30/2026: 2020, -40.49972745901825, 68.89789705377231 (304 steps), ECE+Slope, evenly weighted (Fig 36)
+7/30/2026: 2020, -40.49972745901825, 68.89789705377231 (304 steps), ECE+Slope, evenly weighted (Fig 36)
 - ECE: 0.022206832871652826
 - Slope: 0.9980376781536522
 - Intercept: -0.0006706568888054409
 - AUC: 0.7196074048921803
 - Brier: 0.21215832328340947
-
-Now incorporate the slope/intercept in the objective, how do we do?
+^^ This is what I'm going with as of 8/10/2026. We will revisit the parameters after the rest of the functionality is available.
 
 
 possible odds sources:

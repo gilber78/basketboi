@@ -18,7 +18,7 @@ def get_time_from_full_time(start_time):
 
 def get_current_season_year():
     today = datetime.date.today()
-    if today.month >= 8:
+    if today.month >= 9:
         return today.year
     else:
         return today.year - 1
@@ -43,6 +43,7 @@ def fractional_year_since(x_date, ref_date):
 
 def print_current_season():
     year = get_current_season_year()
+    # TODO fix this to use the most recent season, if the target pickle doesn't exist. But that's a problem for later.
     with open(os.path.join("app", "data", "games", "seasons", f"{year}-{year+1}", f"{year}-{year+1}_season.pkl"), "rb") as file:
         test_season = pickle.load(file)
     print()

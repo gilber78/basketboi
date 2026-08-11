@@ -5,6 +5,7 @@
     "KAGGLE_API_TOKEN_PATH": "app/data/access_token",
     "GAME_DATASET_NAME": "eoinamoore/historical-nba-data-and-player-box-scores",
     "GAME_DATA_FILE_NAME": "Games.csv",
+    "MODEL_SAVE_PATH": "app/data/models",
     "ODDS_DATASET_NAME": null,
     "ODDS_DATA_FILE_NAME": null,
     "FORCE_FILE_UPDATE": false,
