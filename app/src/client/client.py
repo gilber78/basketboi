@@ -19,6 +19,7 @@ response = requests.get("http://localhost:8000/predictions", params={"date": "20
 print("Status code:", response.status_code)
 print("Response:")
 pprint(response.json())
+print(response.url)
 
 response = requests.post(
     "http://localhost:8000/predictions",
@@ -27,5 +28,8 @@ response = requests.post(
 print("Status code:", response.status_code)
 print("Response:")
 pprint(response.json())
+print(response.url)
+
+# http://localhost:8000/predictions?date=YYYY-MM-DD
 
 # TODO build out a proper if name main for this that you can use to customize an input function
