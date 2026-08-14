@@ -10,7 +10,6 @@ import os
 import sys
 import json
 import pickle
-from pprint import pprint
 from pathlib import Path
 from fastapi import FastAPI
 from pydantic import BaseModel
@@ -85,10 +84,3 @@ def predictions_from_date(date: str, gameTags: list = None):  # strictly for deb
         )
 
     return {"date": date, "predictions": predictions_list}
-
-
-if __name__ == "__main__":
-    # pprint(predictions_from_date("2018-01-15"))
-    # pprint(predictions_from_date("2018-05-15"))
-    # pprint(predictions_from_date("2018-05-15", ["LAL @ MIN", "DEN @ MIL"]))
-    pass
