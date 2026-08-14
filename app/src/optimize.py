@@ -519,7 +519,7 @@ def optim_models_daybyday(
         return optimizer.max, optimizer.suggest()
 
 
-def main():
+def optimize():
     print("----- WELCOME TO THE BASKETBALL MODEL OPTIMIZER -----")
     download_and_sort_data(config)  # donwload/sort raw data, if necessary
 
@@ -559,6 +559,6 @@ def main():
 
 
 if __name__ == "__main__":
-    main()
+    optimize()
     print_current_season()
     plt.show()

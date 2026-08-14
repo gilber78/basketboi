@@ -14,14 +14,12 @@ from functions import print_current_season
 from download_and_sort_data import download_and_sort_data  # this import has to come last
 
 
-def main():
+def update():
     print("----- WELCOME TO THE BASKETBALL COMPUTER THINGY -----")
     download_and_sort_data(config)  # donwload/sort raw data, if necessary
     build_models(config)  # create plots that are passed as part of debug for model
-    if config["DEBUG"]:
-        plt.show()  # show plots, if in debug mode
 
 
 if __name__ == "__main__":
-    main()
+    update()
     print_current_season()

@@ -1,10 +1,10 @@
 import pandas as pd
 from NBAGame import NBAGame
 from NBATeam import NBATeam
-from functions import get_day_from_full_time, increment_day, get_list_wins_and_losses
+from functions import get_day_from_full_time, increment_day, get_list_wins_and_losses, validate_game_tag
 
 
-def create_game_data_series(awayTeam: NBATeam, homeTeam: NBATeam, game: NBAGame = None):
+def create_game_data_series(awayTeam: NBATeam, homeTeam: NBATeam, game: NBAGame = None, gameTag: str = None):
     HOME_last10 = get_list_wins_and_losses(homeTeam.last10)
     HOME_home_last10 = get_list_wins_and_losses(homeTeam.home_last10)
     # HOME_away_last10 = get_list_wins_and_losses(homeTeam.away_last10)
@@ -88,6 +88,7 @@ def create_game_data_series(awayTeam: NBATeam, homeTeam: NBATeam, game: NBAGame 
     if game != None:
         game_dict = {
             "GAME_gameDate": game.gameDate,
+            "GAME_gameTag": gameTag,
             "GAME_homeScore": game.homeScore,
             "GAME_awayScore": game.awayScore,
             "GAME_total": game.total,
@@ -97,6 +98,7 @@ def create_game_data_series(awayTeam: NBATeam, homeTeam: NBATeam, game: NBAGame 
     else:
         game_dict = {
             "GAME_gameDate": None,
+            "GAME_gameTag": gameTag,
             "GAME_homeScore": None,
             "GAME_awayScore": None,
             "GAME_total": None,
@@ -113,6 +115,10 @@ class NBASeason:
         self.gameList = [NBAGame(line) for _, line in data.iterrows()]
         self.teamList = self.generate_list_of_teams()
 
+    def reset_statistics(self):
+        for team in self.teamList:
+            team.reset_statistics()
+
     def generate_list_of_teams(self):
         teamList = []
         for game in self.gameList:
@@ -122,7 +128,7 @@ class NBASeason:
                 teamList.append((game.awayTeam, game.awayTeamId))
         return [NBATeam(args[0]) for args in teamList]
 
-    def generate_and_save_full_season_data(self):
+    def generate_full_season_df(self):
         current_day = self.startDate
         df = pd.DataFrame()
         while current_day <= self.endDate:
@@ -137,6 +143,59 @@ class NBASeason:
             # to move to the next day in the sequence
             current_day = increment_day(current_day)
         return df
+
+    def generate_game_slate_df(self, date: str = None, gameTags: list = None):
+        current_day = self.startDate
+        df = pd.DataFrame()
+        while current_day <= self.endDate:
+            # get list of games that occurred on this day, in order
+            current_game_list = [game for game in self.gameList if game.gameDate == current_day]
+            if (
+                current_day == date
+            ):  # break and advance, since we don't want to update the stats before the game happens if we're requesting historical info
+                break
+            else:
+                for game in current_game_list:  # update all teams per game, and increment the day
+                    awayTeam = next(team for team in self.teamList if team.teamId == game.awayTeamId)
+                    homeTeam = next(team for team in self.teamList if team.teamId == game.homeTeamId)
+                    awayTeam.update_game(game)
+                    homeTeam.update_game(game)
+                current_day = increment_day(current_day)
+
+        # conditional logic, for selecting appropriate teams in slate
+        if current_day == date:  # for games that definitely happened
+            for game in current_game_list:
+                awayTeam = next(team for team in self.teamList if team.teamId == game.awayTeamId)
+                homeTeam = next(team for team in self.teamList if team.teamId == game.homeTeamId)
+                df = pd.concat(
+                    [
+                        df,
+                        create_game_data_series(
+                            awayTeam=awayTeam, homeTeam=homeTeam, game=game, gameTag=awayTeam.teamAbbreviation + " @ " + homeTeam.teamAbbreviation
+                        ),
+                    ],
+                    ignore_index=True,
+                )
+        elif gameTags is None:
+            return
+        else:  # for games that may happen and were specified
+            for gameTag in gameTags:
+                gameDict = validate_game_tag(gameTag)
+                awayTeam = next(team for team in self.teamList if team.teamAbbreviation == gameDict["awayTeamAbbreviation"])
+                homeTeam = next(team for team in self.teamList if team.teamAbbreviation == gameDict["homeTeamAbbreviation"])
+                df = pd.concat(
+                    [
+                        df,
+                        create_game_data_series(
+                            awayTeam=awayTeam, homeTeam=homeTeam, gameTag=gameDict["awayTeamAbbreviation"] + " @ " + gameDict["homeTeamAbbreviation"]
+                        ),
+                    ],
+                    ignore_index=True,
+                )
+
+        # make sure that the df isn't empty, return none otherwise
+        if not df.empty:
+            return df
 
     def pretty_print(self):
         sorted_standings = sorted(

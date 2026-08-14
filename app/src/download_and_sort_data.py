@@ -7,7 +7,7 @@ import pandas as pd
 from NBASeason import NBASeason
 
 from constants import MAXSIZE
-from functions import DATA_DATE_FORMAT_STRING, DATA_TIME_FORMAT_STRING, get_current_season_year
+from functions import DATA_DATE_FORMAT_STRING, DATA_TIME_FORMAT_STRING, get_season_year
 
 with open(os.path.join("app", "data", "team_data.json"), "r") as file:
     id_list = [v["id"] for v in json.load(file).values()]
@@ -38,7 +38,7 @@ def download_csv(path, file_name, download_time_filepath, dataset, quiet=False):
 def sort_data_by_season(games_df: pd.DataFrame, path, min_season_year, reset_time_filepath, full=False):
     # loop throught raw dataframe, save raw data to a folder named after the year(s) in question
     os.makedirs(path, exist_ok=True)
-    current_season_year = get_current_season_year()
+    current_season_year = get_season_year()
     if full:
         with open(reset_time_filepath, "w") as file:
             file.write(datetime.datetime.now(datetime.timezone.utc).isoformat())
@@ -54,7 +54,7 @@ def sort_data_by_season(games_df: pd.DataFrame, path, min_season_year, reset_tim
             full_file_path = os.path.join(dir_path, f"{year}-{year+1}_full.csv")
             class_file_path = os.path.join(dir_path, f"{year}-{year+1}_season.pkl")
             season = NBASeason(season_games_df)
-            full_df = season.generate_and_save_full_season_data()
+            full_df = season.generate_full_season_df()
 
             # save data
             os.makedirs(dir_path, exist_ok=True)
