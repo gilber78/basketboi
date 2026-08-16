@@ -83,6 +83,3 @@ def plot_pdf_function_DEBUG(x, y, title, binwidth=0.05, bounds=(0, 1), xlabel="P
 
     # plt.plot(xvals, xvals, "k", alpha=0.6)
     # plt.scatter(xvals, (yvals - b) / m) # use this as a reference mask for putting a model on y=x, if possible
-
-
-# TODO add scatterplots to show relationship between input and output
