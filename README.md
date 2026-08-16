@@ -9,7 +9,7 @@ To use the Kaggle API, sign up for a Kaggle account at https://www.kaggle.com. T
 ### Server-client [in progress]
 - Install the dependencies from requirements.txt [coming soon]
 - Install uvicorn, which runs the server `pip install uvicorn`
-- On the machine meant to host the functionality, run `uvicorn server.basketboi_server:app --host 127.0.0.1 --port 8000` from the project level directory. If you are debugging, feel free to add the `--reload` flag so that updates to server.py are processed in real time
+- On the machine meant to host the functionality, run `uvicorn app.server.basketboi_server:app --host 127.0.0.1 --port 8000` from the project level directory. If you are debugging, feel free to add the `--reload` flag so that updates to server.py are processed in real time
 - then, running `client.py` should connect appropriately
 
 ### Optimization before each season
@@ -21,6 +21,6 @@ In order to properly calibrate the model before each season start (and possibly 
 ## Extra note
 - Before pushing to git, make sure all of the following run (this is my really bad version of "regression test", if it were...):
     - `black .`
-    - `python app/src/client/main.py`
-    - `python app/src/server/optimize.py`
-    - `python app/src/server/basketboi_server.py` (both from cli and uvicorn, in concert with `python app/src/client/basketboi_client.py`)
+    - `python app/client/main.py`
+    - `python app/optim/optimize.py`
+    - `python app/server/basketboi_server.py` (both from cli and uvicorn, in concert with `python app/src/client/basketboi_client.py`)

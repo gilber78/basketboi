@@ -475,7 +475,7 @@ def optim_models_daybyday(
     verbose=2,
     from_register: list | None = None,
     from_file: str | None = None,
-    to_file="optim_data/bo-optimizer.json",
+    to_file="app/optim/bo-optimizer.json",
 ):
     # initialize BO object (if from file or from scratch)
     optimizer = BayesianOptimization(
@@ -543,8 +543,8 @@ def optimize():
     """
     best_value, next_point = optim_models_daybyday(
         year_bounds=(2020, 2020),
-        from_file="optim_data/bo-optimizer5.json",
-        to_file="optim_data/bo-optimizer5.json",
+        from_file="app/optim/bo-optimizer5.json",
+        to_file="app/optim/bo-optimizer5.json",
         init_points=1,
         n_iter=1,
     )
