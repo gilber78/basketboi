@@ -1,5 +1,7 @@
 import os
+import sys
 import json
+from pathlib import Path
 
 with open(os.path.join("app", "data", "config.json"), "r") as file:
     config = json.load(file)
@@ -8,10 +10,11 @@ with open(config["KAGGLE_API_TOKEN_PATH"], "r") as file:
     os.environ["KAGGLE_USERNAME"] = file.readline()
     os.environ["KAGGLE_KEY"] = file.readline()
 
-import matplotlib.pyplot as plt
-from build_models import build_models
-from functions import print_current_season
-from download_and_sort_data import download_and_sort_data  # this import has to come last
+sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
+
+from server.build_models import build_models
+from server.functions import print_current_season
+from server.download_and_sort_data import download_and_sort_data  # this import has to come last
 
 
 def update():

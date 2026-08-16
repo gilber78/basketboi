@@ -1,5 +1,7 @@
 import os
+import sys
 import json
+from pathlib import Path
 
 with open(os.path.join("app", "data", "config.json"), "r") as file:
     config = json.load(file)
@@ -8,16 +10,18 @@ with open(config["KAGGLE_API_TOKEN_PATH"], "r") as file:
     os.environ["KAGGLE_USERNAME"] = file.readline()
     os.environ["KAGGLE_KEY"] = file.readline()
 
-import plotting
+sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
+
 import pandas as pd
-import statistics as stats
 import matplotlib.pyplot as plt
 from functools import partial
 from bayes_opt import BayesianOptimization
 
-from Models import *
-from functions import print_current_season
-from download_and_sort_data import download_and_sort_data  # this import has to come last
+import statistics as stats
+import plotting as plotting
+from server.Models import *
+from server.functions import print_current_season
+from server.download_and_sort_data import download_and_sort_data  # this import has to come last
 
 
 def objective_function_tuple(year, z, b, debug_prints=False, debug_plots=False, debug_debug_plots=False):

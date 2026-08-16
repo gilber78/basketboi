@@ -10,21 +10,21 @@ import os
 import sys
 import json
 import pickle
+from typing import List
 from pathlib import Path
-from fastapi import FastAPI
+from fastapi import FastAPI, Query
 from pydantic import BaseModel
 
-sys.path.insert(0, str(Path(__file__).resolve().parents[1]))  # TODO is path mod still necessary?
+sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 
-from Models import Model
-from NBASeason import NBASeason
-from functions import get_season_year
+from server.Models import Model
+from server.NBASeason import NBASeason
+from server.functions import get_season_year
 
 app = FastAPI()
 
 with open(os.path.join("app", "data", "config.json"), "r") as file:
     config = json.load(file)
-    # os.environ["SEASON_PATH"] = os.path.join(config["DATA_DOWNLOAD_PATH"], "seasons")
 
 
 class PredictionRequest(BaseModel):
@@ -37,19 +37,14 @@ def root():
     return {"message": "Hello from the Basketboi server!", "name": __name__}
 
 
-@app.get("/echo")
+@app.get("/echo/")
 def echo(message: str):
     return {"message": message}
 
 
-@app.get("/predictions")
-def get_predictions(date: str):
-    return predictions_from_date(date)
-
-
-@app.post("/predictions")
-def post_predictions(request: PredictionRequest):
-    return predictions_from_date(request.date, request.games)
+@app.get("/predictions/")
+def get_predictions_full(date: str, games: List[str] = Query(None)):
+    return predictions_from_date(date, games)
 
 
 def predictions_from_date(date: str, gameTags: list = None):  # strictly for debugging purposes

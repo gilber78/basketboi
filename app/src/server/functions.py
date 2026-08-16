@@ -2,7 +2,7 @@ import os
 import pickle
 import datetime
 
-from constants import DAYS_PER_YEAR
+from server.constants import DAYS_PER_YEAR
 
 DATA_DATE_FORMAT_STRING = "%Y-%m-%d"
 DATA_TIME_FORMAT_STRING = "%H:%M:%S"

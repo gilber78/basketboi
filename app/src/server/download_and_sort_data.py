@@ -4,10 +4,10 @@ import kaggle
 import pickle
 import datetime
 import pandas as pd
-from NBASeason import NBASeason
+from server.NBASeason import NBASeason
 
-from constants import MAXSIZE
-from functions import DATA_DATE_FORMAT_STRING, DATA_TIME_FORMAT_STRING, get_season_year
+from server.constants import MAXSIZE
+from server.functions import DATA_DATE_FORMAT_STRING, DATA_TIME_FORMAT_STRING, get_season_year
 
 with open(os.path.join("app", "data", "team_data.json"), "r") as file:
     id_list = [v["id"] for v in json.load(file).values()]

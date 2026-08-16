@@ -1,7 +1,7 @@
 import os
 import pickle
 import pandas as pd
-from Models import Model, MODEL_HOME_WIN_PR  # , MODEL_HOME_SPREAD, MODEL_TOTAL_SCORE
+from server.Models import Model, MODEL_HOME_WIN_PR  # , MODEL_HOME_SPREAD, MODEL_TOTAL_SCORE
 
 
 def save_model_to_disk(model: Model, path: str):

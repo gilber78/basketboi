@@ -1,7 +1,7 @@
 import pandas as pd
-from NBAGame import NBAGame
-from NBATeam import NBATeam
-from functions import get_day_from_full_time, increment_day, get_list_wins_and_losses, validate_game_tag
+from server.NBAGame import NBAGame
+from server.NBATeam import NBATeam
+from server.functions import get_day_from_full_time, increment_day, get_list_wins_and_losses, validate_game_tag
 
 
 def create_game_data_series(awayTeam: NBATeam, homeTeam: NBATeam, game: NBAGame = None, gameTag: str = None):
