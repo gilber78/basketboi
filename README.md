@@ -23,4 +23,4 @@ In order to properly calibrate the model before each season start (and possibly 
     - `black .`
     - `python app/client/main.py`
     - `python app/optim/optimize.py`
-    - `python app/server/basketboi_server.py` (both from cli and uvicorn, in concert with `python app/src/client/basketboi_client.py`)
+    - `python app/server/basketboi_server.py` (both from cli and uvicorn, in concert with `python app/client/basketboi_client.py`)
