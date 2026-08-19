@@ -49,14 +49,19 @@ def get_predictions_full(date: str, games: List[str] = Query(None)):
 
 def predictions_from_date(date: str, gameTags: list = None):  # strictly for debugging purposes
     # get necessary input data from pickled season class
-    year = get_season_year(date)
-    with open(os.path.join(os.path.join(config["DATA_DOWNLOAD_PATH"], "seasons"), f"{year}-{year+1}", f"{year}-{year+1}_season.pkl"), "rb") as file:
-        target_season = pickle.load(file)
-    target_season.reset_statistics()
-    predictions_df = target_season.generate_game_slate_df(date, gameTags)
-    if predictions_df is None:
+    try:
+        year = get_season_year(date)
+        with open(
+            os.path.join(os.path.join(config["DATA_DOWNLOAD_PATH"], "seasons"), f"{year}-{year+1}", f"{year}-{year+1}_season.pkl"), "rb"
+        ) as file:
+            target_season = pickle.load(file)
+        target_season.reset_statistics()
+        predictions_df = target_season.generate_game_slate_df(date, gameTags)
+        if predictions_df is None:
+            raise Exception("Cannot find predictions requested")
+    except Exception as e:
+        print(e)
         return {"date": date, "predictions": None}
-    # target_season.pretty_print()
 
     # fetch pickled model classes
     with open(os.path.join(config["MODEL_SAVE_PATH"], "MODEL_HOME_WIN_PR.pkl"), "rb") as file:
