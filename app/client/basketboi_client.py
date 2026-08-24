@@ -43,5 +43,3 @@ pprint(response.json())
 print(response.url)
 
 # http://localhost:8000/predictions?date=YYYY-MM-DD&games=AWY+%40+HME
-
-# TODO build out a proper if name main for this that you can use to customize an input function
