@@ -69,15 +69,15 @@ def get_cli_inputs(i, pred):
     pred["away_spread_odds"] = away_spread_odds
     pred["home_spread_odds"] = home_spread_odds
     """
-    away_living_string += f"+/-.0  xxxx    "
-    home_living_string += f"+/-.0  xxxx    "
+    away_living_string += f"+/-.5  xxxx    "
+    home_living_string += f"+/-.5  xxxx    "
 
     # input for moneyline odds
     away_ml_odds = int(input(f"\033[A\033[A{away_living_string}        <- Enter {gameDict['awayTeamAbbreviation']} ML odds\r{away_living_string} "))
-    away_living_string += f"{away_ml_odds:>+6d}    " + " o299.5  xxxx"  # TODO delete when the totals are back
+    away_living_string += f"{away_ml_odds:>+6d}    " + " o000.5  xxxx"  # TODO delete when the totals are back
     print("\r\033[A" + away_living_string + "\033[K")
     home_ml_odds = int(input(f"{home_living_string}        <- Enter {gameDict['homeTeamAbbreviation']} ML odds\r{home_living_string} "))
-    home_living_string += f"{home_ml_odds:>+6d}    " + " u299.5  xxxx"  # TODO delete when the totals are back
+    home_living_string += f"{home_ml_odds:>+6d}    " + " u000.5  xxxx"  # TODO delete when the totals are back
     print("\r\033[A" + home_living_string + "\033[K")
     pred["away_ml_odds"] = away_ml_odds
     pred["home_ml_odds"] = home_ml_odds
@@ -122,9 +122,13 @@ def main():
         for i, pred in enumerate(output_json["predictions"]):
             get_cli_inputs(i, pred)
         if input("Please verify that the above odds sheet is correct. Ifs so, press enter.  ") == "":
-            bankroll = float(input("Great! What's the most you're willing to risk today (enter a dollar amount)? $"))
-            print()
-            break
+            try:
+                bankroll = float(input("Great! What's the most you're willing to risk today (enter a dollar amount)? $"))
+                print()
+                break
+            except Exception as e:
+                print(e, "please try again.")
+                exit()
         else:
             print("Trying again!\n")
 
