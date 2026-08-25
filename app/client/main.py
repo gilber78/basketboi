@@ -14,6 +14,7 @@ with open(config["KAGGLE_API_TOKEN_PATH"], "r") as file:
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 
+from kelly import BettingSlip
 from server.build_models import build_models
 from server.functions import print_current_season, validate_game_tag
 from server.basketboi_server import predictions_from_date
@@ -35,6 +36,8 @@ def get_cli_inputs(i, pred):
     # get important server output information
     gameTag = pred["gameTag"]
     gameDict = validate_game_tag(gameTag)
+    pred["awayTeam"] = gameDict["awayTeamAbbreviation"]
+    pred["homeTeam"] = gameDict["homeTeamAbbreviation"]
     home_win_pr = pred["home_win_pr"]
     away_win_pr = 1 - home_win_pr
     pred["away_win_pr"] = away_win_pr
@@ -137,9 +140,12 @@ def main():
             print(e, "please try again.")
             exit()
 
-    # TODO get ev/kelly fracctions for each bet, make suggested bet slitp
+    # TODO get ev/kelly fractions for each bet, make suggested bet slitp
     pprint(output_json)
     pprint(bankroll)
+    betting_slip = BettingSlip(output_json, bankroll)
+    for bet in betting_slip.bets:
+        pprint(bet.current_best)
 
 
 if __name__ == "__main__":
