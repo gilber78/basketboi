@@ -45,20 +45,6 @@ def single_kelly_growth(prob: float, b: float, f: float):
     return prob * np.log(1 + f * (b - 1)) + (1 - prob) * np.log(1 - f)
 
 
-def solve_multi_kelly_fractions():
-    raise NotImplementedError
-    # looks like we need to try and solve for an x (lambda/Lagrange multiplier) such that the sum of f_i equals 1.
-    # We can supposedly solve for each f_i from the lambda, and use a bisection method(?) to find the optimal x*
-    # the, f* is the outputs from x*
-    #
-    # looks like scipy.optimize.minimize can do KKT with minimizing an objective f(x) and inequality constraints g(x) >= 0
-    # result = minimize(objective, initial_guess, method='SLSQP', constraints=[constraints]); {'type': 'ineq', 'fun': constraint1}
-    # so for f(x) = -sum(single_kelly_growths) <- These need to be partials of single kelly growths...
-    # with g_1(x) = 1 - sum(f_i) >= 0
-    # and g_i+1(x) = f_i >= 0
-    # ... figure it out from there...
-
-
 class OptimalBet:
     def __init__(self, gameDict: dict):
         gameTag = gameDict["gameTag"]
@@ -82,9 +68,9 @@ class OptimalBet:
         # evaluate moneyline bet(s)
         away_ml_kelly_fraction, away_ml_kelly_growth = single_kelly_fraction(gameDict["away_win_pr"], gameDict["away_ml_odds"], growth=True)
         home_ml_kelly_fraction, home_ml_kelly_growth = single_kelly_fraction(gameDict["home_win_pr"], gameDict["home_ml_odds"], growth=True)
-        if away_ml_kelly_fraction > home_ml_kelly_fraction:  # this checks which sign is bigger
-            if (away_ml_kelly_fraction > 0) & (away_ml_kelly_growth > current_best["bankroll_growth"]):
-                # this checks that the proposed wager is positive kelly and is better than the current best wager for the game. If so, update
+        if away_ml_kelly_fraction > home_ml_kelly_fraction:
+            # this checks which fraction is closer to +1. If both are negative, it'll get trimmed in the next step
+            if away_ml_kelly_growth > current_best["bankroll_growth"]:
                 current_best = {
                     "gameTag": gameTag,
                     "team": awayTeam,
@@ -97,8 +83,7 @@ class OptimalBet:
                     "bankroll_growth": away_ml_kelly_growth,
                 }
         else:
-            if (home_ml_kelly_fraction > 0) & (home_ml_kelly_growth > current_best["bankroll_growth"]):
-                # this checks that the proposed wager is positive kelly and is better than the current best wager for the game. If so, update
+            if home_ml_kelly_growth > current_best["bankroll_growth"]:
                 current_best = {
                     "gameTag": gameTag,
                     "team": homeTeam,
@@ -126,15 +111,31 @@ class BettingSlip:
         self.date = prediction_json["date"]
         raw_bets = [OptimalBet(game) for game in prediction_json["predictions"]]
         self.bets = [bet for bet in raw_bets if bet.current_best["bet_type"] is not None]
-
-        if np.sum([bet.current_best["fraction"] for bet in self.bets]) <= 1:
-            print("------- YAY No adjustments necessary!")
-        else:
-            print("<!:::!> darn. gotta figure something out.")
+        self.solve_multi_kelly_fractions()
 
         # TODO verify that the kelly fractions for each optimal bet don't sum to greater than 1, and if so, adjust/solve these
         # honestly, we could just scale them all back to 1 but keep the proportions the same. That way, we honor the user's desired spending.
         # but first, let's just see if we can find a day that for -110 or 100 gives us a >1 then go from there.
+
+    def solve_multi_kelly_fractions(self):
+        f0 = np.array([bet.current_best["fraction"] for bet in self.bets])
+        print("INITIAL F*:", f0, sum(f0))
+
+        def objective_function(fn: np.ndarray):
+            growth_rates = [
+                single_kelly_growth(bet.current_best["probability_of_win"], bet.current_best["payout_if_win"], fn[i])
+                for i, bet in enumerate(self.bets)
+            ]
+            return -1 * np.sum(growth_rates)
+
+        def constraint_function(fn: np.ndarray):
+            return 1 - np.sum(fn)
+
+        constraints = {"type": "ineq", "fun": constraint_function}
+        bounds = [(0, 1) for i in range(len(f0))]
+        result = minimize(objective_function, f0, method="SLSQP", constraints=constraints, bounds=bounds)
+        print("RESULT:", result.x, sum(result.x))
+        print(result.multipliers)  # TODO check this from home computer, since this isn't working on python 3.10 dev computer
 
     def pretty_print(self):
         raise NotImplementedError
