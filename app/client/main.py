@@ -119,18 +119,23 @@ def main():
     print(f"There are {len(output_json['predictions'])} games on {output_json['date']}:")
     print("\033[4m                      SPREAD        ML            TOTAL     \033[0m")
     while True:
-        for i, pred in enumerate(output_json["predictions"]):
-            get_cli_inputs(i, pred)
-        if input("Please verify that the above odds sheet is correct. Ifs so, press enter.  ") == "":
-            try:
-                bankroll = float(input("Great! What's the most you're willing to risk today (enter a dollar amount)? $"))
-                print()
+        try:
+            for i, pred in enumerate(output_json["predictions"]):
+                get_cli_inputs(i, pred)
+            if input("Please verify that the above odds sheet is correct. Ifs so, press enter.  ") == "":
+                while True:
+                    bankroll = float(input("Great! What's the most you're willing to risk today (enter a dollar amount)? $"))
+                    if bankroll >= 1:
+                        print()
+                        break
+                    else:
+                        print("Please enter a bet number greater than or equal to $1.00")
                 break
-            except Exception as e:
-                print(e, "please try again.")
-                exit()
-        else:
-            print("Trying again!\n")
+            else:
+                print("Trying again!\n")
+        except Exception as e:
+            print(e, "please try again.")
+            exit()
 
     # TODO get ev/kelly fracctions for each bet, make suggested bet slitp
     pprint(output_json)
