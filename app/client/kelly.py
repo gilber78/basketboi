@@ -42,7 +42,7 @@ def single_kelly_fraction(prob: float, odds: int, growth=False):
 
 def single_kelly_growth(prob: float, b: float, f: float):
     # just the growth parameter
-    prob * np.log(1 + f * (b - 1)) + (1 - prob) * np.log(1 - f)
+    return prob * np.log(1 + f * (b - 1)) + (1 - prob) * np.log(1 - f)
 
 
 def solve_multi_kelly_fractions():
