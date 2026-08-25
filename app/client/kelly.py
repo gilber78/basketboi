@@ -54,6 +54,7 @@ class OptimalBet:
             "team": None,
             "bet_type": None,
             "line": None,
+            "probability_of_win": 0,
             "payout_if_win": 0,
             "fraction": 0,
             "bankroll_growth": 0,
@@ -72,6 +73,7 @@ class OptimalBet:
                     "team": awayTeam,
                     "bet_type": "moneyline",
                     "line": True,
+                    "probability_of_win": gameDict["away_win_pr"],
                     "payout_if_win": american_odds_to_payout(gameDict["away_ml_odds"]),
                     "fraction": away_ml_kelly_fraction,
                     "bankroll_growth": away_ml_kelly_growth,
@@ -83,6 +85,7 @@ class OptimalBet:
                     "team": homeTeam,
                     "bet_type": "moneyline",
                     "line": True,
+                    "probability_of_win": gameDict["home_win_pr"],
                     "payout_if_win": american_odds_to_payout(gameDict["home_ml_odds"]),
                     "fraction": home_ml_kelly_fraction,
                     "bankroll_growth": home_ml_kelly_growth,
@@ -104,6 +107,8 @@ class BettingSlip:
         self.bets = [OptimalBet(game) for game in prediction_json["predictions"]]
 
         # TODO verify that the kelly fractions for each optimal bet don't sum to greater than 1, and if so, adjust/solve these
+        # honestly, we could just scale them all back to 1 but keep the proportions the same. That way, we honor the user's desired spending.
+        # but first, let's just see if we can find a day that for -110 or 100 gives us a >1 then go from there.
 
     def pretty_print(self):
         raise NotImplementedError
