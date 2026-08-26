@@ -104,12 +104,17 @@ class BettingSlip:
         # go through each item in the prediction json procedurally, then select valid (winning) bets and store them to the class
         self.date = prediction_json["date"]
         self.candidate_bets = [bet for game in prediction_json["predictions"] for bet in bets_from_game_json(game)]
-        for candidate in self.candidate_bets:
-            print(candidate.__dict__)
-        # self.solve_multi_kelly_fractions()
-        # TODO fix the solve_multi_kelly_fractions dilemma
-        # is it scipy minimize? or is it the binary section search?
 
+        # TODO finish solving for bets to make, maybe inside a find_optimal method
+        # pick the best-valued g(f) - lambda*(f) bets from each game and their single kelly fractions*
+        # if sum(f*) <= 1, simply use those real bets
+        # else, run bisection search method
+
+        # self.solve_multi_kelly_fractions()
+
+        # is it scipy minimize? or is it the binary section search? what happens if
+
+    """
     def solve_multi_kelly_fractions(self):
         f0 = np.array([bet.current_best["fraction"] for bet in self.bets])
         print("INITIAL F*:", f0, sum(f0))
@@ -128,7 +133,8 @@ class BettingSlip:
         bounds = [(0, 1) for i in range(len(f0))]
         result = minimize(objective_function, f0, method="SLSQP", constraints=constraints, bounds=bounds)
         print("RESULT:", result.x, sum(result.x))
-        print(result.multipliers)  # TODO check this from home computer, since this isn't working on python 3.10 dev computer
+        print(result.multipliers)
+    """
 
     def pretty_print(self):
         raise NotImplementedError

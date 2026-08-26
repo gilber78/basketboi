@@ -136,9 +136,11 @@ def main():
             exit()
 
     # TODO get ev/kelly fractions for each bet, make suggested bet slitp
-    pprint(output_json)
-    pprint(bankroll)
+    # pprint(output_json)
     betting_slip = BettingSlip(output_json, bankroll)
+    print(betting_slip.bankroll)
+    for candidate in betting_slip.candidate_bets:
+        pprint(candidate.__dict__)
 
 
 if __name__ == "__main__":
