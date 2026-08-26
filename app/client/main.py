@@ -15,6 +15,7 @@ with open(config["KAGGLE_API_TOKEN_PATH"], "r") as file:
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 
 from kelly import BettingSlip
+from basketboi_client import process_server_output_json
 from server.build_models import build_models
 from server.functions import print_current_season, validate_game_tag
 from server.basketboi_server import predictions_from_date
@@ -33,16 +34,10 @@ ARGS = parser.parse_args()
 
 
 def get_cli_inputs(i, pred):
-    # get important server output information
-    gameTag = pred["gameTag"]
-    gameDict = validate_game_tag(gameTag)
-    pred["awayTeam"] = gameDict["awayTeamAbbreviation"]
-    pred["homeTeam"] = gameDict["homeTeamAbbreviation"]
-    home_win_pr = pred["home_win_pr"]
-    away_win_pr = 1 - home_win_pr
-    pred["away_win_pr"] = away_win_pr
-    away_living_string = f"      {gameDict['awayTeamAbbreviation']}        "
-    home_living_string = f"      {gameDict['homeTeamAbbreviation']}        "
+    # set up cli strings to print
+    gameDict = validate_game_tag(pred["gameTag"])
+    away_living_string = f"      {pred['awayTeam']}        "
+    home_living_string = f"      {pred['homeTeam']}        "
 
     # get needed user inputs and print to terminal, update strings appropriately
     print(f"--- GAME {i+1:02d}")
@@ -116,7 +111,7 @@ def main():
     # get game related predictions
     with open(ARGS.input, "r") as file:
         input_json = json.load(file)
-    output_json = predictions_from_date(input_json["date"], input_json["games"])
+    output_json = process_server_output_json(predictions_from_date(input_json["date"], input_json["games"]))
 
     # get betting input for each available or requested game
     print(f"There are {len(output_json['predictions'])} games on {output_json['date']}:")
@@ -144,8 +139,6 @@ def main():
     pprint(output_json)
     pprint(bankroll)
     betting_slip = BettingSlip(output_json, bankroll)
-    for bet in betting_slip.bets:
-        pprint(bet.current_best)
 
 
 if __name__ == "__main__":
