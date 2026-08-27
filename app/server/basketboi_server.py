@@ -13,7 +13,6 @@ import pickle
 from typing import List
 from pathlib import Path
 from fastapi import FastAPI, Query
-from pydantic import BaseModel
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 
@@ -25,11 +24,6 @@ app = FastAPI()
 
 with open(os.path.join("app", "data", "config.json"), "r") as file:
     config = json.load(file)
-
-
-class PredictionRequest(BaseModel):
-    date: str
-    games: list  # [str]
 
 
 @app.get("/")

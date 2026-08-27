@@ -1,5 +1,9 @@
+import os
+import json
 import numpy as np
-from scipy.optimize import minimize
+
+with open(os.path.join("app", "data", "config.json"), "r") as file:
+    TOLERANCE = json.load(file)["BISECTION_SEARCH_TOLERANCE"]
 
 
 def american_odds_to_payout(odds: int):
@@ -12,38 +16,6 @@ def american_odds_to_payout(odds: int):
     elif odds <= -100:
         return 1 + 100 / np.abs(odds)
     return None
-
-
-'''
-def american_odds_to_probability(odds: int):
-    """
-    The american odds (+/- in hundreds) to probability between 0 and 1
-    # TODO delete/comment out, this may not be necessary
-    """
-    if odds >= 100:
-        return 100 / (abs(odds) + 100)
-    elif odds <= -100:
-        return abs(odds) / (abs(odds) + 100)
-    return None
-'''
-
-
-def single_kelly_fraction(prob: float, odds: int, growth=False):
-    """
-    outputs the standard kelly fraction, for one wager and one wager only
-    """
-    b = american_odds_to_payout(odds)
-    f = (prob * b - 1) / (b - 1)
-    if growth:
-        return f, single_kelly_growth(prob, b, f)
-    else:
-        return f
-
-
-def single_kelly_growth(prob: float, b: float, f: float):
-    # just the growth parameter
-    # b = american_odds_to_payout(odds)
-    return prob * np.log(1 + f * (b - 1)) + (1 - prob) * np.log(1 - f)
 
 
 class Bet:
@@ -62,8 +34,37 @@ class Bet:
         self.line = line
         self.odds = odds
         self.prob = prob
+        self.payout = american_odds_to_payout(odds)
+        self._single_fraction = self._kelly_fraction()
+        self._single_growth = self._kelly_growth(self._single_fraction)
+        self._multi_fraction = None
+        self._multi_Value = None
         self.fraction = None
-        self.growth = None
+
+    def _kelly_fraction(self):
+        return np.max([(self.prob * self.payout - 1) / (self.payout - 1), 0])
+
+    def _kelly_growth(self, f):
+        return self.prob * np.log(1 + f * (self.payout - 1)) + (1 - self.prob) * np.log(1 - f)
+
+    def _expected_value(self):
+        return self.prob * self.payout - 1
+
+    def _lagrange_fraction(self, lam):
+        if lam == 0:
+            return self._kelly_fraction()
+        elif lam >= self._expected_value():
+            return 0
+        else:
+            a = self.payout * lam - lam
+            b = 2 * lam - self.payout * lam - self.payout + 1
+            c = self.payout * self.prob - lam - 1
+            # zero_plus = (-b + np.sqrt(b**2 - 4 * a * c)) / (2 * a)
+            zero_minus = (-b - np.sqrt(b**2 - 4 * a * c)) / (2 * a)
+            return zero_minus
+
+    def _lagrange_Value(self, f, lam):
+        return self._kelly_growth(f) - lam * f
 
 
 def bets_from_game_json(game: dict):
@@ -98,43 +99,67 @@ def bets_from_game_json(game: dict):
 
 class BettingSlip:
     def __init__(self, prediction_json: dict, bankroll: float = 1.0):
-        self.prediction_json = prediction_json  # maybe don't even need to store this...
+        # self.prediction_json = prediction_json  # maybe don't even need to store this...
+        self.game_list = [pred["gameTag"] for pred in prediction_json["predictions"]]
         self.bankroll = bankroll
+        self.bets = [None]
 
         # go through each item in the prediction json procedurally, then select valid (winning) bets and store them to the class
         self.date = prediction_json["date"]
-        self.candidate_bets = [bet for game in prediction_json["predictions"] for bet in bets_from_game_json(game)]
+        candidate_bets = [bet for game in prediction_json["predictions"] for bet in bets_from_game_json(game)]
 
-        # TODO finish solving for bets to make, maybe inside a find_optimal method
-        # pick the best-valued g(f) - lambda*(f) bets from each game and their single kelly fractions*
-        # if sum(f*) <= 1, simply use those real bets
-        # else, run bisection search method
+        # check the single kelly slate, and if sum of the fractions are < 1 then accept it
+        # if not, move on to multi kelly
+        # clean up the bet objects either way
+        single_kelly_candidates = []
+        for gameTag in self.game_list:
+            best_bet = max([candidate for candidate in candidate_bets if candidate.gameTag == gameTag], key=lambda bet: bet._single_growth)
+            if best_bet._single_fraction > 0:
+                single_kelly_candidates.append(best_bet)
+        if sum([bet._single_fraction for bet in single_kelly_candidates]) <= 1:
+            self.cleanup_slate(single_kelly_candidates, mode="single")
+        else:
+            multi_kelly_candidates = self.bisection_search(candidate_bets)
+            self.cleanup_slate(multi_kelly_candidates, mode="multi")
 
-        # self.solve_multi_kelly_fractions()
+    def bisection_search(self, candidate_bets):
+        # find the initial lambda_max
+        lambda_min = 0
+        lambda_max = np.max([bet._expected_value() for bet in candidate_bets])
 
-        # is it scipy minimize? or is it the binary section search? what happens if
+        # bisection search lies inside while condition
+        while lambda_max - lambda_min > TOLERANCE:
+            # recalculate values for all candidate bets
+            lam = (lambda_max + lambda_min) / 2
+            for bet in candidate_bets:
+                bet._multi_fraction = bet._lagrange_fraction(lam)
+                bet._multi_Value = bet._lagrange_Value(bet._multi_fraction, lam)
 
-    """
-    def solve_multi_kelly_fractions(self):
-        f0 = np.array([bet.current_best["fraction"] for bet in self.bets])
-        print("INITIAL F*:", f0, sum(f0))
+            # select new slate
+            multi_kelly_candidates = []
+            for gameTag in self.game_list:
+                best_bet = max([candidate for candidate in candidate_bets if candidate.gameTag == gameTag], key=lambda bet: bet._multi_Value)
+                if best_bet._multi_fraction > 0:
+                    multi_kelly_candidates.append(best_bet)
 
-        def objective_function(fn: np.ndarray):
-            growth_rates = [
-                single_kelly_growth(bet.current_best["probability_of_win"], bet.current_best["payout_if_win"], fn[i])
-                for i, bet in enumerate(self.bets)
-            ]
-            return -1 * np.sum(growth_rates)
+            # adjust bisection search
+            if sum([bet._multi_fraction for bet in multi_kelly_candidates]) > 1:
+                lambda_min = lam
+            else:
+                lambda_max = lam
 
-        def constraint_function(fn: np.ndarray):
-            return 1 - np.sum(fn)
+        return multi_kelly_candidates
 
-        constraints = {"type": "ineq", "fun": constraint_function}
-        bounds = [(0, 1) for i in range(len(f0))]
-        result = minimize(objective_function, f0, method="SLSQP", constraints=constraints, bounds=bounds)
-        print("RESULT:", result.x, sum(result.x))
-        print(result.multipliers)
-    """
+    def cleanup_slate(self, bet_list, mode):
+        for bet in bet_list:
+            if mode == "single":
+                bet.fraction = bet._single_fraction
+            elif mode == "multi":
+                bet.fraction = bet._multi_fraction
+            else:
+                raise Exception(f"Unable to clean up betting slip, invalid mode invoked {mode}")
+        self.bets = bet_list
 
     def pretty_print(self):
+        # TODO pretty print the bet slip. It's the final step before releaseing v0.0.1
         raise NotImplementedError

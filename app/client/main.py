@@ -135,12 +135,23 @@ def main():
             print(e, "please try again.")
             exit()
 
-    # TODO get ev/kelly fractions for each bet, make suggested bet slitp
-    # pprint(output_json)
+    # get ev/kelly fractions for each bet, make suggested bet slip
+    print("===== output json====")
+    pprint(output_json)
+    print()
+    print("----- betting slip -----")
     betting_slip = BettingSlip(output_json, bankroll)
-    print(betting_slip.bankroll)
-    for candidate in betting_slip.candidate_bets:
-        pprint(candidate.__dict__)
+    for bet in betting_slip.bets:
+        if bet is not None:
+            pprint(bet.__dict__)
+        else:
+            pprint(bet)
+    print(f"percent bankroll consumed: {sum([bet.fraction for bet in betting_slip.bets])}")
+    print(f"number of good bets: {len(betting_slip.bets)}")
+    print()
+
+    # pretty print the betting slip
+    # betting_slip.pretty_print()
 
 
 if __name__ == "__main__":
