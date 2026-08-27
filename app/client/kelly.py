@@ -40,6 +40,7 @@ class Bet:
         self._multi_fraction = None
         self._multi_Value = None
         self.fraction = None
+        self.growth = None
 
     def _kelly_fraction(self):
         return np.max([(self.prob * self.payout - 1) / (self.payout - 1), 0])
@@ -102,7 +103,7 @@ class BettingSlip:
         # self.prediction_json = prediction_json  # maybe don't even need to store this...
         self.game_list = [pred["gameTag"] for pred in prediction_json["predictions"]]
         self.bankroll = bankroll
-        self.bets = [None]
+        self.bets = []
 
         # go through each item in the prediction json procedurally, then select valid (winning) bets and store them to the class
         self.date = prediction_json["date"]
@@ -154,12 +155,72 @@ class BettingSlip:
         for bet in bet_list:
             if mode == "single":
                 bet.fraction = bet._single_fraction
+                bet.growth = bet._single_growth
             elif mode == "multi":
                 bet.fraction = bet._multi_fraction
+                bet.growth = bet._kelly_growth(bet._multi_fraction)
             else:
                 raise Exception(f"Unable to clean up betting slip, invalid mode invoked {mode}")
         self.bets = bet_list
 
     def pretty_print(self):
-        # TODO pretty print the bet slip. It's the final step before releaseing v0.0.1
-        raise NotImplementedError
+        print("#" * 100)
+        print("#" + " " * 98 + "#")
+        print("#" + " " * 33 + "NBA BETTING RECCOMMENDATIONS FOR" + " " * 33 + "#")
+        print("#" + " " * 37 + f"GAMES HELD ON {self.date}" + " " * 37 + "#")
+        print("#" + " " * 98 + "#")
+        print("#" * 100)
+        print("#" + " " * 98 + "#")
+
+        if len(self.bets) == 0:
+            print("#   \033[1m\033[31mNO BETS RECOMMENDED TODAY\033[0m" + " " * 70 + "#")
+        else:
+            total_string = "#  "
+            wager_total = 0
+            payout_total = 0
+            prob_total = 1
+            growth_total = 0
+            for bet in self.bets:
+                bet_string = "#  "
+                if bet.bet_type == "spread":
+                    raise NotImplementedError
+
+                elif bet.bet_type == "moneyline":
+                    wager = np.round(self.bankroll * bet.fraction, 2)
+                    wager_total += wager
+                    payout = np.round(self.bankroll * bet.fraction * bet.payout, 2)
+                    payout_total += payout
+                    prob_total *= bet.prob
+                    growth_total += bet.growth
+                    bet_string += f"{bet.team} (ML)        "
+                    bet_string += f"{bet.odds:>+6d}   "
+                    bet_string += f"${wager:6.2f}  "
+                    bet_string += f"|  pays ${payout:6.2f}, "
+                    bet_string += f"wins ${payout - wager:6.2f} - "
+                    bet_string += f"{bet.prob:>6.2%} chance, "
+                    bet_string += f"{bet.growth:6.2%} growth "
+                    bet_string += " #"
+
+                elif bet.bet_type == "total":
+                    raise NotImplementedError
+
+                else:
+                    raise Exception("Unrecognized bet type selected")
+
+                # finally, print
+                print(bet_string)
+
+            # summations at the bottom
+            print("#" + " " * 98 + "#")
+            total_string += "\033[1m\033[32mTOTALS:\033[0m                  "
+            total_string += f"\033[1m${wager_total:6.2f}\033[0m  "
+            total_string += f"|  pays \033[1m${payout_total:6.2f}\033[0m, "
+            total_string += f"wins \033[1m${payout_total - wager_total:6.2f}\033[0m - "
+            total_string += f"\033[1m{prob_total::>6.2%}\033[0m chance, "
+            total_string += f"\033[1m{growth_total::>6.2%}\033[0m growth "
+            total_string += " #"
+            print(total_string)
+
+        print("#" + " " * 98 + "#")
+        print("#" * 100)
+        print()

@@ -40,7 +40,7 @@ def get_cli_inputs(i, pred):
     home_living_string = f"      {pred['homeTeam']}        "
 
     # get needed user inputs and print to terminal, update strings appropriately
-    print(f"--- GAME {i+1:02d}")
+    print(f"\033[1m   GAME {i+1:02d}\033[0m")
     print(away_living_string)
     print(home_living_string)
 
@@ -100,7 +100,7 @@ def get_cli_inputs(i, pred):
 
 
 def main():
-    print("----- WELCOME TO THE BASKETBALL COMPUTER THINGY -----")
+    print("===== WELCOME TO BASKETBOI! =====")
 
     # update the data models
     download_and_sort_data(config)  # donwload/sort raw data, if necessary
@@ -115,12 +115,12 @@ def main():
 
     # get betting input for each available or requested game
     print(f"There are {len(output_json['predictions'])} games on {output_json['date']}:")
-    print("\033[4m                      SPREAD        ML            TOTAL     \033[0m")
+    print("\033[4m#                     SPREAD        ML            TOTAL                                            #\033[0m")
     while True:
         try:
             for i, pred in enumerate(output_json["predictions"]):
                 get_cli_inputs(i, pred)
-            if input("Please verify that the above odds sheet is correct. Ifs so, press enter.  ") == "":
+            if input("Please verify that the above odds sheet is correct. If so, press enter. ") == "":
                 while True:
                     bankroll = float(input("Great! What's the most you're willing to risk today (enter a dollar amount)? $"))
                     if bankroll >= 1:
@@ -135,12 +135,13 @@ def main():
             print(e, "please try again.")
             exit()
 
-    # get ev/kelly fractions for each bet, make suggested bet slip
+    # get ev/kelly fractions for each bet, make suggested bet slip, return to user
+    betting_slip = BettingSlip(output_json, bankroll)
+    """ debug stuff I don't wanna delete yet
     print("===== output json ====")
     pprint(output_json)
     print()
     print("----- betting slip -----")
-    betting_slip = BettingSlip(output_json, bankroll)
     for bet in betting_slip.bets:
         if bet is not None:
             pprint(bet.__dict__)
@@ -149,9 +150,12 @@ def main():
     print(f"percent bankroll consumed: {sum([bet.fraction for bet in betting_slip.bets])}")
     print(f"number of good bets: {len(betting_slip.bets)}")
     print()
+    """
 
     # pretty print the betting slip
-    # betting_slip.pretty_print()
+    betting_slip.pretty_print()
+    print("All done! May the odds be ever in your favor :)")
+    print()
 
 
 if __name__ == "__main__":
