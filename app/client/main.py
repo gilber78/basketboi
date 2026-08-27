@@ -136,7 +136,7 @@ def main():
             exit()
 
     # get ev/kelly fractions for each bet, make suggested bet slip
-    print("===== output json====")
+    print("===== output json ====")
     pprint(output_json)
     print()
     print("----- betting slip -----")
