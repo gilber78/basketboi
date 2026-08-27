@@ -1,7 +1,7 @@
 import os
 import json
-from NBAGame import NBAGame
-from functions import get_list_wins_and_losses
+from server.NBAGame import NBAGame
+from server.functions import get_list_wins_and_losses
 
 with open(os.path.join("app", "data", "team_data.json"), "r") as file:
     team_data = json.load(file)
@@ -152,7 +152,7 @@ class NBATeam:
 
     def pretty_print(self, header=True):
         if header:
-            print("\033[4m                            W    L     PCT    HOME    AWAY    PFPG    PAPG    DIFF   STRK    L10   \033[0m")
+            print("\033[4m#                           W    L     PCT    HOME    AWAY    PFPG    PAPG    DIFF   STRK    L10   #\033[0m")
         last10 = get_list_wins_and_losses(self.last10)
         print(
             f"{self.teamName:<26} "

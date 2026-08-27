@@ -1,5 +1,5 @@
 import pandas as pd
-from functions import get_day_from_full_time, get_time_from_full_time
+from server.functions import get_day_from_full_time, get_time_from_full_time
 
 
 class NBAGame:

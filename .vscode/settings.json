@@ -1,0 +1,9 @@
+{
+    "[python]": {
+        "editor.defaultFormatter": "ms-python.black-formatter",
+        "editor.formatOnSave": true,
+        "editor.formatOnSaveMode": "file"
+    },
+    "black-formatter.importStrategy": "fromEnvironment",
+    "black-formatter.args": ["--config", "${workspaceFolder}/pyproject.toml"]
+}

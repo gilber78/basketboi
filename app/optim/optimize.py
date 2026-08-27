@@ -1,5 +1,7 @@
 import os
+import sys
 import json
+from pathlib import Path
 
 with open(os.path.join("app", "data", "config.json"), "r") as file:
     config = json.load(file)
@@ -8,16 +10,18 @@ with open(config["KAGGLE_API_TOKEN_PATH"], "r") as file:
     os.environ["KAGGLE_USERNAME"] = file.readline()
     os.environ["KAGGLE_KEY"] = file.readline()
 
-import plotting
+sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
+
 import pandas as pd
-import statistics as stats
 import matplotlib.pyplot as plt
 from functools import partial
 from bayes_opt import BayesianOptimization
 
-from Models import *
-from functions import print_current_season
-from download_and_sort_data import download_and_sort_data  # this import has to come last
+import statistics as stats
+import plotting as plotting
+from server.Models import *
+from server.functions import print_current_season
+from server.download_and_sort_data import download_and_sort_data  # this import has to come last
 
 
 def objective_function_tuple(year, z, b, debug_prints=False, debug_plots=False, debug_debug_plots=False):
@@ -471,7 +475,7 @@ def optim_models_daybyday(
     verbose=2,
     from_register: list | None = None,
     from_file: str | None = None,
-    to_file="optim_data/bo-optimizer.json",
+    to_file="app/optim/bo-optimizer.json",
 ):
     # initialize BO object (if from file or from scratch)
     optimizer = BayesianOptimization(
@@ -519,7 +523,7 @@ def optim_models_daybyday(
         return optimizer.max, optimizer.suggest()
 
 
-def main():
+def optimize():
     print("----- WELCOME TO THE BASKETBALL MODEL OPTIMIZER -----")
     download_and_sort_data(config)  # donwload/sort raw data, if necessary
 
@@ -539,8 +543,8 @@ def main():
     """
     best_value, next_point = optim_models_daybyday(
         year_bounds=(2020, 2020),
-        from_file="optim_data/bo-optimizer5.json",
-        to_file="optim_data/bo-optimizer5.json",
+        from_file="app/optim/bo-optimizer5.json",
+        to_file="app/optim/bo-optimizer5.json",
         init_points=1,
         n_iter=1,
     )
@@ -559,6 +563,6 @@ def main():
 
 
 if __name__ == "__main__":
-    main()
+    optimize()
     print_current_season()
     plt.show()
