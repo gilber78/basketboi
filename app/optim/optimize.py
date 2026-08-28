@@ -86,6 +86,8 @@ def objective_function_tuple(year, z, b, debug_prints=False, debug_plots=False, 
         print("Intercept:", B)
         print("AUC: ", AUC)
         print("Brier:", BRIER)
+        print("Model variance:", MODEL_HOME_WIN_PR.var)
+        print("Model stdev:", MODEL_HOME_WIN_PR.std)
 
     if debug_plots:
         plotting.plot_pdf_function(pred_win, true_win, "Predicted vs Actual Home Team Win % of NBA games")

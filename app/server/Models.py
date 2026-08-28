@@ -90,7 +90,6 @@ class Model:
         Amatrix = vandermonde.T @ Wmatrix @ vandermonde
         Bvector = vandermonde.T @ Wmatrix @ yvals
         self.coeffs = np.linalg.inv(Amatrix) @ Bvector
-        # self.coeffs = np.linalg.pinv(vandermonde) @ yvals
         SS_res = sum((yvals - vandermonde @ self.coeffs) ** 2)[0]
         SS_tot = sum((yvals - np.mean(yvals)) ** 2)[0]
         self.ref_Rsquared = 1 - SS_res / SS_tot
@@ -98,9 +97,15 @@ class Model:
         # calculate linear mask
         xvals = self.value(ref_data)
         xvals = xvals[mask]
-        m, b = np.polyfit(xvals, yvals, 1)  # TODO experiment with mask using w keyword here
+        m, b = np.polyfit(xvals, yvals, 1)  # TODO experiment with mask using w keyword here with my weights array
         self.m, self.b = m[0], b[0]
-        # TODO estimate variance/standard deviation of the whole model, so we can z-score the probability (for spread/total predictions)
+
+        # calculate model variance/std
+        yhat_vals = xvals * self.m + self.b
+        resids = yvals.T[0] - yhat_vals
+        mean = sum(weights * resids) / sum(weights)
+        self.var = sum(weights * (resids - mean) ** 2) / sum(weights)
+        self.std = np.sqrt(self.var)
 
     def value(self, input_data: pd.Series, apply_mask=False):
         vals = (np.nan_to_num(np.vstack([term.value(input_data).to_numpy() for term in self.terms]).T) @ self.coeffs).T[0]
