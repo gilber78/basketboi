@@ -98,8 +98,9 @@ class Model:
         # calculate linear mask
         xvals = self.value(ref_data)
         xvals = xvals[mask]
-        m, b = np.polyfit(xvals, yvals, 1)
+        m, b = np.polyfit(xvals, yvals, 1)  # TODO experiment with mask using w keyword here
         self.m, self.b = m[0], b[0]
+        # TODO estimate variance/standard deviation of the whole model, so we can z-score the probability (for spread/total predictions)
 
     def value(self, input_data: pd.Series, apply_mask=False):
         vals = (np.nan_to_num(np.vstack([term.value(input_data).to_numpy() for term in self.terms]).T) @ self.coeffs).T[0]
