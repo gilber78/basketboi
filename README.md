@@ -37,6 +37,5 @@ In order to properly calibrate the model before each season start (and possibly 
     - `python app/server/basketboi_server.py` (both from cli and uvicorn, in concert with `python app/client/basketboi_client.py`)
 
 #### TODO must make minor QOL tweaks and tag release before 10/20/2026, and get an MVP before the start of this season. This could be
-- (high) QOL when we request a season that doesn't exist
-- (high) QOL printing current season in September/October before the newest pickle is available
+- (high) QOL printing current season in September/October before the newest pickle is available (this should probably say something like "requested season hasn't started yet" or something)
 - (low) further optimizations of the moneyline model

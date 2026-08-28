@@ -46,7 +46,7 @@ def fractional_year_since(x_date: str, ref_date: str):
 
 def print_current_season():
     year = get_season_year()
-    # TODO fix this to use the most recent season if the target pickle doesn't exist. But that's a problem for September.
+    # TODO fix this to use the most recent season if the target pickle doesn't exist. But that's a problem for September 1st.
     with open(os.path.join("app", "data", "games", "seasons", f"{year}-{year+1}", f"{year}-{year+1}_season.pkl"), "rb") as file:
         test_season = pickle.load(file)
     print()

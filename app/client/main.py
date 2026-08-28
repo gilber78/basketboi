@@ -114,26 +114,30 @@ def main():
     output_json = process_server_output_json(predictions_from_date(input_json["date"], input_json["games"]))
 
     # get betting input for each available or requested game
-    print(f"There are {len(output_json['predictions'])} games on {output_json['date']}:")
-    print("\033[4m#                     SPREAD        ML            TOTAL                                            #\033[0m")
-    while True:
-        try:
-            for i, pred in enumerate(output_json["predictions"]):
-                get_cli_inputs(i, pred)
-            if input("Please verify that the above odds sheet is correct. If so, press enter. ") == "":
-                while True:
-                    bankroll = float(input("Great! What's the most you're willing to risk today (enter a dollar amount)? $"))
-                    if bankroll >= 1:
-                        print()
-                        break
-                    else:
-                        print("Please enter a bet number greater than or equal to $1.00")
-                break
-            else:
-                print("Trying again!\n")
-        except Exception as e:
-            print(e, "please try again.")
-            exit()
+    bankroll = 0
+    if output_json["predictions"] is not None:
+        print(f"There are {len(output_json['predictions'])} games on {output_json['date']}:")
+        print("\033[4m#                     SPREAD        ML            TOTAL                                            #\033[0m")
+        while True:
+            try:
+                for i, pred in enumerate(output_json["predictions"]):
+                    get_cli_inputs(i, pred)
+                if input("Please verify that the above odds sheet is correct. If so, press enter. ") == "":
+                    while True:
+                        bankroll = float(input("Great! What's the most you're willing to risk today (enter a dollar amount)? $"))
+                        if bankroll >= 1:
+                            print()
+                            break
+                        else:
+                            print("Please enter a bet number greater than or equal to $1.00")
+                    break
+                else:
+                    print("Trying again!\n")
+            except Exception as e:
+                print(e, "please try again.")
+                exit()
+    else:
+        print(f"There are no predictions available for games on {output_json['date']}:\n")
 
     # get ev/kelly fractions for each bet, make suggested bet slip, return to user
     betting_slip = BettingSlip(output_json, bankroll)

@@ -23,6 +23,9 @@ from server.Models import *
 from server.functions import print_current_season
 from server.download_and_sort_data import download_and_sort_data  # this import has to come last
 
+# TODO create an Optimizer class that can be initialized with different models and still runs the same logic
+# I want to be able to call the optimizer on any of the three models we have with the same function(s)
+
 
 def objective_function_tuple(year, z, b, debug_prints=False, debug_plots=False, debug_debug_plots=False):
     # get reference data based on min year parameter

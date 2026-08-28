@@ -100,28 +100,29 @@ def bets_from_game_json(game: dict):
 
 class BettingSlip:
     def __init__(self, prediction_json: dict, bankroll: float = 1.0):
-        # self.prediction_json = prediction_json  # maybe don't even need to store this...
-        self.game_list = [pred["gameTag"] for pred in prediction_json["predictions"]]
+        self.date = prediction_json["date"]
         self.bankroll = bankroll
         self.bets = []
 
-        # go through each item in the prediction json procedurally, then select valid (winning) bets and store them to the class
-        self.date = prediction_json["date"]
-        candidate_bets = [bet for game in prediction_json["predictions"] for bet in bets_from_game_json(game)]
+        if prediction_json["predictions"] is not None:
+            self.game_list = [pred["gameTag"] for pred in prediction_json["predictions"]]
 
-        # check the single kelly slate, and if sum of the fractions are < 1 then accept it
-        # if not, move on to multi kelly
-        # clean up the bet objects either way
-        single_kelly_candidates = []
-        for gameTag in self.game_list:
-            best_bet = max([candidate for candidate in candidate_bets if candidate.gameTag == gameTag], key=lambda bet: bet._single_growth)
-            if best_bet._single_fraction > 0:
-                single_kelly_candidates.append(best_bet)
-        if sum([bet._single_fraction for bet in single_kelly_candidates]) <= 1:
-            self.cleanup_slate(single_kelly_candidates, mode="single")
-        else:
-            multi_kelly_candidates = self.bisection_search(candidate_bets)
-            self.cleanup_slate(multi_kelly_candidates, mode="multi")
+            # go through each item in the prediction json procedurally, then select valid (winning) bets and store them to the class
+            candidate_bets = [bet for game in prediction_json["predictions"] for bet in bets_from_game_json(game)]
+
+            # check the single kelly slate, and if sum of the fractions are < 1 then accept it
+            # if not, move on to multi kelly
+            # clean up the bet objects either way
+            single_kelly_candidates = []
+            for gameTag in self.game_list:
+                best_bet = max([candidate for candidate in candidate_bets if candidate.gameTag == gameTag], key=lambda bet: bet._single_growth)
+                if best_bet._single_fraction > 0:
+                    single_kelly_candidates.append(best_bet)
+            if sum([bet._single_fraction for bet in single_kelly_candidates]) <= 1:
+                self.cleanup_slate(single_kelly_candidates, mode="single")
+            else:
+                multi_kelly_candidates = self.bisection_search(candidate_bets)
+                self.cleanup_slate(multi_kelly_candidates, mode="multi")
 
     def bisection_search(self, candidate_bets):
         # find the initial lambda_max
