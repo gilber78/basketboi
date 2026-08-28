@@ -25,6 +25,8 @@ from server.download_and_sort_data import download_and_sort_data  # this import 
 
 # TODO create an Optimizer class that can be initialized with different models and still runs the same logic
 # I want to be able to call the optimizer on any of the three models we have with the same function(s)
+# may have to do some significant refactoring, since the stats available for the spread/total is different than the stats avaialbe for home prediction...
+# could create a BaseOptimizer then have child class of ProbabilityOptimizer and ScalarOptimizer to handle stats differently
 
 
 def objective_function_tuple(year, z, b, debug_prints=False, debug_plots=False, debug_debug_plots=False):
