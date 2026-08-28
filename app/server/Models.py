@@ -94,10 +94,10 @@ class Model:
         SS_tot = sum((yvals - np.mean(yvals)) ** 2)[0]
         self.ref_Rsquared = 1 - SS_res / SS_tot
 
-        # calculate linear mask
+        # calculate weighted linear mask
         xvals = self.value(ref_data)
         xvals = xvals[mask]
-        m, b = np.polyfit(xvals, yvals, 1)  # TODO experiment with mask using w keyword here with my weights array
+        m, b = np.polyfit(xvals, yvals, 1, w=weights)
         self.m, self.b = m[0], b[0]
 
         # calculate model variance/std

@@ -31,7 +31,7 @@ def plot_pdf_function(x, y, title, binwidth=0.05, bounds=(0, 1), xlabel="Predict
     plt.plot(xvals, xvals + 0.05, "k", alpha=0.24)
     plt.plot(xvals, xvals - 0.05, "k", alpha=0.24)
     plt.plot(xvals, xvals, "k", alpha=0.6)
-    plt.legend([f"m = {m}", f"b = {b}", "std = {std}"])
+    plt.legend([f"m = {m}", f"b = {b}", f"std = {std}"])
 
 
 def plot_ROC_curve(x, y, title, binwidth=0.01, bounds=(0, 1), xlabel="FPR", ylabel="TPR"):

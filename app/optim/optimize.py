@@ -26,7 +26,7 @@ from server.download_and_sort_data import download_and_sort_data  # this import 
 # TODO create an Optimizer class that can be initialized with different models and still runs the same logic
 # I want to be able to call the optimizer on any of the three models we have with the same function(s)
 # may have to do some significant refactoring, since the stats available for the spread/total is different than the stats avaialbe for home prediction...
-# could create a BaseOptimizer then have child class of ProbabilityOptimizer and ScalarOptimizer to handle stats differently
+# you could create a Optimizer then have child class for each model to handle the stats differently
 
 
 def objective_function_tuple(year, z, b, debug_prints=False, debug_plots=False, debug_debug_plots=False):
@@ -90,7 +90,7 @@ def objective_function_tuple(year, z, b, debug_prints=False, debug_plots=False, 
         print("Model stdev:", MODEL_HOME_WIN_PR.std)
 
     if debug_plots:
-        plotting.plot_pdf_function(pred_win, true_win, "Predicted vs Actual Home Team Win % of NBA games")
+        plotting.plot_pdf_function(pred_win, true_win, "Predicted vs Actual Home Team Win % of NBA games", std=MODEL_HOME_WIN_PR.std)
         plotting.plot_ROC_curve(pred_win, true_win, "ROC curve for Home Team Win % of NBA games%")
 
     if debug_debug_plots:
@@ -539,24 +539,16 @@ def optimize():
     """
         [
             (2020, -42, 51),
-            (2020, -39.62048, 79.193165),
-            (2020, -39.10584517831557, 78.45754303601926),
-            (2020, -34.96927644039598, 64.49692881215984),
-            (2020, -31.73873, 41.673835),
-            (2020, -33.32630956728241, 61.40157044130502),
-            (2020, -22.949122292006116, 28.682112542279647),
-            (2020, -40.49972745901825, 68.89789705377231), **
+            (2020, -40.49972745901825, 68.89789705377231), *and so on
         ],
     """
     best_value, next_point = optim_models_daybyday(
         year_bounds=(2020, 2020),
-        from_file="app/optim/bo-optimizer5.json",
-        to_file="app/optim/bo-optimizer5.json",
+        from_file="app/optim/bo-optimizer-homewin-2026.json",
+        to_file="app/optim/bo-optimizer-homewin-2026.json",
         init_points=1,
         n_iter=1,
     )
-    # if we ever resume just ECE, use bo-optimizer3.json instead. optimizer5 is due to an error in the objective scalar function. 4 is broken.
-    # 6 should be made in order to better balance ECE with slope/intercept errors (maybe go 8 and 4 instead of 4 and 4 for weights?)
 
     # note that the changes need to occur in the json file as well as the code
     print("BEST VALUE:", best_value)
@@ -567,6 +559,7 @@ def optimize():
     '''
 
     objective_function_tuple(2020, -40.49972745901825, 68.89789705377231, debug_prints=True, debug_plots=True)  # test no debug out
+    # TODO start a new run of the optimizer, since we've discovered that weighted linear mask improves performance drastically
 
 
 if __name__ == "__main__":
