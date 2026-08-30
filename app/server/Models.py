@@ -1,3 +1,5 @@
+import os
+import json
 import copy
 import numpy as np
 import pandas as pd
@@ -6,6 +8,9 @@ from functools import partial
 from server.functions import fractional_year_since
 
 np.set_printoptions(linewidth=np.inf)
+
+with open(os.path.join("app", "data", "config.json"), "r") as file:
+    config = json.load(file)
 
 
 def recency_weight_function(x, z, b):
@@ -20,8 +25,7 @@ def recency_weight_function(x, z, b):
     return val**b
 
 
-# TODO place the z/bs for each weight function in the config file if necessary
-HOME_WIN_WEIGHT_FUNCTION = partial(recency_weight_function, z=-40.49972745901825, b=68.89789705377231)
+HOME_WIN_WEIGHT_FUNCTION = partial(recency_weight_function, z=config["HOME_WIN_PR_PARAMETERS"]["z"], b=config["HOME_WIN_PR_PARAMETERS"]["b"])
 EVEN_WEIGHT_FUNCTION = lambda x: 1
 
 
@@ -97,7 +101,7 @@ class Model:
         # calculate weighted linear mask
         xvals = self.value(ref_data)
         xvals = xvals[mask]
-        m, b = np.polyfit(xvals, yvals, 1, w=weights)
+        m, b = np.polyfit(xvals, yvals, 1)  # , w=weights)
         self.m, self.b = m[0], b[0]
 
         # calculate model variance/std

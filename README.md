@@ -1,9 +1,9 @@
-# BASKETBOI
-idk what this name will be, just roll with it.
-mostly a test to get used to dockering
+# Basketball Automated Statistical Knowledge Engine for Tracking Bets, Odds, & Intelligence
+Otherwise known as: BASKETBOI!
 
-## Setup
-### API credentials
+This program is a pet project meant to improve my full-stack development. Its *secondary* purpose is to provide a model for sports betting on NBA games. The model(s) present take historical information about team performance heading into a game (wins/losses, points per game, current streak, etc) and make predictions based on the average expected performance of both teams. It assigns probabilities and takes user inputs about betting odds being laid, and informs the user which wagers are most favorable for their bankroll and how much money to place on each.
+
+## Setup - API credentials
 To use the Kaggle API, sign up for a Kaggle account at https://www.kaggle.com. Then go to the 'Account' tab of your user profile settings and select 'Generate New Token'. Copy the generated token, paste and save it to a file named /app/data/access_token. This will allow you to connect to Kaggle and download the database when the program is run.
 
 ## To run from CLI
@@ -27,8 +27,10 @@ To use the Kaggle API, sign up for a Kaggle account at https://www.kaggle.com. T
 ### Optimization before each season
 In order to properly calibrate the model before each season start (and possibly during the season...), do the following steps:
 
-- optimize model parameters for data starting the 5 seasons previous. For example, to prepare for the 2026/27 season, the first reference season should be 2020 and the first test season should be 2024. This gives two seasons of test data
-- Then, bump up one year so the season starts with 5 seasons of data before the first games (TBD?)
+- Start by selecting model year parameters for data starting the 5 seasons previous. For example, to prepare for the 2026/27 season, the first reference season should be 2020 and the first test season should be 2024. This gives two seasons worth of test data, and sufficient room to find optimal weight function combos
+- Run the optimizer_day_by_day inside `app/optim/optimze.py` to acquire the best z/b parameters for each model
+- Run `objective_function_scalar` for each model for every plausible data year, and obtain the minimum scalar function
+- update the values inside `app/data/config.json` to reflect the otpimal values before tagging a season-specific release
 
 ## Extra note
 - Before pushing to git, make sure all of the following run (this is my really bad version of "regression test", if it were...):
@@ -39,4 +41,4 @@ In order to properly calibrate the model before each season start (and possibly 
 
 #### TODO must make minor QOL tweaks and tag release before 10/20/2026, and get an MVP before the start of this season. This could be
 - (high) QOL printing current season in September/October before the newest pickle is available (this should probably say something like "requested season hasn't started yet" or something)
-- (low) further optimizations of the moneyline model
+- (high) further optimizations of the moneyline model

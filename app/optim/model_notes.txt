@@ -65,6 +65,14 @@ Then, possibly iterate again if results improve.
 - Brier: 0.21215832328340947
 ^^ This is what I'm going with as of 8/10/2026. We will revisit the parameters after the rest of the functionality is available.
 
+8/28/2026: 2020, xxxx, xxxx (yyy steps), ECE+Slope, evenly weighted, time-scaled linear mask (Fig 37)
+========= 2020 -62.18514974709318 29.270466982026086 =========
+- ECE: 0.026939058171745155
+- Slope: 0.9931214964108641
+- Intercept: 0.0008585861590092716
+- AUC:  0.7190301602788656
+- Brier: 0.21223391624696578
+
 
 possible odds sources:
 >> https://www.oddsportal.com/basketball/usa/nba/results/

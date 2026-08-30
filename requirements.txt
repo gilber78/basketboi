@@ -6,3 +6,4 @@ pandas==3.0.5
 pydantic==2.13.4
 Requests==2.34.2
 bayesian-optimization==3.3.0
+# customtkinter/tkinter for gui down the line, consider PyQT as well
