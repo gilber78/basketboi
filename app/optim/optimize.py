@@ -571,6 +571,7 @@ def optimize_home_win_pr():
     )
     '''
 
+    # this function *AS IT STANDS* should be the default when no args are passed to argparse (except for which model to call, obviously)
     home_win_optimizer.objective_function_tuple(
         config["MIN_REFERENCE_DATA_YEAR"],
         config["HOME_WIN_PR_PARAMETERS"]["z"],

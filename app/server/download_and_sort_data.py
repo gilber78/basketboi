@@ -96,7 +96,6 @@ def download_and_sort_data(config):
         print(
             f"Using previously downloaded {config['GAME_DATA_FILE_NAME']} from {last_download_time.astimezone().strftime(LAST_DOWNLOAD_TIME_FORMAT_STRING)}"
         )
-        return
     else:
         download_csv(
             path=config["DATA_DOWNLOAD_PATH"],
@@ -106,14 +105,24 @@ def download_and_sort_data(config):
         )
         print(f"Downloaded {config['GAME_DATA_FILE_NAME']}")
 
-        # trim data to only needed columns
-        print("Performing batch sort/cleanup on game data")
-        games_raw_df = pd.read_csv(os.path.join(config["DATA_DOWNLOAD_PATH"], config["GAME_DATA_FILE_NAME"]), low_memory=False)[GAMES_COLUMNS_TO_KEEP]
-        games_raw_df = games_raw_df[(games_raw_df["homeScore"] != 0) & (games_raw_df["awayScore"] != 0) & (games_raw_df["gameType"] != "Preseason")]
-        if not config["INCLUDE_PLAYOFFS"]:
-            games_raw_df = games_raw_df[(games_raw_df["gameType"] != "Play-in Tournament") & (games_raw_df["gameType"] != "Playoffs")]
-        games_raw_df = games_raw_df.query("(hometeamId in @id_list) & (awayteamId in @id_list)")
+    # trim data to only needed columns
+    games_raw_df = pd.read_csv(os.path.join(config["DATA_DOWNLOAD_PATH"], config["GAME_DATA_FILE_NAME"]), low_memory=False)[GAMES_COLUMNS_TO_KEEP]
+    games_raw_df = games_raw_df[(games_raw_df["homeScore"] != 0) & (games_raw_df["awayScore"] != 0) & (games_raw_df["gameType"] != "Preseason")]
+    if not config["INCLUDE_PLAYOFFS"]:
+        games_raw_df = games_raw_df[(games_raw_df["gameType"] != "Play-in Tournament") & (games_raw_df["gameType"] != "Playoffs")]
+    games_raw_df = games_raw_df.query("(hometeamId in @id_list) & (awayteamId in @id_list)")
 
+    # display the up-to-dateness of the dataset
+    most_recent_game = games_raw_df.iloc[games_raw_df["gameDateTimeEst"].argmax()]
+    print(
+        f">>>\n>>> Most recent game in the raw dataset: {most_recent_game['gameDateTimeEst']}  "
+        + f"{most_recent_game['awayteamCity']} {most_recent_game['awayteamName']} vs. "
+        + f"{most_recent_game['hometeamCity']} {most_recent_game['hometeamName']}\n>>>"
+    )
+
+    if skip_download and not full_download:
+        return  # just goes back to the logic with download csv
+    else:
         # season sort by year
         print("Sorting game data by season")
         if full_download:
