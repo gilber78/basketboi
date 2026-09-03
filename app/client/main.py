@@ -80,7 +80,7 @@ def get_cli_inputs(i, pred):
     pred["away_ml_odds"] = away_ml_odds
     pred["home_ml_odds"] = home_ml_odds
 
-    # TODO put input for totals
+    # TODO put back input for totals and totals odds
     """
     point_total_line = float(input(f"\033[A\033[A{away_living_string}        <- Enter {gameTag} point total line\r{away_living_string} "))
     away_living_string += f" o{point_total_line:>4.1f} "
@@ -103,8 +103,12 @@ def main():
     print("===== WELCOME TO BASKETBOI! =====")
 
     # update the data models
-    download_and_sort_data(config)  # donwload/sort raw data, if necessary
-    build_models(config)  # create plots that are passed as part of debug for model
+    if config["ALLOW_DATA_DOWNLOAD"]:
+        download_and_sort_data(config)  # donwload/sort raw data, if necessary
+        build_models(config)  # create plots that are passed as part of debug for model
+    else:
+        print("!! Downloads halted by supplied config !!")
+        print("-> No model updates initiated as a result")
     print_current_season()
     print()
 

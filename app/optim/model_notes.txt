@@ -61,6 +61,3 @@ Optimum confirmed on 09/02/2026 (lock it in for the season)
 - Brier: 0.21215832424052516
 - Model variance: 0.21354343803950207
 - Model stdev: 0.4621076043948012
-
-
-TODO RUN THE PUSH PROTOCOL IN README BEFORE COMMITTING

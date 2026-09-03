@@ -30,7 +30,7 @@ class BaseOptimizer:
     def __init__(self, MODEL: Model):
         self.MODEL = MODEL
 
-    def _get_pred_and_true_array(self, year, z, b):
+    def _get_pred_and_true_array(self, year, z, b, daybyday_prints=False):
         # get reference data based on min year parameter
         ref_data = pd.concat(
             [
@@ -67,7 +67,8 @@ class BaseOptimizer:
         pred = []
         test_dates = test_data["GAME_gameDate"].unique()
         for game_date in test_dates:
-            # print(">>>", game_date)
+            if daybyday_prints:
+                print(">>>", game_date)
             for _, row in test_data[test_data["GAME_gameDate"] == game_date].iterrows():
                 pred.append(self.MODEL.value(row, apply_mask=True)[0])
                 ref_data.loc[len(ref_data)] = row
@@ -146,8 +147,8 @@ class HomeWinOptimizer(BaseOptimizer):
     def __init__(self, MODEL=MODEL_HOME_WIN_PR):
         super().__init__(MODEL)
 
-    def objective_function_tuple(self, year, z, b, debug_prints=False, debug_plots=False, debug_debug_plots=False):
-        pred_win, true_win = self._get_pred_and_true_array(year, z, b)
+    def objective_function_tuple(self, year, z, b, daybyday_prints=False, debug_prints=False, debug_plots=False, debug_debug_plots=False):
+        pred_win, true_win = self._get_pred_and_true_array(year, z, b, daybyday_prints)
         _, _, AUC = stats.calc_ROC_curve(pred_win, true_win)
         BRIER = stats.calc_brier_score(pred_win, true_win)
         ECE = stats.calc_ECE_score(pred_win, true_win)
@@ -530,6 +531,7 @@ class HomeWinOptimizer(BaseOptimizer):
                 binwidth=1,
                 bounds=(76, 147),
             )
+        # TODO save and clear the debug_debug plots to a folder inside optim rather than loading and displaying all 40
 
         return ECE, M, B, AUC, BRIER
 
@@ -573,6 +575,7 @@ def optimize_home_win_pr():
         config["MIN_REFERENCE_DATA_YEAR"],
         config["HOME_WIN_PR_PARAMETERS"]["z"],
         config["HOME_WIN_PR_PARAMETERS"]["b"],
+        daybyday_prints=True,
         debug_prints=True,
         debug_plots=True,
         # debug_debug_plots=True,
@@ -580,7 +583,10 @@ def optimize_home_win_pr():
 
 
 if __name__ == "__main__":
-    download_and_sort_data(config)  # donwload/sort raw data, if necessary
+    if config["ALLOW_DATA_DOWNLOAD"]:
+        download_and_sort_data(config)
+    else:
+        print("!! Downloads halted by supplied config !!")
     optimize_home_win_pr()
     print_current_season()
     plt.show()
