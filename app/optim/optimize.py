@@ -23,6 +23,8 @@ from server.Models import *
 from server.functions import print_current_season
 from server.download_and_sort_data import download_and_sort_data  # this import has to come last
 
+# TODO argparseify optimize_home_win_pr so we can determine if it's in just run config mode or run the full daybyday optimizer
+
 
 class BaseOptimizer:
     def __init__(self, MODEL: Model):
@@ -540,6 +542,7 @@ def optimize_home_win_pr():
     print("----- WELCOME TO THE HOME WIN % OPTIMIZER -----")
     home_win_optimizer = HomeWinOptimizer()
 
+    ''' Z/B parameterization
     # calls of optim_models_daybyday
     """
         [
@@ -564,6 +567,7 @@ def optimize_home_win_pr():
     home_win_optimizer.objective_function_tuple(
         best_value["params"]["year"], best_value["params"]["z"], best_value["params"]["b"], debug_prints=True, debug_plots=True
     )
+    '''
 
     home_win_optimizer.objective_function_tuple(
         config["MIN_REFERENCE_DATA_YEAR"],
@@ -571,10 +575,8 @@ def optimize_home_win_pr():
         config["HOME_WIN_PR_PARAMETERS"]["b"],
         debug_prints=True,
         debug_plots=True,
+        # debug_debug_plots=True,
     )
-    # hold the year constant (say 2020), find an optimal z/b combo
-    # then, run through all possible years and get the minimum scalar objective function for the year, holding z/b constant
-    # possibly, repeat this cycle as desired/necessary
 
 
 if __name__ == "__main__":

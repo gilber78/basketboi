@@ -27,10 +27,10 @@ To use the Kaggle API, sign up for a Kaggle account at https://www.kaggle.com. T
 ### Optimization before each season
 In order to properly calibrate the model before each season start (and possibly during the season...), do the following steps:
 
-- Start by selecting model year parameters for data starting the 5 seasons previous. For example, to prepare for the 2026/27 season, the first reference season should be 2020 and the first test season should be 2024. This gives two seasons worth of test data, and sufficient room to find optimal weight function combos
+- Start by selecting model year parameters for data starting the 5 seasons previous. For example, to prepare for the 2026/27 season, the first reference season should be 2020 and the first test season should be 2024. This gives 5 (total) seasons worth of reference data and 2 seasons worth of test data, and sufficient room to find optimal weight function combos
 - Run the optimizer_day_by_day inside `app/optim/optimze.py` to acquire the best z/b parameters for each model
-- Run `objective_function_scalar` for each model for every plausible data year, and obtain the minimum scalar function
 - update the values inside `app/data/config.json` to reflect the otpimal values before tagging a season-specific release
+- (optional) verify the polynomials by calling the functions inside optimize.py with `debug_debug_plots` set True, but I forsee this not being a super common modification.
 
 ## Extra note
 - Before pushing to git, make sure all of the following run (this is my really bad version of "regression test", if it were...):
@@ -39,6 +39,8 @@ In order to properly calibrate the model before each season start (and possibly 
     - `time python app/optim/optimize.py`
     - `python app/server/basketboi_server.py` (both from cli and uvicorn, in concert with `python app/client/basketboi_client.py`)
 
-#### TODO must make minor QOL tweaks and tag release before 10/20/2026, and get an MVP before the start of this season. This could be
-- (high) QOL printing current season in September/October before the newest pickle is available (this should probably say something like "requested season hasn't started yet" or something)
-- (high) further optimizations of the moneyline model
+#### TODO must make minor tweaks and tag release before 10/20/2026, and get an MVP before the start of this season. This could be
+- (high) finalize, for once and for all, with the term by term comparisons (with historical weighting considered...)
+- (med) accept both Kalshi price in CLI, along with American odds (configurable)?
+- (low) argparseify optimize.py
+- (low) add "toggle data download" to config.json, so we can dev offline/on planes if needed

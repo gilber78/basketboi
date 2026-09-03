@@ -16,6 +16,7 @@
     "INCLUDE_PLAYOFFS": false,
     "BISECTION_SEARCH_TOLERANCE": 1e-6,
     "HOME_WIN_PR_PARAMETERS": {
+        "year": 2020,
         "z": -40.49972745901825,
         "b": 68.89789705377231
     }
