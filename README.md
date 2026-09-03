@@ -43,4 +43,3 @@ In order to properly calibrate the model before each season start (and possibly 
 - (high) finalize, for once and for all, with the term by term comparisons (with historical weighting considered...)
 - (med) accept both Kalshi price in CLI, along with American odds (configurable)?
 - (low) argparseify optimize.py
-- (low) add "toggle data download" to config.json, so we can dev offline/on planes if needed
