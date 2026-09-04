@@ -42,4 +42,3 @@ In order to properly calibrate the model before each season start (and possibly 
 #### TODO must make minor tweaks and tag release before 10/20/2026, and get an MVP before the start of this season. This could be
 - (high) finalize, for once and for all, with the term by term comparisons (with historical weighting considered...)
 - (med) accept both Kalshi price in CLI, along with American odds (configurable)?
-- (low) argparseify optimize.py

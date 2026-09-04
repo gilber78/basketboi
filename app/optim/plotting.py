@@ -50,21 +50,19 @@ def plot_pdf_function_DEBUG(x, y, title, binwidth=0.05, bounds=(0, 1), xlabel="P
     bins = np.linspace(bounds[0], bounds[1], int((bounds[1] - bounds[0]) / binwidth) + 1)
     xvals = [(bins[i] + bins[i - 1]) / 2 for i in range(1, len(bins))]
     yvals = []
-    weights = []
     for i in range(1, len(bins)):
         y_mask = y[(bins[i - 1] <= x) & (x <= bins[i])]
         if len(y_mask) == 0:
             yvals.append((bins[i] + bins[i - 1]) / 2)
         else:
             yvals.append(sum(y_mask) / len(y_mask))
-        weights.append(1)
     xvals = np.array(xvals)
     yvals = np.array(yvals)
-    weights = np.array(weights)
 
-    m, b = np.polyfit(xvals, yvals, 1, w=weights)
-    a2, a1, a0 = np.polyfit(xvals, yvals, 2, w=weights)
-    k3, k2, k1, k0 = np.polyfit(xvals, yvals, 3, w=weights)
+    # TODO add conditioning to the polyfit so it graphs better here... it prefers smaller number ranges
+    m, b = np.polyfit(xvals, yvals, 1)
+    a2, a1, a0 = np.polyfit(xvals, yvals, 2)
+    k3, k2, k1, k0 = np.polyfit(xvals, yvals, 3)
     liney = m * xvals + b
     quady = a2 * xvals**2 + a1 * xvals + a0
     cubey = k3 * xvals**3 + k2 * xvals**2 + k1 * xvals + k0

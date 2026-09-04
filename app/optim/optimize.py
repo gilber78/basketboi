@@ -1,6 +1,7 @@
 import os
 import sys
 import json
+import argparse
 from pathlib import Path
 
 with open(os.path.join("app", "data", "config.json"), "r") as file:
@@ -23,12 +24,102 @@ from server.Models import *
 from server.functions import print_current_season
 from server.download_and_sort_data import download_and_sort_data  # this import has to come last
 
-# TODO argparseify optimize_home_win_pr so we can determine if it's in just run config mode or run the full daybyday optimizer
+
+def get_args():
+    parser = argparse.ArgumentParser(
+        description="""optimize.py ::: contains the backend utilities necessary to improve and fine-tune all the NBA models that BASKETBOI runs"""
+    )
+    parser.add_argument(
+        "--model",
+        "-m",
+        dest="model",
+        type=str,
+        required=True,
+        choices=["homeSpread", "homeWin", "totalScore"],
+        help="Only required arg, specifies which of the three models to run the optimization against. Choices are [homeSpread, homeWin, totalScore].",
+    )
+    parser.add_argument(
+        "--optimize",
+        "-o",
+        dest="optimize",
+        default=False,
+        action="store_true",
+        help="Calls the full bayesian optimization protocol and utilizes --init-points and --num-iters args. Default is False.",
+    )
+    parser.add_argument(
+        "--init-points",
+        "-ip",
+        dest="init_points",
+        type=int,
+        default=0,
+        help="Sets number of random points for the bayesian optimizer to sample before searching. Default is 0.",
+    )
+    parser.add_argument(
+        "--num-iters",
+        "-ni",
+        dest="num_iters",
+        type=int,
+        default=1,
+        help="Sets number of iterations for the bayesian optimizer to perform. Default is 1.",
+    )
+    parser.add_argument(
+        "--from-file",
+        "-ff",
+        dest="from_file",
+        default=False,
+        action="store_true",
+        help="Tells the bayesian optimizer whether to read a previous state from a file. Default is False.",
+    )
+    parser.add_argument(
+        "--file-name",
+        "-fn",
+        dest="file_name",
+        type=str,
+        default="app/optim/bo-optimizer.json",
+        help="Tells the bayesian optimizer what file to output the state to. Default is app/optim/bo-optimizer.json.",
+    )
+    parser.add_argument(
+        "--daybyday-prints",
+        "-dbdpr",
+        dest="daybyday_prints",
+        default=False,
+        action="store_true",
+        help="Calls line-by-line print statements for the final function evaluations. Default is False.",
+    )
+    parser.add_argument(
+        "--debug-prints",
+        "-dpr",
+        dest="debug_prints",
+        default=False,
+        action="store_true",
+        help="Calls debug prints to the final function evaluation. Default is False.",
+    )
+    parser.add_argument(
+        "--debug-plots",
+        "-dpl",
+        dest="debug_plots",
+        default=False,
+        action="store_true",
+        help="Calls debug plots to the final function evaluation. Default is False.",
+    )
+    parser.add_argument(
+        "--debug-debug-plots",
+        "-ddpl",
+        dest="debug_debug_plots",
+        default=False,
+        action="store_true",
+        help="Calls the debug-debug plots to the final function evaluation. Default is False.",
+    )
+    return parser.parse_args()
+
+
+ARGS = get_args()
 
 
 class BaseOptimizer:
-    def __init__(self, MODEL: Model):
+    def __init__(self, MODEL: Model, debug_debug_fig_path: str):
         self.MODEL = MODEL
+        self.debug_debug_fig_path = debug_debug_fig_path
 
     def _get_pred_and_true_array(self, year, z, b, daybyday_prints=False):
         # get reference data based on min year parameter
@@ -36,7 +127,7 @@ class BaseOptimizer:
             [
                 pd.read_csv(os.path.join(os.environ["SEASON_PATH"], dir, f"{dir}_full.csv"))
                 for dir in os.listdir(os.environ["SEASON_PATH"])
-                if (int(dir.split("-")[0]) >= year) and not (int(dir.split("-")[0]) >= config["MIN_TEST_DATA_YEAR"])
+                if (int(dir.split("-")[0]) >= year) and not (int(dir.split("-")[0]) >= config["TEST_DATA_YEAR"])
             ],
             ignore_index=True,
         )
@@ -44,7 +135,7 @@ class BaseOptimizer:
             [
                 pd.read_csv(os.path.join(os.environ["SEASON_PATH"], dir, f"{dir}_full.csv"))
                 for dir in os.listdir(os.environ["SEASON_PATH"])
-                if (int(dir.split("-")[0]) >= config["MIN_TEST_DATA_YEAR"])
+                if (int(dir.split("-")[0]) >= config["TEST_DATA_YEAR"])
             ],
             ignore_index=True,
         )
@@ -87,13 +178,12 @@ class BaseOptimizer:
     def optim_models_daybyday(
         self,
         x0=None,
-        year_bounds=(config["MIN_SEASON_YEAR"], config["MIN_TEST_DATA_YEAR"] - 1),
+        year_bounds=(config["MIN_SEASON_YEAR"], config["TEST_DATA_YEAR"] - 1),
         z_bounds=(-100, -2),
         b_bounds=(1, 100),
         init_points=5,
         n_iter=5,
         verbose=2,
-        from_register: list | None = None,
         from_file: str | None = None,
         to_file="app/optim/bo-optimizer.json",
     ):
@@ -110,14 +200,7 @@ class BaseOptimizer:
         )
 
         # initial values, if supplied to the function
-        if (from_register is not None) and (from_file is not None):
-            raise Exception("Cannot optimize from both register and file -- pick one arg to pass")
-        elif from_register:
-            param_list = from_register[0]
-            target_list = from_register[1]
-            for i in range(len(param_list)):
-                optimizer.register(params=param_list[i], target=target_list[i])
-        elif from_file is not None:
+        if from_file is not None:
             optimizer.load_state(from_file)
 
         try:
@@ -143,9 +226,13 @@ class BaseOptimizer:
             return optimizer.max, optimizer.suggest()
 
 
+class HomeSpreadOptimizer(BaseOptimizer):
+    pass
+
+
 class HomeWinOptimizer(BaseOptimizer):
-    def __init__(self, MODEL=MODEL_HOME_WIN_PR):
-        super().__init__(MODEL)
+    def __init__(self, MODEL=MODEL_HOME_WIN_PR, debug_debug_fig_path=os.path.join(config["OPTIM_SAVE_PATH"], "home_win_pr_figs")):
+        super().__init__(MODEL, debug_debug_fig_path)
 
     def objective_function_tuple(self, year, z, b, daybyday_prints=False, debug_prints=False, debug_plots=False, debug_debug_plots=False):
         pred_win, true_win = self._get_pred_and_true_array(year, z, b, daybyday_prints)
@@ -165,17 +252,13 @@ class HomeWinOptimizer(BaseOptimizer):
             print("Model variance:", self.MODEL.var)
             print("Model stdev:", self.MODEL.std)
 
-        if debug_plots:
-            plotting.plot_pdf_function(pred_win, true_win, "Predicted vs Actual Home Team Win % of NBA games", std=self.MODEL.std)
-            plotting.plot_ROC_curve(pred_win, true_win, "ROC curve for Home Team Win % of NBA games%")
-
         if debug_debug_plots:
             # get debug data needed for these below plots
             sample_data = pd.concat(
                 [
                     pd.read_csv(os.path.join(os.environ["SEASON_PATH"], dir, f"{dir}_full.csv"))
                     for dir in os.listdir(os.environ["SEASON_PATH"])
-                    if (int(dir.split("-")[0]) >= config["MIN_REFERENCE_DATA_YEAR"])
+                    if (int(dir.split("-")[0]) >= config["REFERENCE_DATA_YEAR"])
                 ],
                 ignore_index=True,
             )
@@ -263,7 +346,7 @@ class HomeWinOptimizer(BaseOptimizer):
                     else:
                         print(bins[best_i] + 1, bins[best_j])
 
-            find_bounds(test_terms, sample_data)
+            # find_bounds(test_terms, sample_data)
 
             # HOME
             plotting.plot_pdf_function_DEBUG(
@@ -531,7 +614,18 @@ class HomeWinOptimizer(BaseOptimizer):
                 binwidth=1,
                 bounds=(76, 147),
             )
-        # TODO save and clear the debug_debug plots to a folder inside optim rather than loading and displaying all 40
+
+            # save and clear the debug_debug plots to a folder inside optim rather than loading and displaying all 40
+            # doing in a couple jobs to avoid the warning(s)
+            os.makedirs(self.debug_debug_fig_path, exist_ok=True)
+            for i, fignum in enumerate(plt.get_fignums()):
+                fig = plt.figure(fignum)
+                fig.savefig(f"{self.debug_debug_fig_path}/Figure{i+1:02d}.png")
+                plt.close(fig)
+
+        if debug_plots:
+            plotting.plot_pdf_function(pred_win, true_win, "Predicted vs Actual Home Team Win % of NBA games", std=self.MODEL.std)
+            plotting.plot_ROC_curve(pred_win, true_win, "ROC curve for Home Team Win % of NBA games%")
 
         return ECE, M, B, AUC, BRIER
 
@@ -540,54 +634,70 @@ class HomeWinOptimizer(BaseOptimizer):
         return (-4 * ECE**2) + (-4 * (M - 1) ** 2) + (-4 * B**2)
 
 
-def optimize_home_win_pr():
-    print("----- WELCOME TO THE HOME WIN % OPTIMIZER -----")
-    home_win_optimizer = HomeWinOptimizer()
+class TotalScoreOptimizer(BaseOptimizer):
+    pass
 
-    ''' Z/B parameterization
-    # calls of optim_models_daybyday
-    """
+
+def optimize(optimizer):
+    print("----- WELCOME TO THE OPTIMIZER -----")
+
+    if ARGS.optimize:
+        # calls of optim_models_daybyday
+        """
         [
             (2020, -42, 51),
             (2020, -40.49972745901825, 68.89789705377231), *and so on
         ],
-    """
-    best_value, next_point = home_win_optimizer.optim_models_daybyday(
-        x0=[(2020, -40.49972745901825, 68.89789705377231)],
-        year_bounds=(2020, 2020),
-        # from_file="app/optim/bo-optimizer-homewin-2026.json",
-        to_file="app/optim/bo-optimizer-homewin-test0.json",
-        init_points=0,
-        n_iter=1,
-    )
+        """  # reference x0 list, just in case
+        best_value, next_point = optimizer.optim_models_daybyday(
+            # x0=[(2020, -40.49972745901825, 68.89789705377231)],
+            year_bounds=(2020, 2020),
+            from_file=ARGS.file_name if ARGS.from_file else None,
+            to_file=ARGS.file_name,
+            init_points=ARGS.init_points,
+            n_iter=ARGS.num_iters,
+        )
 
-    # note that the changes need to occur in the json file as well as the code
-    print("BEST VALUE:", best_value)
-    print("NEXT TRIAL:", next_point)
+        # note that the changes need to occur in the json file as well as the code
+        print("BEST VALUE:", best_value)
+        print("NEXT TRIAL:", next_point)
 
-    # final call of suggested point to the tuple function, print out results of all states
-    home_win_optimizer.objective_function_tuple(
-        best_value["params"]["year"], best_value["params"]["z"], best_value["params"]["b"], debug_prints=True, debug_plots=True
-    )
-    '''
+        # final call of suggested point to the tuple function, print out results of all states
+        optimizer.objective_function_tuple(
+            best_value["params"]["year"],
+            best_value["params"]["z"],
+            best_value["params"]["b"],
+            daybyday_prints=ARGS.daybyday_prints,
+            debug_prints=ARGS.debug_prints,
+            debug_plots=ARGS.debug_plots,
+            debug_debug_plots=ARGS.debug_debug_plots,
+        )
 
     # this function *AS IT STANDS* should be the default when no args are passed to argparse (except for which model to call, obviously)
-    home_win_optimizer.objective_function_tuple(
-        config["MIN_REFERENCE_DATA_YEAR"],
+    optimizer.objective_function_tuple(
+        config["HOME_WIN_PR_PARAMETERS"]["year"],
         config["HOME_WIN_PR_PARAMETERS"]["z"],
         config["HOME_WIN_PR_PARAMETERS"]["b"],
-        daybyday_prints=True,
-        debug_prints=True,
-        debug_plots=True,
-        # debug_debug_plots=True,
+        daybyday_prints=ARGS.daybyday_prints,
+        debug_prints=ARGS.debug_prints,
+        debug_plots=ARGS.debug_plots,
+        debug_debug_plots=ARGS.debug_debug_plots,
     )
 
 
 if __name__ == "__main__":
+    # update data pull, if necessary
     if config["ALLOW_DATA_DOWNLOAD"]:
         download_and_sort_data(config)
     else:
         print("!! Downloads halted by supplied config !!")
-    optimize_home_win_pr()
+
+    # call optimize with the correct object based on specified args
+    if ARGS.model == "homeWin":
+        optimize(HomeWinOptimizer())
+    else:
+        raise NotImplementedError
+
+    # cleanup
     print_current_season()
     plt.show()

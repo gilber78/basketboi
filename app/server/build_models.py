@@ -16,7 +16,7 @@ def build_models(config):
         [
             pd.read_csv(os.path.join(os.environ["SEASON_PATH"], dir, f"{dir}_full.csv"))
             for dir in os.listdir(os.environ["SEASON_PATH"])
-            if (int(dir.split("-")[0]) >= config["MIN_REFERENCE_DATA_YEAR"])
+            if (int(dir.split("-")[0]) >= config["REFERENCE_DATA_YEAR"])
         ],
         ignore_index=True,
     )

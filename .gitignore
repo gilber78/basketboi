@@ -211,6 +211,4 @@ access_token
 games/
 models/
 *pat.txt
-
-# delete these when you're done
-*.xlsx
+Figure*.png
