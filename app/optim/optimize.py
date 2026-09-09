@@ -137,6 +137,14 @@ def get_args():
         help="Calls the full bayesian optimization protocol and utilizes --init-points and --num-iters args. Default is False.",
     )
     parser.add_argument(
+        "--seeded",
+        "-s",
+        dest="seeded",
+        default=False,
+        action="store_true",
+        help="Seeds the bayesian optimization with whatever is set as the current configured poitn for the specified model. Default is False.",
+    )
+    parser.add_argument(
         "--init-points",
         "-ip",
         dest="init_points",
@@ -207,8 +215,9 @@ ARGS = get_args()
 
 
 class BaseOptimizer:
-    def __init__(self, MODEL: Model, sample_data_column: str, debug_debug_fig_title: str, debug_debug_fig_path: str):
+    def __init__(self, MODEL: Model, config_data_column: str, sample_data_column: str, debug_debug_fig_title: str, debug_debug_fig_path: str):
         self.MODEL = MODEL
+        self.config_data_column = config_data_column
         self.sample_data_column = sample_data_column
         self.titles = TITLES_LAMBDA(debug_debug_fig_title)
         self.debug_debug_fig_path = debug_debug_fig_path
@@ -298,8 +307,7 @@ class BaseOptimizer:
         try:
             # probe x0s, if supplied
             if x0 is not None:
-                for x in x0:
-                    optimizer.probe(params={"year": x[0], "z": x[1], "b": x[2]}, lazy=True)  # set lazy to true
+                optimizer.probe(params={"year": x0[0], "z": x0[1], "b": x0[2]}, lazy=True)
 
             # run minimize/maximize
             optimizer.maximize(init_points=init_points, n_iter=n_iter)
@@ -357,7 +365,7 @@ class BaseOptimizer:
 
 
 class HomeSpreadOptimizer(BaseOptimizer):
-    # reference the completed optimizer(s) to implement this class
+    # reference the other completed optimizer(s) to implement this class
     pass
 
 
@@ -365,11 +373,12 @@ class HomeWinOptimizer(BaseOptimizer):
     def __init__(
         self,
         MODEL=MODEL_HOME_WIN_PR,
+        config_data_column="HOME_WIN_PR_PARAMETERS",
         sample_data_column="GAME_homeWin",
         debug_debug_fig_title="Home Win %",
         debug_debug_fig_path=os.path.join(config["OPTIM_SAVE_PATH"], "home_win_pr_figs"),
     ):
-        super().__init__(MODEL, sample_data_column, debug_debug_fig_title, debug_debug_fig_path)
+        super().__init__(MODEL, config_data_column, sample_data_column, debug_debug_fig_title, debug_debug_fig_path)
 
     def objective_function_tuple(self, year, z, b, daybyday_prints=False, debug_prints=False, debug_plots=False, debug_debug_plots=False):
         pred_win, true_win = self._get_pred_and_true_array(year, z, b, daybyday_prints)
@@ -404,7 +413,7 @@ class HomeWinOptimizer(BaseOptimizer):
 
 
 class TotalScoreOptimizer(BaseOptimizer):
-    # reference the completed optimizer(s) to implement this class
+    # reference the other completed optimizer(s) to implement this class
     pass
 
 
@@ -414,7 +423,11 @@ def optimize(optimizer):
     if ARGS.optimize:
         # calls of optim_models_daybyday
         best_value, next_point = optimizer.optim_models_daybyday(
-            # x0=[(2020, -40.49972745901825, 68.89789705377231)], # TODO toggle x0 to use the current configged point based on an arg, else None
+            x0=(
+                (config["REFERENCE_DATA_YEAR"], config[optimizer.config_data_column]["z"], config[optimizer.config_data_column]["b"])
+                if ARGS.seeded
+                else None
+            ),
             year_bounds=(config["REFERENCE_DATA_YEAR"], config["REFERENCE_DATA_YEAR"]),
             from_file=ARGS.file_name if ARGS.from_file else None,
             to_file=ARGS.file_name,
@@ -439,10 +452,9 @@ def optimize(optimizer):
 
     # this function *AS IT STANDS* should be the default when no args are passed to argparse (except for which model to call, obviously)
     optimizer.objective_function_tuple(
-        # TODO fix the configged point to be based on the optimizer column supplied
         config["REFERENCE_DATA_YEAR"],
-        config["HOME_WIN_PR_PARAMETERS"]["z"],
-        config["HOME_WIN_PR_PARAMETERS"]["b"],
+        config[optimizer.config_data_column]["z"],
+        config[optimizer.config_data_column]["b"],
         daybyday_prints=ARGS.daybyday_prints,
         debug_prints=ARGS.debug_prints,
         debug_plots=ARGS.debug_plots,

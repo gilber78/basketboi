@@ -19,6 +19,7 @@ HOME_HOME_LAST10_W,                        | 1 |
 HOME_HOME_LAST10_L,                        | 1 |
 HOME_WIN_POINTS_FOR_PER_GAME,              | X |
 HOME_WIN_POINTS_AGAINST_PER_GAME,          | X |
+HOME_LOSS_POINTS_FOR_PER_GAME,             | X |
 HOME_LOSS_POINTS_AGAINST_PER_GAME,         | X |
 HOME_HOMEWIN_POINTS_FOR_PER_GAME,          | X |
 HOME_HOMEWIN_POINTS_AGAINST_PER_GAME,      | X |
@@ -52,7 +53,7 @@ Weight function z
 Weight function b
 Min reference data year
 
-Optimum confirmed on 09/02/2026 (lock it in for the season)
+Optimum confirmed on 09/02/2026 (lock it in for the season, barring a model adjustment)
 ========= 2020 -40.49972745901825 68.89789705377231 =========
 - ECE: 0.022206832871652826
 - Slope: 0.9980376781536522
