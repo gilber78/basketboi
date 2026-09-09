@@ -1,59 +1,66 @@
 << coefficients for home win probability >>
-# TODO this list needs to be checked/updated with day-by-day numbers, if different
-# Currently, this only reflects the current implementation of homewin
-# would like verification that this is what is most useful
+# TODO determine the state (if any) of the last 8 variables for homewin
 
-Variable Name                          current   candidates
--------------------------------------------------------------
-HOME_WIN_PERCENTAGE,                       | 1 |
-HOME_POINTS_FOR_PER_GAME,                  | 3 |
-HOME_POINTS_AGAINST_PER_GAME,              | 1 |
-HOME_STREAK,                               | 3 |
-HOME_LAST10_W,                             | 1 |
-HOME_LAST10_L,                             | 1 |
-HOME_HOME_WIN_PERCENTAGE,                  | 1 |
-HOME_HOME_POINTS_FOR_PER_GAME,             | 2 |
-HOME_HOME_POINTS_AGAINST_PER_GAME,         | 1 |
-HOME_HOME_STREAK,                          | 3 |
-HOME_HOME_LAST10_W,                        | 1 |
-HOME_HOME_LAST10_L,                        | 1 |
-HOME_WIN_POINTS_FOR_PER_GAME,              | X |
-HOME_WIN_POINTS_AGAINST_PER_GAME,          | X |
-HOME_LOSS_POINTS_FOR_PER_GAME,             | X |
-HOME_LOSS_POINTS_AGAINST_PER_GAME,         | X |
-HOME_HOMEWIN_POINTS_FOR_PER_GAME,          | X |
-HOME_HOMEWIN_POINTS_AGAINST_PER_GAME,      | X |
-HOME_HOMELOSS_POINTS_FOR_PER_GAME,         | X |
-HOME_HOMELOSS_POINTS_AGAINST_PER_GAME,     | X |
+NUM  Variable Name                       current   notes
+---------------------------------------------------------------------
+01   HOME_WIN_PERCENTAGE,                    | 1 | 
+02   HOME_POINTS_FOR_PER_GAME,               | 3 | 
+03   HOME_POINTS_AGAINST_PER_GAME,           | 3 | 
+04   HOME_STREAK,                            | 3 | 
+05   HOME_LAST10_W,                          | 1 | 
+06   HOME_LAST10_L,                          | 1 | 
+07   HOME_HOME_WIN_PERCENTAGE,               | 3 | 
+08   HOME_HOME_POINTS_FOR_PER_GAME,          | 3 | 
+09   HOME_HOME_POINTS_AGAINST_PER_GAME,      | 3 | 
+10   HOME_HOME_STREAK,                       | 3 | 
+11   HOME_HOME_LAST10_W,                     | 1 | 
+12   HOME_HOME_LAST10_L,                     | 1 | 
+13   HOME_WIN_POINTS_FOR_PER_GAME,           | X | ?
+14   HOME_WIN_POINTS_AGAINST_PER_GAME,       | X | ?
+15   HOME_LOSS_POINTS_FOR_PER_GAME,          | X | ?
+16   HOME_LOSS_POINTS_AGAINST_PER_GAME,      | X | ?
+17   HOME_HOMEWIN_POINTS_FOR_PER_GAME,       | X | ?
+18   HOME_HOMEWIN_POINTS_AGAINST_PER_GAME,   | X | ?
+19   HOME_HOMELOSS_POINTS_FOR_PER_GAME,      | X | ?
+20   HOME_HOMELOSS_POINTS_AGAINST_PER_GAME,  | X | ?
 
-AWAY_WIN_PERCENTAGE,                       | 1 |
-AWAY_POINTS_FOR_PER_GAME,                  | 3 |
-AWAY_POINTS_AGAINST_PER_GAME,              | 1 |
-AWAY_STREAK,                               | 3 |
-AWAY_LAST10_W,                             | 1 |
-AWAY_LAST10_L,                             | 1 |
-AWAY_AWAY_WIN_PERCENTAGE,                  | 1 |
-AWAY_AWAY_POINTS_FOR_PER_GAME,             | 2 |
-AWAY_AWAY_POINTS_AGAINST_PER_GAME,         | 1 |
-AWAY_AWAY_STREAK,                          | 3 |
-AWAY_AWAY_LAST10_W,                        | 1 |
-AWAY_AWAY_LAST10_L,                        | 1 |
-AWAY_WIN_POINTS_FOR_PER_GAME,              | X |
-AWAY_WIN_POINTS_AGAINST_PER_GAME,          | X |
-AWAY_LOSS_POINTS_FOR_PER_GAME,             | X |
-AWAY_LOSS_POINTS_AGAINST_PER_GAME,         | X |
-AWAY_AWAYWIN_POINTS_FOR_PER_GAME,          | X |
-AWAY_AWAYWIN_POINTS_AGAINST_PER_GAME,      | X |
-AWAY_AWAYLOSS_POINTS_FOR_PER_GAME,         | X |
-AWAY_AWAYLOSS_POINTS_AGAINST_PER_GAME,     | X |
+21   AWAY_WIN_PERCENTAGE,                    | 1 | 
+22   AWAY_POINTS_FOR_PER_GAME,               | 3 |
+23   AWAY_POINTS_AGAINST_PER_GAME,           | 3 | 
+24   AWAY_STREAK,                            | 3 | 
+25   AWAY_LAST10_W,                          | 1 | 
+26   AWAY_LAST10_L,                          | 1 | 
+27   AWAY_AWAY_WIN_PERCENTAGE,               | 3 | 
+28   AWAY_AWAY_POINTS_FOR_PER_GAME,          | 3 | 
+29   AWAY_AWAY_POINTS_AGAINST_PER_GAME,      | 3 | 
+30   AWAY_AWAY_STREAK,                       | 3 | 
+31   AWAY_AWAY_LAST10_W,                     | 1 | 
+32   AWAY_AWAY_LAST10_L,                     | 1 | 
+33   AWAY_WIN_POINTS_FOR_PER_GAME,           | X | ?
+34   AWAY_WIN_POINTS_AGAINST_PER_GAME,       | X | ?
+35   AWAY_LOSS_POINTS_FOR_PER_GAME,          | X | ?
+36   AWAY_LOSS_POINTS_AGAINST_PER_GAME,      | X | ?
+37   AWAY_AWAYWIN_POINTS_FOR_PER_GAME,       | X | ?
+38   AWAY_AWAYWIN_POINTS_AGAINST_PER_GAME,   | X | ?
+39   AWAY_AWAYLOSS_POINTS_FOR_PER_GAME,      | X | ?
+40   AWAY_AWAYLOSS_POINTS_AGAINST_PER_GAME,  | X | ?
+
+Quadratic fit doesn't make sense for our purposes. We are either okay with different behavior at the extremes of the data or not.
+There's not really a situation where the probability of winning goes *up* at the extremes, it's always an odd function.
+5th degree doesn't make sense either, since there's usually only 0 or 2 critical points.
+This limits us to linear or cubic fits. We'll keep plotting quadratic to make it clear when linear is the better fit, since all 3 will be extremely close in value.
+
+For the last 8 Xd out terms, it seems like the points for are mostly cubic, the points against are mostly linear.
+Then again, the other scoring terms are all cubed in the current version of the other terms, and that's what all 8 of these are. Doesn't mean we have to do the same though.
+There also still seems to be very little to be gained here as well, most of the lines are pretty darn flat.
 
 
 << Parameters for home win probability to optimize againts >>
 Weight function z
 Weight function b
-Min reference data year
+year is set at 2020 for the 2026-27 season, with 2024 being the initial test year
 
-Optimum confirmed on 09/02/2026 (lock it in for the season, barring a model adjustment)
+Optimum confirmed on 09/02/2026
 ========= 2020 -40.49972745901825 68.89789705377231 =========
 - ECE: 0.022206832871652826
 - Slope: 0.9980376781536522
@@ -62,3 +69,13 @@ Optimum confirmed on 09/02/2026 (lock it in for the season, barring a model adju
 - Brier: 0.21215832424052516
 - Model variance: 0.21354343803950207
 - Model stdev: 0.4621076043948012
+
+TODO NEED A NEW OPTIM ROUTINE RUN AFTER THE MODEL CHANGES ON 09/09
+The current configged point and newest model [before removing X terms] from 09/02/2026 yields the promising results (everything but slope/intercept is better):
+- ECE: 0.019783010156971394
+- Slope: 0.9499243482354223
+- Intercept: 0.025433777024768102
+- AUC:  0.7197505340479763
+- Brier: 0.2120923670712685
+- Model variance: 0.21247508801273643
+- Model stdev: 0.4609502012286538
