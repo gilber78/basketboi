@@ -332,6 +332,7 @@ class BaseOptimizer:
                 pd.read_csv(os.path.join(os.environ["SEASON_PATH"], dir, f"{dir}_full.csv"))
                 for dir in os.listdir(os.environ["SEASON_PATH"])
                 if (int(dir.split("-")[0]) >= config["REFERENCE_DATA_YEAR"])
+                # not excluding the test data makes the specific linear v cubic relationship more clear
             ],
             ignore_index=True,
         )
