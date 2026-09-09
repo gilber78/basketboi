@@ -3,6 +3,8 @@ import matplotlib.pyplot as plt
 
 import statistics as stats
 
+plt.rcParams["figure.max_open_warning"] = 0
+
 
 def plot_2d_histogram(x, y, title, binwidth=1, xlabel="Predicted values", ylabel="True values"):
     plt.figure()
@@ -82,6 +84,3 @@ def plot_pdf_function_DEBUG(x, y, title, binwidth=0.05, bounds=(0, 1), xlabel="P
     plt.plot(xvals, quady)
     plt.plot(xvals, cubey)
     plt.legend([f"line = {np.round(liner2, 5)}", f"quad = {np.round(quadr2, 5)}", f"cube = {np.round(cuber2, 5)}"])
-
-    # plt.plot(xvals, xvals, "k", alpha=0.6)
-    # plt.scatter(xvals, (yvals - b) / m) # use this as a reference mask for putting a model on y=x, if possible
