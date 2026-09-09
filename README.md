@@ -36,9 +36,10 @@ In order to properly calibrate the model before each season start (and possibly 
 - Before pushing to git, make sure all of the following run (this is my really bad version of "regression test", if it were...):
     - `black .`
     - `python app/client/main.py`
-    - `time python app/optim/optimize.py`
+    - `time python3 app/optim/optimize.py --model homeWin -o -dpr -dpl` or equivalent command as desired
     - `python app/server/basketboi_server.py` (both from cli and uvicorn, in concert with `python app/client/basketboi_client.py`)
 
 #### TODO must make minor tweaks and tag release before 10/20/2026, and get an MVP before the start of this season. This could be
 - (high) finalize, for once and for all, with the term by term comparisons (with historical weighting considered...)
 - (med) accept both Kalshi price in CLI, along with American odds (configurable)?
+- (low) clear all *relevant* TODOS

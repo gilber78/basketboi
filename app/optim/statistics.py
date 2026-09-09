@@ -49,7 +49,7 @@ def calc_ECE_score(x, y, binwidth=0.05, bounds=(0, 1)):
         y_mask = y[(bins[i - 1] < x) & (x <= bins[i])]
         n_k = len(y_mask)
         if len(y_mask) == 0:
-            p_k = (bins[i] + bins[i - 1]) / 2
+            p_k = (bins[i] + bins[i - 1]) / 2  # don't penalize the statistic due to a lack of data
         else:
             p_k = sum(y_mask) / len(y_mask)
         c_k = np.mean([bins[i - 1], bins[i]])
@@ -63,7 +63,7 @@ def calc_ECE_score_unweighted(x, y, binwidth=0.05, bounds=(0, 1)):
     for i in range(1, len(bins)):
         y_mask = y[(bins[i - 1] < x) & (x <= bins[i])]
         if len(y_mask) == 0:
-            p_k = (bins[i] + bins[i - 1]) / 2
+            p_k = (bins[i] + bins[i - 1]) / 2  # don't penalize the statistic due to a lack of data
         else:
             p_k = sum(y_mask) / len(y_mask)
         c_k = np.mean([bins[i - 1], bins[i]])
@@ -80,7 +80,7 @@ def calc_calibrated_slope_intercept(x, y, binwidth=0.05, bounds=(0, 1), print_ma
         if print_mask:
             print(np.round(bins[i - 1], 2), "-", np.round(bins[i], 2), "|", len(y_mask))
         if len(y_mask) == 0:
-            yvals.append((bins[i] + bins[i - 1]) / 2)
+            yvals.append((bins[i] + bins[i - 1]) / 2)  # don't penalize the statistic due to a lack of data
         else:
             yvals.append(sum(y_mask) / len(y_mask))
     xvals = np.array(xvals)

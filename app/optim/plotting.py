@@ -3,12 +3,10 @@ import matplotlib.pyplot as plt
 
 import statistics as stats
 
-plt.rcParams["figure.max_open_warning"] = 0
-
 
 def plot_2d_histogram(x, y, title, binwidth=1, xlabel="Predicted values", ylabel="True values"):
     plt.figure()
-    plt.title(title)
+    plt.title(title, wrap=True)
     plt.xlabel(xlabel)
     plt.ylabel(ylabel)
     plt.plot(y, y, "w", alpha=0.6)
@@ -19,7 +17,7 @@ def plot_pdf_function(x, y, title, binwidth=0.05, bounds=(0, 1), xlabel="Predict
     xvals, yvals, m, b = stats.calc_calibrated_slope_intercept(x, y, binwidth, bounds, True)
     liney = m * xvals + b
     plt.figure()
-    plt.title(title)
+    plt.title(title, wrap=True)
     plt.xlabel(xlabel)
     plt.ylabel(ylabel)
     plt.xlim(bounds)
@@ -39,7 +37,7 @@ def plot_pdf_function(x, y, title, binwidth=0.05, bounds=(0, 1), xlabel="Predict
 def plot_ROC_curve(x, y, title, binwidth=0.01, bounds=(0, 1), xlabel="FPR", ylabel="TPR"):
     TPR, FPR, _ = stats.calc_ROC_curve(x, y, binwidth, bounds)
     plt.figure()
-    plt.title(title)
+    plt.title(title, wrap=True)
     plt.xlabel(xlabel)
     plt.ylabel(ylabel)
     plt.xlim(bounds)
@@ -48,20 +46,25 @@ def plot_ROC_curve(x, y, title, binwidth=0.01, bounds=(0, 1), xlabel="FPR", ylab
     plt.plot(FPR, FPR, "k", alpha=0.6)
 
 
-def plot_pdf_function_DEBUG(x, y, title, binwidth=0.05, bounds=(0, 1), xlabel="Predicted Probability", ylabel="True Probability"):
+def plot_pdf_function_DEBUG(x, y, title, binwidth, bounds, xlabel="Input Term", ylabel="Output Model Value"):
     bins = np.linspace(bounds[0], bounds[1], int((bounds[1] - bounds[0]) / binwidth) + 1)
     xvals = [(bins[i] + bins[i - 1]) / 2 for i in range(1, len(bins))]
     yvals = []
     for i in range(1, len(bins)):
         y_mask = y[(bins[i - 1] <= x) & (x <= bins[i])]
         if len(y_mask) == 0:
-            yvals.append((bins[i] + bins[i - 1]) / 2)
+            yvals.append(0)  # this is 0 so that we don't plot data we don't use
         else:
             yvals.append(sum(y_mask) / len(y_mask))
     xvals = np.array(xvals)
     yvals = np.array(yvals)
 
-    # TODO add conditioning to the polyfit so it graphs better here... it prefers smaller number ranges
+    # SPECIFIC TO DEBUG ONLY!! ::: drop entries below <0.05 and >0.95 PoD mask
+    inds_to_drop = np.where((yvals < 0.05) | (yvals > 0.95))[0]
+    xvals = np.delete(xvals, inds_to_drop)
+    yvals = np.delete(yvals, inds_to_drop)
+
+    # regressions up to degree 3
     m, b = np.polyfit(xvals, yvals, 1)
     a2, a1, a0 = np.polyfit(xvals, yvals, 2)
     k3, k2, k1, k0 = np.polyfit(xvals, yvals, 3)
@@ -72,14 +75,13 @@ def plot_pdf_function_DEBUG(x, y, title, binwidth=0.05, bounds=(0, 1), xlabel="P
     quadr2 = 1 - np.sum((yvals - quady) ** 2) / np.sum((yvals - np.mean(yvals)) ** 2)
     cuber2 = 1 - np.sum((yvals - cubey) ** 2) / np.sum((yvals - np.mean(yvals)) ** 2)
 
+    # plotting functionality
     plt.figure()
-    plt.title(title)
+    plt.title(title, wrap=True)
     plt.xlabel(xlabel)
     plt.ylabel(ylabel)
-    plt.xlim(bounds)
     plt.ylim((0, 1))
     plt.scatter(xvals, yvals, alpha=1)
-
     plt.plot(xvals, liney)
     plt.plot(xvals, quady)
     plt.plot(xvals, cubey)

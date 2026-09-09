@@ -24,6 +24,96 @@ from server.Models import *
 from server.functions import print_current_season
 from server.download_and_sort_data import download_and_sort_data  # this import has to come last
 
+TEST_TERMS = [
+    # home team params
+    HOME_WIN_PERCENTAGE,
+    HOME_POINTS_FOR_PER_GAME,
+    HOME_POINTS_AGAINST_PER_GAME,
+    HOME_STREAK,
+    HOME_LAST10_W,
+    HOME_LAST10_L,
+    HOME_HOME_WIN_PERCENTAGE,
+    HOME_HOME_POINTS_FOR_PER_GAME,
+    HOME_HOME_POINTS_AGAINST_PER_GAME,
+    HOME_HOME_STREAK,
+    HOME_HOME_LAST10_W,
+    HOME_HOME_LAST10_L,
+    HOME_WIN_POINTS_FOR_PER_GAME,
+    HOME_WIN_POINTS_AGAINST_PER_GAME,
+    HOME_LOSS_POINTS_FOR_PER_GAME,
+    HOME_LOSS_POINTS_AGAINST_PER_GAME,
+    HOME_HOMEWIN_POINTS_FOR_PER_GAME,
+    HOME_HOMEWIN_POINTS_AGAINST_PER_GAME,
+    HOME_HOMELOSS_POINTS_FOR_PER_GAME,
+    HOME_HOMELOSS_POINTS_AGAINST_PER_GAME,
+    # away team params
+    AWAY_WIN_PERCENTAGE,
+    AWAY_POINTS_FOR_PER_GAME,
+    AWAY_POINTS_AGAINST_PER_GAME,
+    AWAY_STREAK,
+    AWAY_LAST10_W,
+    AWAY_LAST10_L,
+    AWAY_AWAY_WIN_PERCENTAGE,
+    AWAY_AWAY_POINTS_FOR_PER_GAME,
+    AWAY_AWAY_POINTS_AGAINST_PER_GAME,
+    AWAY_AWAY_STREAK,
+    AWAY_AWAY_LAST10_W,
+    AWAY_AWAY_LAST10_L,
+    AWAY_WIN_POINTS_FOR_PER_GAME,
+    AWAY_WIN_POINTS_AGAINST_PER_GAME,
+    AWAY_LOSS_POINTS_FOR_PER_GAME,
+    AWAY_LOSS_POINTS_AGAINST_PER_GAME,
+    AWAY_AWAYWIN_POINTS_FOR_PER_GAME,
+    AWAY_AWAYWIN_POINTS_AGAINST_PER_GAME,
+    AWAY_AWAYLOSS_POINTS_FOR_PER_GAME,
+    AWAY_AWAYLOSS_POINTS_AGAINST_PER_GAME,
+]
+
+TITLES_LAMBDA = lambda title_string: [
+    # home team params
+    f"DEBUG {title_string} v HOME_WIN_PERCENTAGE",
+    f"DEBUG {title_string} v HOME_POINTS_FOR_PER_GAME",
+    f"DEBUG {title_string} v HOME_POINTS_AGAINST_PER_GAME",
+    f"DEBUG {title_string} v HOME_STREAK",
+    f"DEBUG {title_string} v HOME_LAST10_W",
+    f"DEBUG {title_string} v HOME_LAST10_L",
+    f"DEBUG {title_string} v HOME_HOME_WIN_PERCENTAGE",
+    f"DEBUG {title_string} v HOME_HOME_POINTS_FOR_PER_GAME",
+    f"DEBUG {title_string} v HOME_HOME_POINTS_AGAINST_PER_GAME",
+    f"DEBUG {title_string} v HOME_HOME_STREAK",
+    f"DEBUG {title_string} v HOME_HOME_LAST10_W",
+    f"DEBUG {title_string} v HOME_HOME_LAST10_L",
+    f"DEBUG {title_string} v HOME_WIN_POINTS_FOR_PER_GAME",
+    f"DEBUG {title_string} v HOME_WIN_POINTS_AGAINST_PER_GAME",
+    f"DEBUG {title_string} v HOME_LOSS_POINTS_FOR_PER_GAME",
+    f"DEBUG {title_string} v HOME_LOSS_POINTS_AGAINST_PER_GAME",
+    f"DEBUG {title_string} v HOME_HOMEWIN_POINTS_FOR_PER_GAME",
+    f"DEBUG {title_string} v HOME_HOMEWIN_POINTS_AGAINST_PER_GAME",
+    f"DEBUG {title_string} v HOME_HOMELOSS_POINTS_FOR_PER_GAME",
+    f"DEBUG {title_string} v HOME_HOMELOSS_POINTS_AGAINST_PER_GAME",
+    # away team params
+    f"DEBUG {title_string} v AWAY_WIN_PERCENTAGE",
+    f"DEBUG {title_string} v AWAY_POINTS_FOR_PER_GAME",
+    f"DEBUG {title_string} v AWAY_POINTS_AGAINST_PER_GAME",
+    f"DEBUG {title_string} v AWAY_STREAK",
+    f"DEBUG {title_string} v AWAY_LAST10_W",
+    f"DEBUG {title_string} v AWAY_LAST10_L",
+    f"DEBUG {title_string} v AWAY_AWAY_WIN_PERCENTAGE",
+    f"DEBUG {title_string} v AWAY_AWAY_POINTS_FOR_PER_GAME",
+    f"DEBUG {title_string} v AWAY_AWAY_POINTS_AGAINST_PER_GAME",
+    f"DEBUG {title_string} v AWAY_AWAY_STREAK",
+    f"DEBUG {title_string} v AWAY_AWAY_LAST10_W",
+    f"DEBUG {title_string} v AWAY_AWAY_LAST10_L",
+    f"DEBUG {title_string} v AWAY_WIN_POINTS_FOR_PER_GAME",
+    f"DEBUG {title_string} v AWAY_WIN_POINTS_AGAINST_PER_GAME",
+    f"DEBUG {title_string} v AWAY_LOSS_POINTS_FOR_PER_GAME",
+    f"DEBUG {title_string} v AWAY_LOSS_POINTS_AGAINST_PER_GAME",
+    f"DEBUG {title_string} v AWAY_AWAYWIN_POINTS_FOR_PER_GAME",
+    f"DEBUG {title_string} v AWAY_AWAYWIN_POINTS_AGAINST_PER_GAME",
+    f"DEBUG {title_string} v AWAY_AWAYLOSS_POINTS_FOR_PER_GAME",
+    f"DEBUG {title_string} v AWAY_AWAYLOSS_POINTS_AGAINST_PER_GAME",
+]
+
 
 def get_args():
     parser = argparse.ArgumentParser(
@@ -117,8 +207,10 @@ ARGS = get_args()
 
 
 class BaseOptimizer:
-    def __init__(self, MODEL: Model, debug_debug_fig_path: str):
+    def __init__(self, MODEL: Model, sample_data_column: str, debug_debug_fig_title: str, debug_debug_fig_path: str):
         self.MODEL = MODEL
+        self.sample_data_column = sample_data_column
+        self.titles = TITLES_LAMBDA(debug_debug_fig_title)
         self.debug_debug_fig_path = debug_debug_fig_path
 
     def _get_pred_and_true_array(self, year, z, b, daybyday_prints=False):
@@ -225,14 +317,59 @@ class BaseOptimizer:
             # return the suggested next point(s)
             return optimizer.max, optimizer.suggest()
 
+    def _gen_debug_debug_plots(self):
+        # read sample data
+        sample_data = pd.concat(
+            [
+                pd.read_csv(os.path.join(os.environ["SEASON_PATH"], dir, f"{dir}_full.csv"))
+                for dir in os.listdir(os.environ["SEASON_PATH"])
+                if (int(dir.split("-")[0]) >= config["REFERENCE_DATA_YEAR"])
+            ],
+            ignore_index=True,
+        )
+        sample_data = sample_data[
+            (sample_data["HOME_games_played"] != 0)
+            & (sample_data["AWAY_games_played"] != 0)
+            & (sample_data["HOME_wins"] != 0)
+            & (sample_data["AWAY_wins"] != 0)
+            & (sample_data["HOME_home_wins"] != 0)
+            & (sample_data["AWAY_away_wins"] != 0)
+            & (sample_data["HOME_home_losses"] != 0)
+            & (sample_data["AWAY_away_losses"] != 0)
+        ].reset_index()
+        sample_output = sample_data[self.sample_data_column].to_numpy()
+
+        # loop through the test terms and generate a tuple of plot metadata
+        os.makedirs(self.debug_debug_fig_path, exist_ok=True)
+        for i in range(len(TEST_TERMS)):
+            # generate plot metadata
+            term = TEST_TERMS[i]
+            title = self.titles[i]
+            binwidth = 1 if "PERCENTAGE" not in title else 0.05
+            term_values = term.value(sample_data)
+            bounds = (term_values.min(), term_values.max())
+
+            # create and save plot
+            plotting.plot_pdf_function_DEBUG(term_values, sample_output, title, binwidth, bounds)
+            fig = plt.gcf()
+            fig.savefig(f"{self.debug_debug_fig_path}/Figure{i+1:02d}.png")
+            plt.close(fig)
+
 
 class HomeSpreadOptimizer(BaseOptimizer):
+    # reference the completed optimizer(s) to implement this class
     pass
 
 
 class HomeWinOptimizer(BaseOptimizer):
-    def __init__(self, MODEL=MODEL_HOME_WIN_PR, debug_debug_fig_path=os.path.join(config["OPTIM_SAVE_PATH"], "home_win_pr_figs")):
-        super().__init__(MODEL, debug_debug_fig_path)
+    def __init__(
+        self,
+        MODEL=MODEL_HOME_WIN_PR,
+        sample_data_column="GAME_homeWin",
+        debug_debug_fig_title="Home Win %",
+        debug_debug_fig_path=os.path.join(config["OPTIM_SAVE_PATH"], "home_win_pr_figs"),
+    ):
+        super().__init__(MODEL, sample_data_column, debug_debug_fig_title, debug_debug_fig_path)
 
     def objective_function_tuple(self, year, z, b, daybyday_prints=False, debug_prints=False, debug_plots=False, debug_debug_plots=False):
         pred_win, true_win = self._get_pred_and_true_array(year, z, b, daybyday_prints)
@@ -253,375 +390,7 @@ class HomeWinOptimizer(BaseOptimizer):
             print("Model stdev:", self.MODEL.std)
 
         if debug_debug_plots:
-            # get debug data needed for these below plots
-            sample_data = pd.concat(
-                [
-                    pd.read_csv(os.path.join(os.environ["SEASON_PATH"], dir, f"{dir}_full.csv"))
-                    for dir in os.listdir(os.environ["SEASON_PATH"])
-                    if (int(dir.split("-")[0]) >= config["REFERENCE_DATA_YEAR"])
-                ],
-                ignore_index=True,
-            )
-            sample_data = sample_data[
-                (sample_data["HOME_games_played"] != 0)
-                & (sample_data["AWAY_games_played"] != 0)
-                & (sample_data["HOME_wins"] != 0)
-                & (sample_data["AWAY_wins"] != 0)
-                & (sample_data["HOME_home_wins"] != 0)
-                & (sample_data["AWAY_away_wins"] != 0)
-                & (sample_data["HOME_home_losses"] != 0)
-                & (sample_data["AWAY_away_losses"] != 0)
-            ].reset_index()
-
-            test_terms = [
-                # home team params
-                HOME_WIN_PERCENTAGE,
-                HOME_POINTS_FOR_PER_GAME,
-                HOME_POINTS_AGAINST_PER_GAME,
-                HOME_STREAK,
-                HOME_LAST10_W,
-                HOME_LAST10_L,
-                HOME_HOME_WIN_PERCENTAGE,
-                HOME_HOME_POINTS_FOR_PER_GAME,
-                HOME_HOME_POINTS_AGAINST_PER_GAME,
-                HOME_HOME_STREAK,
-                HOME_HOME_LAST10_W,
-                HOME_HOME_LAST10_L,
-                HOME_WIN_POINTS_FOR_PER_GAME,
-                HOME_WIN_POINTS_AGAINST_PER_GAME,
-                HOME_LOSS_POINTS_FOR_PER_GAME,
-                HOME_LOSS_POINTS_AGAINST_PER_GAME,
-                HOME_HOMEWIN_POINTS_FOR_PER_GAME,
-                HOME_HOMEWIN_POINTS_AGAINST_PER_GAME,
-                HOME_HOMELOSS_POINTS_FOR_PER_GAME,
-                HOME_HOMELOSS_POINTS_AGAINST_PER_GAME,
-                # away team params
-                AWAY_WIN_PERCENTAGE,
-                AWAY_POINTS_FOR_PER_GAME,
-                AWAY_POINTS_AGAINST_PER_GAME,
-                AWAY_STREAK,
-                AWAY_LAST10_W,
-                AWAY_LAST10_L,
-                AWAY_AWAY_WIN_PERCENTAGE,
-                AWAY_AWAY_POINTS_FOR_PER_GAME,
-                AWAY_AWAY_POINTS_AGAINST_PER_GAME,
-                AWAY_AWAY_STREAK,
-                AWAY_AWAY_LAST10_W,
-                AWAY_AWAY_LAST10_L,
-                AWAY_WIN_POINTS_FOR_PER_GAME,
-                AWAY_WIN_POINTS_AGAINST_PER_GAME,
-                AWAY_LOSS_POINTS_FOR_PER_GAME,
-                AWAY_LOSS_POINTS_AGAINST_PER_GAME,
-                AWAY_AWAYWIN_POINTS_FOR_PER_GAME,
-                AWAY_AWAYWIN_POINTS_AGAINST_PER_GAME,
-                AWAY_AWAYLOSS_POINTS_FOR_PER_GAME,
-                AWAY_AWAYLOSS_POINTS_AGAINST_PER_GAME,
-            ]
-
-            def find_bounds(terms: list, data: pd.DataFrame):
-                num_bins = 301
-                bins = np.linspace(-100, 200, num_bins)
-                for term in terms:
-                    value = term.value(data)
-                    sizes = [len(value[(bins[i - 1] <= value) & (value <= bins[i])]) for i in range(1, num_bins)]
-                    best = 0
-                    current = 0
-                    best_i = None
-                    best_j = None
-                    i = 0
-                    j = 1
-                    while True:
-                        j += 1
-                        if j >= len(sizes):
-                            break
-                        if sizes[j] == 0:
-                            current = j - i
-                            if current > best:
-                                best = current
-                                best_i = i
-                                best_j = j
-                            i = j
-                    if np.sign(bins[best_i]) == -1 and np.sign(bins[best_j]) == -1:
-                        print(0, 1)
-                    else:
-                        print(bins[best_i] + 1, bins[best_j])
-
-            # find_bounds(test_terms, sample_data)
-
-            # HOME
-            plotting.plot_pdf_function_DEBUG(
-                HOME_WIN_PERCENTAGE.value(sample_data), sample_data["GAME_homeWin"].to_numpy(), "DEBUG % v HOME_WIN_PERCENTAGE"
-            )
-            plotting.plot_pdf_function_DEBUG(
-                HOME_POINTS_FOR_PER_GAME.value(sample_data),
-                sample_data["GAME_homeWin"].to_numpy(),
-                "DEBUG % v HOME_POINTS_FOR_PER_GAME",
-                binwidth=1,
-                bounds=(76, 130),
-            )
-            plotting.plot_pdf_function_DEBUG(
-                HOME_POINTS_AGAINST_PER_GAME.value(sample_data),
-                sample_data["GAME_homeWin"].to_numpy(),
-                "DEBUG % v HOME_POINTS_AGAINST_PER_GAME",
-                binwidth=1,
-                bounds=(78, 139),
-            )
-            plotting.plot_pdf_function_DEBUG(
-                HOME_STREAK.value(sample_data),
-                sample_data["GAME_homeWin"].to_numpy(),
-                "DEBUG % v HOME_STREAK",
-                binwidth=1,
-                bounds=(-27, 31),
-            )
-            plotting.plot_pdf_function_DEBUG(
-                HOME_LAST10_W.value(sample_data),
-                sample_data["GAME_homeWin"].to_numpy(),
-                "DEBUG % v HOME_LAST10_W",
-                binwidth=1,
-                bounds=(-1, 11),
-            )
-            plotting.plot_pdf_function_DEBUG(
-                HOME_LAST10_L.value(sample_data),
-                sample_data["GAME_homeWin"].to_numpy(),
-                "DEBUG % v HOME_LAST10_L",
-                binwidth=1,
-                bounds=(-1, 11),
-            )
-            plotting.plot_pdf_function_DEBUG(
-                HOME_HOME_WIN_PERCENTAGE.value(sample_data), sample_data["GAME_homeWin"].to_numpy(), "DEBUG % v HOME_HOME_WIN_PERCENTAGE"
-            )
-            plotting.plot_pdf_function_DEBUG(
-                HOME_HOME_POINTS_FOR_PER_GAME.value(sample_data),
-                sample_data["GAME_homeWin"].to_numpy(),
-                "DEBUG % v HOME_HOME_POINTS_FOR_PER_GAME",
-                binwidth=1,
-                bounds=(72, 133),
-            )
-            plotting.plot_pdf_function_DEBUG(
-                HOME_HOME_POINTS_AGAINST_PER_GAME.value(sample_data),
-                sample_data["GAME_homeWin"].to_numpy(),
-                "DEBUG % v HOME_HOME_POINTS_AGAINST_PER_GAME",
-                binwidth=1,
-                bounds=(74, 135),
-            )
-            plotting.plot_pdf_function_DEBUG(
-                HOME_HOME_STREAK.value(sample_data),
-                sample_data["GAME_homeWin"].to_numpy(),
-                "DEBUG % v HOME_HOME_STREAK",
-                binwidth=1,
-                bounds=(-19, 33),
-            )
-            plotting.plot_pdf_function_DEBUG(
-                HOME_HOME_LAST10_W.value(sample_data),
-                sample_data["GAME_homeWin"].to_numpy(),
-                "DEBUG % v HOME_HOME_LAST10_W",
-                binwidth=1,
-                bounds=(-1, 11),
-            )
-            plotting.plot_pdf_function_DEBUG(
-                HOME_HOME_LAST10_L.value(sample_data),
-                sample_data["GAME_homeWin"].to_numpy(),
-                "DEBUG % v HOME_HOME_LAST10_L",
-                binwidth=1,
-                bounds=(-1, 11),
-            )
-            plotting.plot_pdf_function_DEBUG(
-                HOME_WIN_POINTS_FOR_PER_GAME.value(sample_data),
-                sample_data["GAME_homeWin"].to_numpy(),
-                "DEBUG % v HOME_WIN_POINTS_FOR_PER_GAME",
-                binwidth=1,
-                bounds=(77, 138),
-            )
-            plotting.plot_pdf_function_DEBUG(
-                HOME_WIN_POINTS_AGAINST_PER_GAME.value(sample_data),
-                sample_data["GAME_homeWin"].to_numpy(),
-                "DEBUG % v HOME_WIN_POINTS_AGAINST_PER_GAME",
-                binwidth=1,
-                bounds=(73, 126),
-            )
-            plotting.plot_pdf_function_DEBUG(
-                HOME_LOSS_POINTS_FOR_PER_GAME.value(sample_data),
-                sample_data["GAME_homeWin"].to_numpy(),
-                "DEBUG % v HOME_LOSS_POINTS_FOR_PER_GAME",
-                binwidth=1,
-                bounds=(72, 131),
-            )
-            plotting.plot_pdf_function_DEBUG(
-                HOME_LOSS_POINTS_AGAINST_PER_GAME.value(sample_data),
-                sample_data["GAME_homeWin"].to_numpy(),
-                "DEBUG % v HOME_LOSS_POINTS_AGAINST_PER_GAME",
-                binwidth=1,
-                bounds=(80, 143),
-            )
-            plotting.plot_pdf_function_DEBUG(
-                HOME_HOMEWIN_POINTS_FOR_PER_GAME.value(sample_data),
-                sample_data["GAME_homeWin"].to_numpy(),
-                "DEBUG % v HOME_HOMEWIN_POINTS_FOR_PER_GAME",
-                binwidth=1,
-                bounds=(76, 146),
-            )
-            plotting.plot_pdf_function_DEBUG(
-                HOME_HOMEWIN_POINTS_AGAINST_PER_GAME.value(sample_data),
-                sample_data["GAME_homeWin"].to_numpy(),
-                "DEBUG % v HOME_HOMEWIN_POINTS_AGAINST_PER_GAME",
-                binwidth=1,
-                bounds=(66, 134),
-            )
-            plotting.plot_pdf_function_DEBUG(
-                HOME_HOMELOSS_POINTS_FOR_PER_GAME.value(sample_data),
-                sample_data["GAME_homeWin"].to_numpy(),
-                "DEBUG % v HOME_HOMELOSS_POINTS_FOR_PER_GAME",
-                binwidth=1,
-                bounds=(64, 136),
-            )
-            plotting.plot_pdf_function_DEBUG(
-                HOME_HOMELOSS_POINTS_AGAINST_PER_GAME.value(sample_data),
-                sample_data["GAME_homeWin"].to_numpy(),
-                "DEBUG % v HOME_HOMELOSS_POINTS_AGAINST_PER_GAME",
-                binwidth=1,
-                bounds=(78, 149),
-            )
-            # AWAY
-            plotting.plot_pdf_function_DEBUG(
-                AWAY_WIN_PERCENTAGE.value(sample_data), sample_data["GAME_homeWin"].to_numpy(), "DEBUG % v AWAY_WIN_PERCENTAGE"
-            )
-            plotting.plot_pdf_function_DEBUG(
-                AWAY_POINTS_FOR_PER_GAME.value(sample_data),
-                sample_data["GAME_homeWin"].to_numpy(),
-                "DEBUG % v AWAY_POINTS_FOR_PER_GAME",
-                binwidth=1,
-                bounds=(76, 131),
-            )
-            plotting.plot_pdf_function_DEBUG(
-                AWAY_POINTS_AGAINST_PER_GAME.value(sample_data),
-                sample_data["GAME_homeWin"].to_numpy(),
-                "DEBUG % v AWAY_POINTS_AGAINST_PER_GAME",
-                binwidth=1,
-                bounds=(78, 135),
-            )
-            plotting.plot_pdf_function_DEBUG(
-                AWAY_STREAK.value(sample_data),
-                sample_data["GAME_homeWin"].to_numpy(),
-                "DEBUG % v AWAY_STREAK",
-                binwidth=1,
-                bounds=(-26, 34),
-            )
-            plotting.plot_pdf_function_DEBUG(
-                AWAY_LAST10_W.value(sample_data),
-                sample_data["GAME_homeWin"].to_numpy(),
-                "DEBUG % v AWAY_LAST10_W",
-                binwidth=1,
-                bounds=(-1, 11),
-            )
-            plotting.plot_pdf_function_DEBUG(
-                AWAY_LAST10_L.value(sample_data),
-                sample_data["GAME_homeWin"].to_numpy(),
-                "DEBUG % v AWAY_LAST10_L",
-                binwidth=1,
-                bounds=(-1, 11),
-            )
-            plotting.plot_pdf_function_DEBUG(
-                AWAY_AWAY_WIN_PERCENTAGE.value(sample_data), sample_data["GAME_homeWin"].to_numpy(), "DEBUG % v AWAY_AWAY_WIN_PERCENTAGE"
-            )
-            plotting.plot_pdf_function_DEBUG(
-                AWAY_AWAY_POINTS_FOR_PER_GAME.value(sample_data),
-                sample_data["GAME_homeWin"].to_numpy(),
-                "DEBUG % v AWAY_AWAY_POINTS_FOR_PER_GAME",
-                binwidth=1,
-                bounds=(74, 132),
-            )
-            plotting.plot_pdf_function_DEBUG(
-                AWAY_AWAY_POINTS_AGAINST_PER_GAME.value(sample_data),
-                sample_data["GAME_homeWin"].to_numpy(),
-                "DEBUG % v AWAY_AWAY_POINTS_AGAINST_PER_GAME",
-                binwidth=1,
-                bounds=(73, 135),
-            )
-            plotting.plot_pdf_function_DEBUG(
-                AWAY_AWAY_STREAK.value(sample_data),
-                sample_data["GAME_homeWin"].to_numpy(),
-                "DEBUG % v AWAY_AWAY_STREAK",
-                binwidth=1,
-                bounds=(-37, 16),
-            )
-            plotting.plot_pdf_function_DEBUG(
-                AWAY_AWAY_LAST10_W.value(sample_data),
-                sample_data["GAME_homeWin"].to_numpy(),
-                "DEBUG % v AWAY_AWAY_LAST10_W",
-                binwidth=1,
-                bounds=(-1, 11),
-            )
-            plotting.plot_pdf_function_DEBUG(
-                AWAY_AWAY_LAST10_L.value(sample_data),
-                sample_data["GAME_homeWin"].to_numpy(),
-                "DEBUG % v AWAY_AWAY_LAST10_L",
-                binwidth=1,
-                bounds=(-1, 11),
-            )
-            plotting.plot_pdf_function_DEBUG(
-                AWAY_WIN_POINTS_FOR_PER_GAME.value(sample_data),
-                sample_data["GAME_homeWin"].to_numpy(),
-                "DEBUG % v AWAY_WIN_POINTS_FOR_PER_GAME",
-                binwidth=1,
-                bounds=(83, 137),
-            )
-            plotting.plot_pdf_function_DEBUG(
-                AWAY_WIN_POINTS_AGAINST_PER_GAME.value(sample_data),
-                sample_data["GAME_homeWin"].to_numpy(),
-                "DEBUG % v AWAY_WIN_POINTS_AGAINST_PER_GAME",
-                binwidth=1,
-                bounds=(71, 125),
-            )
-            plotting.plot_pdf_function_DEBUG(
-                AWAY_LOSS_POINTS_FOR_PER_GAME.value(sample_data),
-                sample_data["GAME_homeWin"].to_numpy(),
-                "DEBUG % v AWAY_LOSS_POINTS_FOR_PER_GAME",
-                binwidth=1,
-                bounds=(67, 130),
-            )
-            plotting.plot_pdf_function_DEBUG(
-                AWAY_LOSS_POINTS_AGAINST_PER_GAME.value(sample_data),
-                sample_data["GAME_homeWin"].to_numpy(),
-                "DEBUG % v AWAY_LOSS_POINTS_AGAINST_PER_GAME",
-                binwidth=1,
-                bounds=(82, 146),
-            )
-            plotting.plot_pdf_function_DEBUG(
-                AWAY_AWAYWIN_POINTS_FOR_PER_GAME.value(sample_data),
-                sample_data["GAME_homeWin"].to_numpy(),
-                "DEBUG % v AWAY_AWAYWIN_POINTS_FOR_PER_GAME",
-                binwidth=1,
-                bounds=(72, 144),
-            )
-            plotting.plot_pdf_function_DEBUG(
-                AWAY_AWAYWIN_POINTS_AGAINST_PER_GAME.value(sample_data),
-                sample_data["GAME_homeWin"].to_numpy(),
-                "DEBUG % v AWAY_AWAYWIN_POINTS_AGAINST_PER_GAME",
-                binwidth=1,
-                bounds=(64, 137),
-            )
-            plotting.plot_pdf_function_DEBUG(
-                AWAY_AWAYLOSS_POINTS_FOR_PER_GAME.value(sample_data),
-                sample_data["GAME_homeWin"].to_numpy(),
-                "DEBUG % v AWAY_AWAYLOSS_POINTS_FOR_PER_GAME",
-                binwidth=1,
-                bounds=(62, 131),
-            )
-            plotting.plot_pdf_function_DEBUG(
-                AWAY_AWAYLOSS_POINTS_AGAINST_PER_GAME.value(sample_data),
-                sample_data["GAME_homeWin"].to_numpy(),
-                "DEBUG % v AWAY_AWAYLOSS_POINTS_AGAINST_PER_GAME",
-                binwidth=1,
-                bounds=(76, 147),
-            )
-
-            # save and clear the debug_debug plots to a folder inside optim rather than loading and displaying all 40
-            # doing in a couple jobs to avoid the warning(s)
-            os.makedirs(self.debug_debug_fig_path, exist_ok=True)
-            for i, fignum in enumerate(plt.get_fignums()):
-                fig = plt.figure(fignum)
-                fig.savefig(f"{self.debug_debug_fig_path}/Figure{i+1:02d}.png")
-                plt.close(fig)
+            self._gen_debug_debug_plots()
 
         if debug_plots:
             plotting.plot_pdf_function(pred_win, true_win, "Predicted vs Actual Home Team Win % of NBA games", std=self.MODEL.std)
@@ -635,6 +404,7 @@ class HomeWinOptimizer(BaseOptimizer):
 
 
 class TotalScoreOptimizer(BaseOptimizer):
+    # reference the completed optimizer(s) to implement this class
     pass
 
 
@@ -643,15 +413,9 @@ def optimize(optimizer):
 
     if ARGS.optimize:
         # calls of optim_models_daybyday
-        """
-        [
-            (2020, -42, 51),
-            (2020, -40.49972745901825, 68.89789705377231), *and so on
-        ],
-        """  # reference x0 list, just in case
         best_value, next_point = optimizer.optim_models_daybyday(
-            # x0=[(2020, -40.49972745901825, 68.89789705377231)],
-            year_bounds=(2020, 2020),
+            # x0=[(2020, -40.49972745901825, 68.89789705377231)], # TODO toggle x0 to use the current configged point based on an arg, else None
+            year_bounds=(config["REFERENCE_DATA_YEAR"], config["REFERENCE_DATA_YEAR"]),
             from_file=ARGS.file_name if ARGS.from_file else None,
             to_file=ARGS.file_name,
             init_points=ARGS.init_points,
@@ -675,7 +439,8 @@ def optimize(optimizer):
 
     # this function *AS IT STANDS* should be the default when no args are passed to argparse (except for which model to call, obviously)
     optimizer.objective_function_tuple(
-        config["HOME_WIN_PR_PARAMETERS"]["year"],
+        # TODO fix the configged point to be based on the optimizer column supplied
+        config["REFERENCE_DATA_YEAR"],
         config["HOME_WIN_PR_PARAMETERS"]["z"],
         config["HOME_WIN_PR_PARAMETERS"]["b"],
         daybyday_prints=ARGS.daybyday_prints,
