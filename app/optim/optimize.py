@@ -350,6 +350,7 @@ class BaseOptimizer:
 
         # loop through the test terms and generate a tuple of plot metadata
         os.makedirs(self.debug_debug_fig_path, exist_ok=True)
+        print(":::: signal strengths")
         for i in range(len(TEST_TERMS)):
             # generate plot metadata
             term = TEST_TERMS[i]
@@ -359,6 +360,7 @@ class BaseOptimizer:
             bounds = (term_values.min(), term_values.max())
 
             # create and save plot
+            print(f"FIGURE {i+1}: ", end="")
             plotting.plot_pdf_function_DEBUG(term_values, sample_output, title, binwidth, bounds)
             fig = plt.gcf()
             fig.savefig(f"{self.debug_debug_fig_path}/Figure{i+1:02d}.png")
@@ -469,6 +471,10 @@ if __name__ == "__main__":
         download_and_sort_data(config)
     else:
         print("!! Downloads halted by supplied config !!")
+
+    # if uncommented, only calls the debug debug plots then exits
+    # HomeWinOptimizer()._gen_debug_debug_plots()
+    # exit()
 
     # call optimize with the correct object based on specified args
     if ARGS.model == "homeWin":

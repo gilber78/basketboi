@@ -64,16 +64,21 @@ def plot_pdf_function_DEBUG(x, y, title, binwidth, bounds, xlabel="Input Term", 
     xvals = np.delete(xvals, inds_to_drop)
     yvals = np.delete(yvals, inds_to_drop)
 
-    # regressions up to degree 3
+    # regressions for degree 1 and 3 and respective curves
     m, b = np.polyfit(xvals, yvals, 1)
-    a2, a1, a0 = np.polyfit(xvals, yvals, 2)
     k3, k2, k1, k0 = np.polyfit(xvals, yvals, 3)
     liney = m * xvals + b
-    quady = a2 * xvals**2 + a1 * xvals + a0
     cubey = k3 * xvals**3 + k2 * xvals**2 + k1 * xvals + k0
+
+    # calculate and return debug-debug fitness score(s) r2 * sin^2(2 * arctan(m))
+    xscaled = (xvals - np.min(x)) / (np.max(x) - np.min(x))
+    line_slope = (np.max(liney) - np.min(liney)) / (xscaled[np.argmax(liney)] - xscaled[np.argmin(liney)])
+    cube_slope = (np.max(cubey) - np.min(cubey)) / (xscaled[np.argmax(cubey)] - xscaled[np.argmin(cubey)])
     liner2 = 1 - np.sum((yvals - liney) ** 2) / np.sum((yvals - np.mean(yvals)) ** 2)
-    quadr2 = 1 - np.sum((yvals - quady) ** 2) / np.sum((yvals - np.mean(yvals)) ** 2)
     cuber2 = 1 - np.sum((yvals - cubey) ** 2) / np.sum((yvals - np.mean(yvals)) ** 2)
+    line_strength_of_signal = liner2 * np.sin(2 * np.atan(line_slope)) ** 2
+    cube_strength_of_signal = cuber2 * np.sin(2 * np.atan(cube_slope)) ** 2
+    print(line_strength_of_signal, cube_strength_of_signal)
 
     # plotting functionality
     plt.figure()
@@ -82,7 +87,6 @@ def plot_pdf_function_DEBUG(x, y, title, binwidth, bounds, xlabel="Input Term", 
     plt.ylabel(ylabel)
     plt.ylim((0, 1))
     plt.scatter(xvals, yvals, alpha=1)
-    plt.plot(xvals, liney)
-    plt.plot(xvals, quady)
-    plt.plot(xvals, cubey)
-    plt.legend([f"line = {np.round(liner2, 5)}", f"quad = {np.round(quadr2, 5)}", f"cube = {np.round(cuber2, 5)}"])
+    plt.plot(xvals, liney, "r")
+    plt.plot(xvals, cubey, "g")
+    plt.legend(["data points", f"line = {np.round(liner2, 5)}", f"cube = {np.round(cuber2, 5)}"])

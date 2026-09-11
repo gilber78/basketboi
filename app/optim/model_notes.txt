@@ -1,5 +1,4 @@
 << coefficients for home win probability >>
-# TODO determine the state (if any) of the last 8 variables for homewin
 
 NUM  Variable Name                       current   notes
 ---------------------------------------------------------------------
@@ -50,9 +49,9 @@ There's not really a situation where the probability of winning goes *up* at the
 5th degree doesn't make sense either, since there's usually only 0 or 2 critical points.
 This limits us to linear or cubic fits. We'll keep plotting quadratic to make it clear when linear is the better fit, since all 3 will be extremely close in value.
 
-For the last 8 Xd out terms, it seems like the points for are mostly cubic, the points against are mostly linear.
-Then again, the other scoring terms are all cubed in the current version of the other terms, and that's what all 8 of these are. Doesn't mean we have to do the same though.
-There also still seems to be very little to be gained here as well, most of the lines are pretty darn flat.
+Based on the R^2 sin^2(2 * arctan(m)) fitness scores, 0.17594335277687914 (Fig28) is the smallest fitness currently used.
+Considering the low strength of signal scores for all 16 X? parameters, and the fact that they are dependent on the home team winning, i'ts not a good idea to use them for homewin
+Save this for a split spread/total model that takes the form p * M1 + (1 - p) * M2
 
 
 << Parameters for home win probability to optimize againts >>

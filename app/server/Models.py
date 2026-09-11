@@ -29,6 +29,12 @@ HOME_WIN_WEIGHT_FUNCTION = partial(recency_weight_function, z=config["HOME_WIN_P
 EVEN_WEIGHT_FUNCTION = lambda x: 1
 
 
+# TODO when ready for spread/total, create the ability to have a plit p*M1 + (1-p)*M2 type of structure
+# - need the ability to train model on either all wins, all losses, or *ALL* data (default)
+# - need a container class that can take a p value and do the p/1-p splits for the models as the "final form"
+# Maybe call this DependentModel?
+
+
 class Term:
     def __init__(self, constant_names, num_names, den_names):
         # class that holds how to calculate a model term from either the reference dataframe or a team object
