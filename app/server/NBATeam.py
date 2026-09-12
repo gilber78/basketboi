@@ -1,7 +1,7 @@
 """
 BASKETBOI
 
-Copyright © 2026 Your Name. All rights reserved.
+Copyright © 2026 Eric Gilbertson. All rights reserved.
 See LICENSE.md for permitted use.
 """
 
