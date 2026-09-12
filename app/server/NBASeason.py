@@ -1,3 +1,10 @@
+"""
+BASKETBOI
+
+Copyright © 2026 Your Name. All rights reserved.
+See LICENSE.md for permitted use.
+"""
+
 import pandas as pd
 from server.NBAGame import NBAGame
 from server.NBATeam import NBATeam
@@ -5,6 +12,9 @@ from server.functions import get_day_from_full_time, increment_day, get_list_win
 
 
 def create_game_data_series(awayTeam: NBATeam, homeTeam: NBATeam, game: NBAGame = None, gameTag: str = None):
+    """
+    Takes two team objects and one game object and creates a data series from them that gets stored as a part of "full data" csv
+    """
     HOME_last10 = get_list_wins_and_losses(homeTeam.last10)
     HOME_home_last10 = get_list_wins_and_losses(homeTeam.home_last10)
     # HOME_away_last10 = get_list_wins_and_losses(homeTeam.away_last10)
@@ -109,17 +119,30 @@ def create_game_data_series(awayTeam: NBATeam, homeTeam: NBATeam, game: NBAGame 
 
 
 class NBASeason:
+    """
+    Contains all the values needed to represent a full NBA season
+    """
+
     def __init__(self, data: pd.DataFrame):
+        """
+        Takes a season-wide dataframe and extracts the starting point of data
+        """
         self.startDate = get_day_from_full_time(data["gameDateTimeEst"].min())
         self.endDate = get_day_from_full_time(data["gameDateTimeEst"].max())
         self.gameList = [NBAGame(line) for _, line in data.iterrows()]
         self.teamList = self.generate_list_of_teams()
 
     def reset_statistics(self):
+        """
+        Wipes team data clean for the season
+        """
         for team in self.teamList:
             team.reset_statistics()
 
     def generate_list_of_teams(self):
+        """
+        Get list of all teams that played games this season and creates a team object for each
+        """
         teamList = []
         for game in self.gameList:
             if (game.homeTeam, game.homeTeamId) not in teamList:
@@ -129,6 +152,9 @@ class NBASeason:
         return [NBATeam(args[0]) for args in teamList]
 
     def generate_full_season_df(self):
+        """
+        Walks through every game and updates the game objects/dataseries for the whole season
+        """
         current_day = self.startDate
         df = pd.DataFrame()
         while current_day <= self.endDate:
@@ -145,6 +171,9 @@ class NBASeason:
         return df
 
     def generate_game_slate_df(self, date: str = None, gameTags: list = None):
+        """
+        Generates a full data series for specified game(tags) that reflects team performance up to that date in the season.
+        """
         current_day = self.startDate
         df = pd.DataFrame()
         while current_day <= self.endDate:
@@ -198,6 +227,9 @@ class NBASeason:
             return df
 
     def pretty_print(self):
+        """
+        Pretty prints the season data
+        """
         sorted_standings = sorted(
             self.teamList,
             key=lambda team: (0 if team.games_played == 0 else team.wins / team.games_played, team.points_for - team.points_against),

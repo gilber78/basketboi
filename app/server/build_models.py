@@ -1,3 +1,10 @@
+"""
+BASKETBOI
+
+Copyright © 2026 Your Name. All rights reserved.
+See LICENSE.md for permitted use.
+"""
+
 import os
 import pickle
 import pandas as pd
@@ -5,18 +12,24 @@ from server.Models import Model, MODEL_HOME_WIN_PR  # , MODEL_HOME_SPREAD, MODEL
 
 
 def save_model_to_disk(model: Model, path: str):
+    """
+    Pickle model class and save it to file
+    """
     with open(path, "wb") as file:
         pickle.dump(model, file, pickle.HIGHEST_PROTOCOL)
         print(f"Saved {model} model data to {path}")
 
 
 def build_models(config):
+    """
+    Train model class and send it to be saved and retrieved for later
+    """
     # get reference data
     ref_data = pd.concat(
         [
             pd.read_csv(os.path.join(os.environ["SEASON_PATH"], dir, f"{dir}_full.csv"))
             for dir in os.listdir(os.environ["SEASON_PATH"])
-            if (int(dir.split("-")[0]) >= config["MIN_REFERENCE_DATA_YEAR"])
+            if (int(dir.split("-")[0]) >= config["REFERENCE_DATA_YEAR"])
         ],
         ignore_index=True,
     )

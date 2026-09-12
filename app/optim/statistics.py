@@ -1,7 +1,17 @@
+"""
+BASKETBOI
+
+Copyright © 2026 Your Name. All rights reserved.
+See LICENSE.md for permitted use.
+"""
+
 import numpy as np
 
 
 def calc_ROC_curve(x, y, binwidth=0.01, bounds=(0, 1)):
+    """
+    Calculate receiver operating charactieristic curve from x and y arrays
+    """
     class_thresholds = np.linspace(bounds[0], bounds[1], int((bounds[1] - bounds[0]) / binwidth) + 1)[1:-1]
     TPR = []
     FPR = []
@@ -34,6 +44,9 @@ def calc_ROC_curve(x, y, binwidth=0.01, bounds=(0, 1)):
 
 
 def calc_brier_score(x, y):
+    """
+    Calculate brier score between x and y data series
+    """
     brier_score = 0
     for i in range(len(x)):
         brier_score += (x[i] - y[i]) ** 2
@@ -41,7 +54,17 @@ def calc_brier_score(x, y):
     return brier_score
 
 
-def calc_ECE_score(x, y, binwidth=0.05, bounds=(0, 1)):
+def calc_ECE_score_binned(x, y):
+    """
+    Calculate Estimated Calibrated Error for an xy data series
+    """
+    raise NotImplementedError
+
+
+def calc_ECE_score_binned(x, y, binwidth=0.05, bounds=(0, 1)):
+    """
+    Calculate Estimated Calibrated Error for a data series, based on a binned histogram
+    """
     bins = np.linspace(bounds[0], bounds[1], int((bounds[1] - bounds[0]) / binwidth) + 1)
     vals = []
     N = len(x)
@@ -49,7 +72,7 @@ def calc_ECE_score(x, y, binwidth=0.05, bounds=(0, 1)):
         y_mask = y[(bins[i - 1] < x) & (x <= bins[i])]
         n_k = len(y_mask)
         if len(y_mask) == 0:
-            p_k = (bins[i] + bins[i - 1]) / 2
+            p_k = (bins[i] + bins[i - 1]) / 2  # don't penalize the statistic due to a lack of data
         else:
             p_k = sum(y_mask) / len(y_mask)
         c_k = np.mean([bins[i - 1], bins[i]])
@@ -57,21 +80,10 @@ def calc_ECE_score(x, y, binwidth=0.05, bounds=(0, 1)):
     return sum(vals)
 
 
-def calc_ECE_score_unweighted(x, y, binwidth=0.05, bounds=(0, 1)):
-    bins = np.linspace(bounds[0], bounds[1], int((bounds[1] - bounds[0]) / binwidth) + 1)
-    vals = []
-    for i in range(1, len(bins)):
-        y_mask = y[(bins[i - 1] < x) & (x <= bins[i])]
-        if len(y_mask) == 0:
-            p_k = (bins[i] + bins[i - 1]) / 2
-        else:
-            p_k = sum(y_mask) / len(y_mask)
-        c_k = np.mean([bins[i - 1], bins[i]])
-        vals.append(np.abs(p_k - c_k))
-    return np.mean(vals)
-
-
 def calc_calibrated_slope_intercept(x, y, binwidth=0.05, bounds=(0, 1), print_mask=False):
+    """
+    calculate slope intercept of PDF histogram data
+    """
     bins = np.linspace(bounds[0], bounds[1], int((bounds[1] - bounds[0]) / binwidth) + 1)
     xvals = [(bins[i] + bins[i - 1]) / 2 for i in range(1, len(bins))]
     yvals = []
@@ -80,7 +92,7 @@ def calc_calibrated_slope_intercept(x, y, binwidth=0.05, bounds=(0, 1), print_ma
         if print_mask:
             print(np.round(bins[i - 1], 2), "-", np.round(bins[i], 2), "|", len(y_mask))
         if len(y_mask) == 0:
-            yvals.append((bins[i] + bins[i - 1]) / 2)
+            yvals.append((bins[i] + bins[i - 1]) / 2)  # don't penalize the statistic due to a lack of data
         else:
             yvals.append(sum(y_mask) / len(y_mask))
     xvals = np.array(xvals)

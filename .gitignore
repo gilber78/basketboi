@@ -207,10 +207,12 @@ marimo/_lsp/
 __marimo__/
 
 ### CUSTOM
+# misc
 access_token
 games/
 models/
 *pat.txt
+Figure*.png
 
-# delete these when you're done
-*.xlsx
+# optimizer files, when not wanted to be shared
+bo-optimizer.json

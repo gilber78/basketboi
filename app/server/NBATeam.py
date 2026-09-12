@@ -1,3 +1,10 @@
+"""
+BASKETBOI
+
+Copyright © 2026 Your Name. All rights reserved.
+See LICENSE.md for permitted use.
+"""
+
 import os
 import json
 from server.NBAGame import NBAGame
@@ -8,7 +15,14 @@ with open(os.path.join("app", "data", "team_data.json"), "r") as file:
 
 
 class NBATeam:
+    """
+    Container class that stores all necessary data to represent a single NBA team
+    """
+
     def __init__(self, teamName):
+        """
+        Intiializes the immutable variables and initializes empty statistics class variables
+        """
         # immutable instance variables, these never change
         self.teamName = teamName
         self.teamId = team_data[teamName]["id"]
@@ -16,6 +30,9 @@ class NBATeam:
         self.reset_statistics()
 
     def reset_statistics(self):
+        """
+        Sets the NBATeam object as if the season has just started
+        """
         # instance variables that get updated as we play throught games
         self.games_played = 0
         self.wins = 0
@@ -68,6 +85,9 @@ class NBATeam:
         self.awayloss_points_against = 0
 
     def update_game(self, game: NBAGame):
+        """
+        Update the team statistics base on a game object
+        """
         # determine parameters of the game to tell what stats to update how
         switch = {
             "home": True if self.teamId == game.homeTeamId else False,
@@ -151,6 +171,9 @@ class NBATeam:
                 self.awayloss_points_against += game.homeScore
 
     def pretty_print(self, header=True):
+        """
+        Pretty prints the NBATeam objects statistics fields
+        """
         if header:
             print("\033[4m#                           W    L     PCT    HOME    AWAY    PFPG    PAPG    DIFF   STRK    L10   #\033[0m")
         last10 = get_list_wins_and_losses(self.last10)

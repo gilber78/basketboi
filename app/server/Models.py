@@ -1,3 +1,12 @@
+"""
+BASKETBOI
+
+Copyright © 2026 Your Name. All rights reserved.
+See LICENSE.md for permitted use.
+"""
+
+import os
+import json
 import copy
 import numpy as np
 import pandas as pd
@@ -7,8 +16,14 @@ from server.functions import fractional_year_since
 
 np.set_printoptions(linewidth=np.inf)
 
+with open(os.path.join("app", "data", "config.json"), "r") as file:
+    config = json.load(file)
+
 
 def recency_weight_function(x, z, b):
+    """
+    Historic weight function that takes a fractional year (x) and parameters z and b and calculates a downscaling factor
+    """
     if x < z:
         val = 0
     elif x < z / 2:
@@ -20,27 +35,48 @@ def recency_weight_function(x, z, b):
     return val**b
 
 
-# TODO place the z/bs for each weight function in the config file if necessary
-HOME_WIN_WEIGHT_FUNCTION = partial(recency_weight_function, z=-40.49972745901825, b=68.89789705377231)
+HOME_WIN_WEIGHT_FUNCTION = partial(recency_weight_function, z=config["HOME_WIN_PR_PARAMETERS"]["z"], b=config["HOME_WIN_PR_PARAMETERS"]["b"])
 EVEN_WEIGHT_FUNCTION = lambda x: 1
 
 
+# TODO when ready for spread/total, create the ability to have a plit p*M1 + (1-p)*M2 type of structure
+# - need the ability to train model on either all wins, all losses, or *ALL* data (default)
+# - need a container class that can take a p value and do the p/1-p splits for the models as the "final form"
+# Maybe call this DependentModel?
+
+
 class Term:
+    """
+    Class that acts as a term inside a regression model
+    """
+
     def __init__(self, constant_names, num_names, den_names):
         # class that holds how to calculate a model term from either the reference dataframe or a team object
         # uses a list of lists approach. Terms are added inside each list, multiplied across sublists. Can only nest 2 deep
+        """
+        Stores the names of columns for a constant term k, numerator n, denominator d, and degree a. Full term takes the form (kn/d)^a.
+        """
         self.constant_names = constant_names
         self.num_names = num_names
         self.den_names = den_names
         self.degree = int(1)
 
     def value(self, ref_series: pd.Series):
+        """
+        Calculates the value of a term based on an input data series
+        """
         constant = self._sub_value(self.constant_names, ref_series)
         num = self._sub_value(self.num_names, ref_series)
         den = self._sub_value(self.den_names, ref_series)
         return (constant * num / den) ** self.degree
 
     def _sub_value(self, item_list, ref_series=pd.DataFrame):
+        """
+        Handles the recursive relationship of these term lists.
+        Terms inside the same list are added. Terms in different lists are multiplied together.
+        For example, the term (1+2)*(3-4) gets read as [[1, 2], [3, -4]]
+        This function dives deep and handles this recursion.
+        """
         if item_list == []:
             return pd.Series([1] * len(ref_series))
         else:
@@ -57,11 +93,21 @@ class Term:
             return subval
 
     def set_degree(self, val):
+        """
+        Sets degree (exponent) of term
+        """
         self.degree = int(val)
 
 
 class Model:
+    """
+    Main model class that handles the behavior of combining many many terms and producing one prediction
+    """
+
     def __init__(self, terms: list, target: str, bounds=[None, None], weight_func=EVEN_WEIGHT_FUNCTION):
+        """
+        Stores all needed values and initializes others for the Model class
+        """
         self.terms = terms
         self.target = target
         self.bounds = bounds
@@ -73,6 +119,9 @@ class Model:
         self.weight_func = weight_func
 
     def calculate_model(self, ref_data: pd.DataFrame):
+        """
+        Calculates all the coefficients required of the Model class based on reference data
+        """
         # create values
         self.ref_date = np.max(ref_data["GAME_gameDate"])
         weights = np.array([self.weight_func(fractional_year_since(x["GAME_gameDate"], self.ref_date)) for _, x in ref_data.iterrows()])
@@ -90,18 +139,27 @@ class Model:
         Amatrix = vandermonde.T @ Wmatrix @ vandermonde
         Bvector = vandermonde.T @ Wmatrix @ yvals
         self.coeffs = np.linalg.inv(Amatrix) @ Bvector
-        # self.coeffs = np.linalg.pinv(vandermonde) @ yvals
         SS_res = sum((yvals - vandermonde @ self.coeffs) ** 2)[0]
         SS_tot = sum((yvals - np.mean(yvals)) ** 2)[0]
         self.ref_Rsquared = 1 - SS_res / SS_tot
 
-        # calculate linear mask
+        # calculate weighted linear mask
         xvals = self.value(ref_data)
         xvals = xvals[mask]
-        m, b = np.polyfit(xvals, yvals, 1)
+        m, b = np.polyfit(xvals, yvals, 1)  # , w=weights)
         self.m, self.b = m[0], b[0]
 
+        # calculate model variance/std
+        yhat_vals = xvals * self.m + self.b
+        resids = yvals.T[0] - yhat_vals
+        mean = sum(weights * resids) / sum(weights)
+        self.var = sum(weights * (resids - mean) ** 2) / sum(weights)
+        self.std = np.sqrt(self.var)
+
     def value(self, input_data: pd.Series, apply_mask=False):
+        """
+        Calculates the vlaue of the model (prediction) for a given data series
+        """
         vals = (np.nan_to_num(np.vstack([term.value(input_data).to_numpy() for term in self.terms]).T) @ self.coeffs).T[0]
         if apply_mask:
             vals = vals * self.m + self.b
@@ -121,6 +179,10 @@ HOME_POINTS_FOR_PER_GAME_2.set_degree(2)
 HOME_POINTS_FOR_PER_GAME_3 = copy.deepcopy(HOME_POINTS_FOR_PER_GAME)
 HOME_POINTS_FOR_PER_GAME_3.set_degree(3)
 HOME_POINTS_AGAINST_PER_GAME = Term([], ["HOME_points_against"], ["HOME_games_played"])
+HOME_POINTS_AGAINST_PER_GAME_2 = copy.deepcopy(HOME_POINTS_AGAINST_PER_GAME)
+HOME_POINTS_AGAINST_PER_GAME_2.set_degree(2)
+HOME_POINTS_AGAINST_PER_GAME_3 = copy.deepcopy(HOME_POINTS_AGAINST_PER_GAME)
+HOME_POINTS_AGAINST_PER_GAME_3.set_degree(3)
 HOME_STREAK = Term([], ["HOME_streak"], [])
 HOME_STREAK_2 = copy.deepcopy(HOME_STREAK)
 HOME_STREAK_2.set_degree(2)
@@ -129,10 +191,20 @@ HOME_STREAK_3.set_degree(3)
 HOME_LAST10_W = Term([], ["HOME_last10_w"], [])
 HOME_LAST10_L = Term([], ["HOME_last10_l"], [])
 HOME_HOME_WIN_PERCENTAGE = Term([], ["HOME_home_wins"], ["HOME_home_games_played"])
+HOME_HOME_WIN_PERCENTAGE_2 = copy.deepcopy(HOME_HOME_WIN_PERCENTAGE)
+HOME_HOME_WIN_PERCENTAGE_2.set_degree(2)
+HOME_HOME_WIN_PERCENTAGE_3 = copy.deepcopy(HOME_HOME_WIN_PERCENTAGE)
+HOME_HOME_WIN_PERCENTAGE_3.set_degree(3)
 HOME_HOME_POINTS_FOR_PER_GAME = Term([], ["HOME_home_points_for"], ["HOME_home_games_played"])
 HOME_HOME_POINTS_FOR_PER_GAME_2 = copy.deepcopy(HOME_HOME_POINTS_FOR_PER_GAME)
 HOME_HOME_POINTS_FOR_PER_GAME_2.set_degree(2)
+HOME_HOME_POINTS_FOR_PER_GAME_3 = copy.deepcopy(HOME_HOME_POINTS_FOR_PER_GAME)
+HOME_HOME_POINTS_FOR_PER_GAME_3.set_degree(3)
 HOME_HOME_POINTS_AGAINST_PER_GAME = Term([], ["HOME_home_points_against"], ["HOME_home_games_played"])
+HOME_HOME_POINTS_AGAINST_PER_GAME_2 = copy.deepcopy(HOME_HOME_POINTS_AGAINST_PER_GAME)
+HOME_HOME_POINTS_AGAINST_PER_GAME_2.set_degree(2)
+HOME_HOME_POINTS_AGAINST_PER_GAME_3 = copy.deepcopy(HOME_HOME_POINTS_AGAINST_PER_GAME)
+HOME_HOME_POINTS_AGAINST_PER_GAME_3.set_degree(3)
 HOME_HOME_STREAK = Term([], ["HOME_home_streak"], [])
 HOME_HOME_STREAK_2 = copy.deepcopy(HOME_HOME_STREAK)
 HOME_HOME_STREAK_2.set_degree(2)
@@ -141,7 +213,7 @@ HOME_HOME_STREAK_3.set_degree(3)
 HOME_HOME_LAST10_W = Term([], ["HOME_home_last10_w"], [])
 HOME_HOME_LAST10_L = Term([], ["HOME_home_last10_l"], [])
 
-# dunno how these fit in (yet)
+# home terms dependent on who won the game
 HOME_WIN_POINTS_FOR_PER_GAME = Term([], ["HOME_win_points_for"], ["HOME_wins"])
 HOME_WIN_POINTS_AGAINST_PER_GAME = Term([], ["HOME_win_points_against"], ["HOME_wins"])
 HOME_LOSS_POINTS_FOR_PER_GAME = Term([], ["HOME_loss_points_for"], ["HOME_losses"])
@@ -159,6 +231,10 @@ AWAY_POINTS_FOR_PER_GAME_2.set_degree(2)
 AWAY_POINTS_FOR_PER_GAME_3 = copy.deepcopy(AWAY_POINTS_FOR_PER_GAME)
 AWAY_POINTS_FOR_PER_GAME_3.set_degree(3)
 AWAY_POINTS_AGAINST_PER_GAME = Term([], ["AWAY_points_against"], ["AWAY_games_played"])
+AWAY_POINTS_AGAINST_PER_GAME_2 = copy.deepcopy(AWAY_POINTS_AGAINST_PER_GAME)
+AWAY_POINTS_AGAINST_PER_GAME_2.set_degree(2)
+AWAY_POINTS_AGAINST_PER_GAME_3 = copy.deepcopy(AWAY_POINTS_AGAINST_PER_GAME)
+AWAY_POINTS_AGAINST_PER_GAME_3.set_degree(3)
 AWAY_STREAK = Term([], ["AWAY_streak"], [])
 AWAY_STREAK_2 = copy.deepcopy(AWAY_STREAK)
 AWAY_STREAK_2.set_degree(2)
@@ -167,10 +243,20 @@ AWAY_STREAK_3.set_degree(3)
 AWAY_LAST10_W = Term([], ["AWAY_last10_w"], [])
 AWAY_LAST10_L = Term([], ["AWAY_last10_l"], [])
 AWAY_AWAY_WIN_PERCENTAGE = Term([], ["AWAY_away_wins"], ["AWAY_away_games_played"])
+AWAY_AWAY_WIN_PERCENTAGE_2 = copy.deepcopy(AWAY_AWAY_WIN_PERCENTAGE)
+AWAY_AWAY_WIN_PERCENTAGE_2.set_degree(2)
+AWAY_AWAY_WIN_PERCENTAGE_3 = copy.deepcopy(AWAY_AWAY_WIN_PERCENTAGE)
+AWAY_AWAY_WIN_PERCENTAGE_3.set_degree(3)
 AWAY_AWAY_POINTS_FOR_PER_GAME = Term([], ["AWAY_away_points_for"], ["AWAY_away_games_played"])
 AWAY_AWAY_POINTS_FOR_PER_GAME_2 = copy.deepcopy(AWAY_AWAY_POINTS_FOR_PER_GAME)
 AWAY_AWAY_POINTS_FOR_PER_GAME_2.set_degree(2)
+AWAY_AWAY_POINTS_FOR_PER_GAME_3 = copy.deepcopy(AWAY_AWAY_POINTS_FOR_PER_GAME)
+AWAY_AWAY_POINTS_FOR_PER_GAME_3.set_degree(3)
 AWAY_AWAY_POINTS_AGAINST_PER_GAME = Term([], ["AWAY_away_points_against"], ["AWAY_away_games_played"])
+AWAY_AWAY_POINTS_AGAINST_PER_GAME_2 = copy.deepcopy(AWAY_AWAY_POINTS_AGAINST_PER_GAME)
+AWAY_AWAY_POINTS_AGAINST_PER_GAME_2.set_degree(2)
+AWAY_AWAY_POINTS_AGAINST_PER_GAME_3 = copy.deepcopy(AWAY_AWAY_POINTS_AGAINST_PER_GAME)
+AWAY_AWAY_POINTS_AGAINST_PER_GAME_3.set_degree(3)
 AWAY_AWAY_STREAK = Term([], ["AWAY_away_streak"], [])
 AWAY_AWAY_STREAK_2 = copy.deepcopy(AWAY_AWAY_STREAK)
 AWAY_AWAY_STREAK_2.set_degree(2)
@@ -179,7 +265,7 @@ AWAY_AWAY_STREAK_3.set_degree(3)
 AWAY_AWAY_LAST10_W = Term([], ["AWAY_away_last10_w"], [])
 AWAY_AWAY_LAST10_L = Term([], ["AWAY_away_last10_l"], [])
 
-# dunno how these fit in (yet)
+# away terms dependent on who won
 AWAY_WIN_POINTS_FOR_PER_GAME = Term([], ["AWAY_win_points_for"], ["AWAY_wins"])
 AWAY_WIN_POINTS_AGAINST_PER_GAME = Term([], ["AWAY_win_points_against"], ["AWAY_wins"])
 AWAY_LOSS_POINTS_FOR_PER_GAME = Term([], ["AWAY_loss_points_for"], ["AWAY_losses"])
@@ -200,15 +286,22 @@ MODEL_HOME_WIN_PR = Model(
         HOME_POINTS_FOR_PER_GAME_2,
         HOME_POINTS_FOR_PER_GAME_3,
         HOME_POINTS_AGAINST_PER_GAME,
+        HOME_POINTS_AGAINST_PER_GAME_2,
+        HOME_POINTS_AGAINST_PER_GAME_3,
         HOME_STREAK,
         HOME_STREAK_2,
         HOME_STREAK_3,
         HOME_LAST10_W,
         HOME_LAST10_L,
         HOME_HOME_WIN_PERCENTAGE,
+        HOME_HOME_WIN_PERCENTAGE_2,
+        HOME_HOME_WIN_PERCENTAGE_3,
         HOME_HOME_POINTS_FOR_PER_GAME,
         HOME_HOME_POINTS_FOR_PER_GAME_2,
+        HOME_HOME_POINTS_FOR_PER_GAME_3,
         HOME_HOME_POINTS_AGAINST_PER_GAME,
+        HOME_HOME_POINTS_AGAINST_PER_GAME_2,
+        HOME_HOME_POINTS_AGAINST_PER_GAME_3,
         HOME_HOME_STREAK,
         HOME_HOME_STREAK_2,
         HOME_HOME_STREAK_3,
@@ -228,15 +321,22 @@ MODEL_HOME_WIN_PR = Model(
         AWAY_POINTS_FOR_PER_GAME_2,
         AWAY_POINTS_FOR_PER_GAME_3,
         AWAY_POINTS_AGAINST_PER_GAME,
+        AWAY_POINTS_AGAINST_PER_GAME_2,
+        AWAY_POINTS_AGAINST_PER_GAME_3,
         AWAY_STREAK,
         AWAY_STREAK_2,
         AWAY_STREAK_3,
         AWAY_LAST10_W,
         AWAY_LAST10_L,
         AWAY_AWAY_WIN_PERCENTAGE,
+        AWAY_AWAY_WIN_PERCENTAGE_2,
+        AWAY_AWAY_WIN_PERCENTAGE_3,
         AWAY_AWAY_POINTS_FOR_PER_GAME,
         AWAY_AWAY_POINTS_FOR_PER_GAME_2,
+        AWAY_AWAY_POINTS_FOR_PER_GAME_3,
         AWAY_AWAY_POINTS_AGAINST_PER_GAME,
+        AWAY_AWAY_POINTS_AGAINST_PER_GAME_2,
+        AWAY_AWAY_POINTS_AGAINST_PER_GAME_3,
         AWAY_AWAY_STREAK,
         AWAY_AWAY_STREAK_2,
         AWAY_AWAY_STREAK_3,

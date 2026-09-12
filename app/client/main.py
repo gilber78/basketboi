@@ -1,3 +1,10 @@
+"""
+BASKETBOI
+
+Copyright © 2026 Your Name. All rights reserved.
+See LICENSE.md for permitted use.
+"""
+
 import os
 import sys
 import json
@@ -34,6 +41,9 @@ ARGS = parser.parse_args()
 
 
 def get_cli_inputs(i, pred):
+    """
+    get inputs from CLI regarding the odds being laid for a game
+    """
     # set up cli strings to print
     gameDict = validate_game_tag(pred["gameTag"])
     away_living_string = f"      {pred['awayTeam']}        "
@@ -80,7 +90,7 @@ def get_cli_inputs(i, pred):
     pred["away_ml_odds"] = away_ml_odds
     pred["home_ml_odds"] = home_ml_odds
 
-    # TODO put input for totals
+    # TODO put back input for totals and totals odds
     """
     point_total_line = float(input(f"\033[A\033[A{away_living_string}        <- Enter {gameTag} point total line\r{away_living_string} "))
     away_living_string += f" o{point_total_line:>4.1f} "
@@ -100,11 +110,18 @@ def get_cli_inputs(i, pred):
 
 
 def main():
+    """
+    main CLI basketboi end-to-end function
+    """
     print("===== WELCOME TO BASKETBOI! =====")
 
     # update the data models
-    download_and_sort_data(config)  # donwload/sort raw data, if necessary
-    build_models(config)  # create plots that are passed as part of debug for model
+    if config["ALLOW_DATA_DOWNLOAD"]:
+        download_and_sort_data(config)  # donwload/sort raw data, if necessary
+        build_models(config)  # create plots that are passed as part of debug for model
+    else:
+        print("!! Downloads halted by supplied config !!")
+        print("-> No model updates initiated as a result")
     print_current_season()
     print()
 
@@ -114,26 +131,30 @@ def main():
     output_json = process_server_output_json(predictions_from_date(input_json["date"], input_json["games"]))
 
     # get betting input for each available or requested game
-    print(f"There are {len(output_json['predictions'])} games on {output_json['date']}:")
-    print("\033[4m#                     SPREAD        ML            TOTAL                                            #\033[0m")
-    while True:
-        try:
-            for i, pred in enumerate(output_json["predictions"]):
-                get_cli_inputs(i, pred)
-            if input("Please verify that the above odds sheet is correct. If so, press enter. ") == "":
-                while True:
-                    bankroll = float(input("Great! What's the most you're willing to risk today (enter a dollar amount)? $"))
-                    if bankroll >= 1:
-                        print()
-                        break
-                    else:
-                        print("Please enter a bet number greater than or equal to $1.00")
-                break
-            else:
-                print("Trying again!\n")
-        except Exception as e:
-            print(e, "please try again.")
-            exit()
+    bankroll = 0
+    if output_json["predictions"] is not None:
+        print(f"There are {len(output_json['predictions'])} games on {output_json['date']}:")
+        print("\033[4m#                     SPREAD        ML            TOTAL                                            #\033[0m")
+        while True:
+            try:
+                for i, pred in enumerate(output_json["predictions"]):
+                    get_cli_inputs(i, pred)
+                if input("Please verify that the above odds sheet is correct. If so, press enter. ") == "":
+                    while True:
+                        bankroll = float(input("Great! What's the most you're willing to risk today (enter a dollar amount)? $"))
+                        if bankroll >= 1:
+                            print()
+                            break
+                        else:
+                            print("Please enter a bet number greater than or equal to $1.00")
+                    break
+                else:
+                    print("Trying again!\n")
+            except Exception as e:
+                print(e, "please try again.")
+                exit()
+    else:
+        print(f"There are no predictions available for games on {output_json['date']}:\n")
 
     # get ev/kelly fractions for each bet, make suggested bet slip, return to user
     betting_slip = BettingSlip(output_json, bankroll)

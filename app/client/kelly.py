@@ -1,3 +1,10 @@
+"""
+BASKETBOI
+
+Copyright © 2026 Your Name. All rights reserved.
+See LICENSE.md for permitted use.
+"""
+
 import os
 import json
 import numpy as np
@@ -19,6 +26,10 @@ def american_odds_to_payout(odds: int):
 
 
 class Bet:
+    """
+    Class that contains variables necessary to evaluate a wager
+    """
+
     def __init__(
         self,
         gameTag: str = None,
@@ -28,6 +39,9 @@ class Bet:
         odds: int = None,
         prob: float = None,
     ):
+        """
+        store all variables
+        """
         self.gameTag = gameTag
         self.team = team
         self.bet_type = bet_type
@@ -43,15 +57,27 @@ class Bet:
         self.growth = None
 
     def _kelly_fraction(self):
+        """
+        Calculate kelly fraction for bet, if positive. Else 0
+        """
         return np.max([(self.prob * self.payout - 1) / (self.payout - 1), 0])
 
     def _kelly_growth(self, f):
+        """
+        Calculate growth rate for bet at a specific kelly fraction
+        """
         return self.prob * np.log(1 + f * (self.payout - 1)) + (1 - self.prob) * np.log(1 - f)
 
     def _expected_value(self):
+        """
+        Calculate expected value of bet
+        """
         return self.prob * self.payout - 1
 
     def _lagrange_fraction(self, lam):
+        """
+        Calculate Lagrange multiplier for the specified kelly fraction
+        """
         if lam == 0:
             return self._kelly_fraction()
         elif lam >= self._expected_value():
@@ -65,10 +91,16 @@ class Bet:
             return zero_minus
 
     def _lagrange_Value(self, f, lam):
+        """
+        Objective function to maximize, including lagrange multiplier
+        """
         return self._kelly_growth(f) - lam * f
 
 
 def bets_from_game_json(game: dict):
+    """
+    Get all Bet class objects for a specific NBA game
+    """
     # point spread for both teams
     # away_spread = Bet()
     # home_spread = Bet()
@@ -99,31 +131,42 @@ def bets_from_game_json(game: dict):
 
 
 class BettingSlip:
+    """
+    Class that contains Bet objects and calculates optimal bets and kelly fractions to return to the user
+    """
+
     def __init__(self, prediction_json: dict, bankroll: float = 1.0):
-        # self.prediction_json = prediction_json  # maybe don't even need to store this...
-        self.game_list = [pred["gameTag"] for pred in prediction_json["predictions"]]
+        """
+        Sets up the bet slip and calculates the optimums on class creation
+        """
+        self.date = prediction_json["date"]
         self.bankroll = bankroll
         self.bets = []
 
-        # go through each item in the prediction json procedurally, then select valid (winning) bets and store them to the class
-        self.date = prediction_json["date"]
-        candidate_bets = [bet for game in prediction_json["predictions"] for bet in bets_from_game_json(game)]
+        if prediction_json["predictions"] is not None:
+            self.game_list = [pred["gameTag"] for pred in prediction_json["predictions"]]
 
-        # check the single kelly slate, and if sum of the fractions are < 1 then accept it
-        # if not, move on to multi kelly
-        # clean up the bet objects either way
-        single_kelly_candidates = []
-        for gameTag in self.game_list:
-            best_bet = max([candidate for candidate in candidate_bets if candidate.gameTag == gameTag], key=lambda bet: bet._single_growth)
-            if best_bet._single_fraction > 0:
-                single_kelly_candidates.append(best_bet)
-        if sum([bet._single_fraction for bet in single_kelly_candidates]) <= 1:
-            self.cleanup_slate(single_kelly_candidates, mode="single")
-        else:
-            multi_kelly_candidates = self.bisection_search(candidate_bets)
-            self.cleanup_slate(multi_kelly_candidates, mode="multi")
+            # go through each item in the prediction json procedurally, then select valid (winning) bets and store them to the class
+            candidate_bets = [bet for game in prediction_json["predictions"] for bet in bets_from_game_json(game)]
+
+            # check the single kelly slate, and if sum of the fractions are < 1 then accept it
+            # if not, move on to multi kelly
+            # clean up the bet objects either way
+            single_kelly_candidates = []
+            for gameTag in self.game_list:
+                best_bet = max([candidate for candidate in candidate_bets if candidate.gameTag == gameTag], key=lambda bet: bet._single_growth)
+                if best_bet._single_fraction > 0:
+                    single_kelly_candidates.append(best_bet)
+            if sum([bet._single_fraction for bet in single_kelly_candidates]) <= 1:
+                self.cleanup_slate(single_kelly_candidates, mode="single")
+            else:
+                multi_kelly_candidates = self.bisection_search(candidate_bets)
+                self.cleanup_slate(multi_kelly_candidates, mode="multi")
 
     def bisection_search(self, candidate_bets):
+        """
+        Finds best lagrange multiplier for the betting slip
+        """
         # find the initial lambda_max
         lambda_min = 0
         lambda_max = np.max([bet._expected_value() for bet in candidate_bets])
@@ -152,6 +195,9 @@ class BettingSlip:
         return multi_kelly_candidates
 
     def cleanup_slate(self, bet_list, mode):
+        """
+        Takes a list of bets and extracts the proper fraction and growth rate, depending on if optimization was done in multi or if single kelly was accepted.
+        """
         for bet in bet_list:
             if mode == "single":
                 bet.fraction = bet._single_fraction
@@ -164,6 +210,9 @@ class BettingSlip:
         self.bets = bet_list
 
     def pretty_print(self):
+        """
+        Prints the betting slip for the user
+        """
         print("#" * 100)
         print("#" + " " * 98 + "#")
         print("#" + " " * 33 + "NBA BETTING RECCOMMENDATIONS FOR" + " " * 33 + "#")
