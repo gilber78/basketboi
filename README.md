@@ -42,6 +42,3 @@ In order to properly calibrate the model before each season start (and possibly 
     - `python app/client/main.py`
     - `time python3 app/optim/optimize.py --model homeWin -o -dpr -dpl` or equivalent command as desired
     - `python app/server/basketboi_server.py` (both from cli and uvicorn, in concert with `python app/client/basketboi_client.py`)
-
-#### TODO must make minor tweaks and tag release before 10/20/2026, and get an MVP before the start of this season. This could be
-- (low) run all years for homeWin, make sure more data is not more better with this new model

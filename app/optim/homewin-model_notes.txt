@@ -89,4 +89,5 @@ Model stdev: 0.4669718208892932
 0.9 - 0.95 | 62
 0.95 - 1.0 | 0
 
-Could theoretically run through all years, but we'll wait to do that a little bit longer
+TODO run all years for homeWin, make sure more data is not more better with this new model. But we'll wait to do that a little bit longer.
+WE do know that even weight is worse by ever so slightly.
