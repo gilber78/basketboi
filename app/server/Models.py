@@ -171,7 +171,7 @@ HOME_HOME_STREAK_3.set_degree(3)
 HOME_HOME_LAST10_W = Term([], ["HOME_home_last10_w"], [])
 HOME_HOME_LAST10_L = Term([], ["HOME_home_last10_l"], [])
 
-# dunno how these fit in (yet)
+# home terms dependent on who won the game
 HOME_WIN_POINTS_FOR_PER_GAME = Term([], ["HOME_win_points_for"], ["HOME_wins"])
 HOME_WIN_POINTS_AGAINST_PER_GAME = Term([], ["HOME_win_points_against"], ["HOME_wins"])
 HOME_LOSS_POINTS_FOR_PER_GAME = Term([], ["HOME_loss_points_for"], ["HOME_losses"])
@@ -223,7 +223,7 @@ AWAY_AWAY_STREAK_3.set_degree(3)
 AWAY_AWAY_LAST10_W = Term([], ["AWAY_away_last10_w"], [])
 AWAY_AWAY_LAST10_L = Term([], ["AWAY_away_last10_l"], [])
 
-# dunno how these fit in (yet)
+# away terms dependent on who won
 AWAY_WIN_POINTS_FOR_PER_GAME = Term([], ["AWAY_win_points_for"], ["AWAY_wins"])
 AWAY_WIN_POINTS_AGAINST_PER_GAME = Term([], ["AWAY_win_points_against"], ["AWAY_wins"])
 AWAY_LOSS_POINTS_FOR_PER_GAME = Term([], ["AWAY_loss_points_for"], ["AWAY_losses"])

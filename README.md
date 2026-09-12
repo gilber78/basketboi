@@ -12,8 +12,12 @@ To use the Kaggle API, sign up for a Kaggle account at https://www.kaggle.com. T
 3) Follow the prompts after the program downloads the newest NBA data and updates the model(s) to enter the odds for every game (only moneyline supported for now)
 4) Double check the odds sheet and press enter, as prompted
 5) Enter the total bankroll/daily outlay you wish to use, when prompted
-6) The program will print a list of suggested bets and some supporting data. If no profitable bets were found, the program will output `"NO BETS RECOMMENDED TODAY"` in red bold. Otherwise, simply place the recommended bets and best of luck!
+6) The program will print a list of suggested bets and some supporting data. If no profitable bets were found, the program will output `NO BETS RECOMMENDED TODAY` in red bold. Otherwise, simply place the recommended bets and best of luck!
 7) https://www.oddsshopper.com/tools/betting-calculators/odds can be used to convert kalshi prices to american odds, if needed while using the web interface.
+
+For now, use DraftKings or a traditional sportsbook as the primary venue. It allows only having to run the code once and get bets accepted at the price laid out for you. If you live somewhere where only prediction markets are legal, then be wary that the code currently doesn't support calculating orders/contracts available. You'll have to run the code multiple times to get a good converged estimate for how much to optimally bet for each game and on what.
+
+https://www.actionnetwork.com/betting-calculators/betting-odds-calculator <- This site converts all odds type, BASKETBOI takes american odds as an integer input. Kalshi currently needs to use decimal odds.
 
 *Please remember that gambling of any kind should be done at your own risk, this tool is not proven to offer accurate predictions or sound financial advice. Call 1-800-GAMBLER if you or someone you know struggles with gambling addiction*
 
@@ -40,5 +44,4 @@ In order to properly calibrate the model before each season start (and possibly 
     - `python app/server/basketboi_server.py` (both from cli and uvicorn, in concert with `python app/client/basketboi_client.py`)
 
 #### TODO must make minor tweaks and tag release before 10/20/2026, and get an MVP before the start of this season. This could be
-- (high) finalize, for once and for all, with the term by term comparisons (with historical weighting considered...)
-- (med) accept both Kalshi price in CLI, along with American odds (configurable?) or decide if you'll just full send DraftKings instead
+- (low) run all years for homeWin, make sure more data is not more better with this new model
