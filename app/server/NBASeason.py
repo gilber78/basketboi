@@ -1,11 +1,20 @@
+"""
+BASKETBOI
+
+Copyright © 2026 Eric Gilbertson. All rights reserved.
+See LICENSE.md for permitted use.
+"""
+
 import pandas as pd
-from NBAGame import NBAGame
-from NBATeam import NBATeam
-from functions import get_day_from_full_time, increment_day, get_list_wins_and_losses
+from server.NBAGame import NBAGame
+from server.NBATeam import NBATeam
+from server.functions import get_day_from_full_time, increment_day, get_list_wins_and_losses, validate_game_tag
 
 
-def create_game_data_series(game: NBAGame, awayTeam: NBATeam, homeTeam: NBATeam):
-    # TODO expand this to percentages, ratios, etc that get used in modeling to save space
+def create_game_data_series(awayTeam: NBATeam, homeTeam: NBATeam, game: NBAGame = None, gameTag: str = None):
+    """
+    Takes two team objects and one game object and creates a data series from them that gets stored as a part of "full data" csv
+    """
     HOME_last10 = get_list_wins_and_losses(homeTeam.last10)
     HOME_home_last10 = get_list_wins_and_losses(homeTeam.home_last10)
     # HOME_away_last10 = get_list_wins_and_losses(homeTeam.away_last10)
@@ -85,32 +94,67 @@ def create_game_data_series(game: NBAGame, awayTeam: NBATeam, homeTeam: NBATeam)
         "AWAY_awaywin_points_against": awayTeam.awaywin_points_against,
         "AWAY_awayloss_points_for": awayTeam.awayloss_points_for,
         "AWAY_awayloss_points_against": awayTeam.awayloss_points_against,
-        "GAME_homeScore": game.homeScore,
-        "GAME_awayScore": game.awayScore,
-        "GAME_total": game.total,
-        "GAME_spread": game.spread,
-        "GAME_homeWin": 1 if game.winner == homeTeam.teamId else 0,
     }
-    return pd.DataFrame([series_dict])
+    if game != None:
+        game_dict = {
+            "GAME_gameDate": game.gameDate,
+            "GAME_gameTag": gameTag,
+            "GAME_homeScore": game.homeScore,
+            "GAME_awayScore": game.awayScore,
+            "GAME_total": game.total,
+            "GAME_spread": game.spread,
+            "GAME_homeWin": 1 if game.winner == homeTeam.teamId else 0,
+        }
+    else:
+        game_dict = {
+            "GAME_gameDate": None,
+            "GAME_gameTag": gameTag,
+            "GAME_homeScore": None,
+            "GAME_awayScore": None,
+            "GAME_total": None,
+            "GAME_spread": None,
+            "GAME_homeWin": None,
+        }
+    return pd.DataFrame([series_dict | game_dict])
 
 
 class NBASeason:
+    """
+    Contains all the values needed to represent a full NBA season
+    """
+
     def __init__(self, data: pd.DataFrame):
+        """
+        Takes a season-wide dataframe and extracts the starting point of data
+        """
         self.startDate = get_day_from_full_time(data["gameDateTimeEst"].min())
         self.endDate = get_day_from_full_time(data["gameDateTimeEst"].max())
         self.gameList = [NBAGame(line) for _, line in data.iterrows()]
         self.teamList = self.generate_list_of_teams()
 
+    def reset_statistics(self):
+        """
+        Wipes team data clean for the season
+        """
+        for team in self.teamList:
+            team.reset_statistics()
+
     def generate_list_of_teams(self):
+        """
+        Get list of all teams that played games this season and creates a team object for each
+        """
         teamList = []
         for game in self.gameList:
             if (game.homeTeam, game.homeTeamId) not in teamList:
                 teamList.append((game.homeTeam, game.homeTeamId))
             if (game.awayTeam, game.awayTeamId) not in teamList:
                 teamList.append((game.awayTeam, game.awayTeamId))
-        return [NBATeam(*args) for args in teamList]
+        return [NBATeam(args[0]) for args in teamList]
 
-    def generate_and_save_full_season_data(self):
+    def generate_full_season_df(self):
+        """
+        Walks through every game and updates the game objects/dataseries for the whole season
+        """
         current_day = self.startDate
         df = pd.DataFrame()
         while current_day <= self.endDate:
@@ -119,14 +163,73 @@ class NBASeason:
             for game in current_game_list:
                 awayTeam = next(team for team in self.teamList if team.teamId == game.awayTeamId)
                 homeTeam = next(team for team in self.teamList if team.teamId == game.homeTeamId)
-                df = pd.concat([df, create_game_data_series(game, awayTeam, homeTeam)], ignore_index=True)
+                df = pd.concat([df, create_game_data_series(awayTeam=awayTeam, homeTeam=homeTeam, game=game)], ignore_index=True)
                 awayTeam.update_game(game)
                 homeTeam.update_game(game)
             # to move to the next day in the sequence
             current_day = increment_day(current_day)
         return df
 
+    def generate_game_slate_df(self, date: str = None, gameTags: list = None):
+        """
+        Generates a full data series for specified game(tags) that reflects team performance up to that date in the season.
+        """
+        current_day = self.startDate
+        df = pd.DataFrame()
+        while current_day <= self.endDate:
+            # get list of games that occurred on this day, in order
+            current_game_list = [game for game in self.gameList if game.gameDate == current_day]
+            if (
+                current_day == date
+            ):  # break and advance, since we don't want to update the stats before the game happens if we're requesting historical info
+                break
+            else:
+                for game in current_game_list:  # update all teams per game, and increment the day
+                    awayTeam = next(team for team in self.teamList if team.teamId == game.awayTeamId)
+                    homeTeam = next(team for team in self.teamList if team.teamId == game.homeTeamId)
+                    awayTeam.update_game(game)
+                    homeTeam.update_game(game)
+                current_day = increment_day(current_day)
+
+        # conditional logic, for selecting appropriate teams in slate
+        if current_day == date:  # for games that definitely happened
+            for game in current_game_list:
+                awayTeam = next(team for team in self.teamList if team.teamId == game.awayTeamId)
+                homeTeam = next(team for team in self.teamList if team.teamId == game.homeTeamId)
+                df = pd.concat(
+                    [
+                        df,
+                        create_game_data_series(
+                            awayTeam=awayTeam, homeTeam=homeTeam, game=game, gameTag=awayTeam.teamAbbreviation + " @ " + homeTeam.teamAbbreviation
+                        ),
+                    ],
+                    ignore_index=True,
+                )
+        elif gameTags is None:
+            return
+        else:  # for games that may happen and were specified
+            for gameTag in gameTags:
+                gameDict = validate_game_tag(gameTag)
+                awayTeam = next(team for team in self.teamList if team.teamAbbreviation == gameDict["awayTeamAbbreviation"])
+                homeTeam = next(team for team in self.teamList if team.teamAbbreviation == gameDict["homeTeamAbbreviation"])
+                df = pd.concat(
+                    [
+                        df,
+                        create_game_data_series(
+                            awayTeam=awayTeam, homeTeam=homeTeam, gameTag=gameDict["awayTeamAbbreviation"] + " @ " + gameDict["homeTeamAbbreviation"]
+                        ),
+                    ],
+                    ignore_index=True,
+                )
+
+        # make sure that the df isn't empty, return none otherwise
+        if not df.empty:
+            return df
+
     def pretty_print(self):
+        """
+        Pretty prints the season data
+        """
         sorted_standings = sorted(
             self.teamList,
             key=lambda team: (0 if team.games_played == 0 else team.wins / team.games_played, team.points_for - team.points_against),

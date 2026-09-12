@@ -1,16 +1,38 @@
-from NBAGame import NBAGame
-from functions import get_list_wins_and_losses
+"""
+BASKETBOI
+
+Copyright © 2026 Eric Gilbertson. All rights reserved.
+See LICENSE.md for permitted use.
+"""
+
+import os
+import json
+from server.NBAGame import NBAGame
+from server.functions import get_list_wins_and_losses
+
+with open(os.path.join("app", "data", "team_data.json"), "r") as file:
+    team_data = json.load(file)
 
 
 class NBATeam:
-    def __init__(self, teamName, teamId):
+    """
+    Container class that stores all necessary data to represent a single NBA team
+    """
+
+    def __init__(self, teamName):
+        """
+        Intiializes the immutable variables and initializes empty statistics class variables
+        """
         # immutable instance variables, these never change
         self.teamName = teamName
-        self.teamId = teamId
-        self.teamAbbreviation = None  # TODO pull abbreviation from json/pass as arg
+        self.teamId = team_data[teamName]["id"]
+        self.teamAbbreviation = team_data[teamName]["abv"]
         self.reset_statistics()
 
     def reset_statistics(self):
+        """
+        Sets the NBATeam object as if the season has just started
+        """
         # instance variables that get updated as we play throught games
         self.games_played = 0
         self.wins = 0
@@ -63,6 +85,9 @@ class NBATeam:
         self.awayloss_points_against = 0
 
     def update_game(self, game: NBAGame):
+        """
+        Update the team statistics base on a game object
+        """
         # determine parameters of the game to tell what stats to update how
         switch = {
             "home": True if self.teamId == game.homeTeamId else False,
@@ -146,8 +171,11 @@ class NBATeam:
                 self.awayloss_points_against += game.homeScore
 
     def pretty_print(self, header=True):
+        """
+        Pretty prints the NBATeam objects statistics fields
+        """
         if header:
-            print("\033[4m                            W    L     PCT    HOME    AWAY    PFPG    PAPG    DIFF   STRK    L10   \033[0m")
+            print("\033[4m#                           W    L     PCT    HOME    AWAY    PFPG    PAPG    DIFF   STRK    L10   #\033[0m")
         last10 = get_list_wins_and_losses(self.last10)
         print(
             f"{self.teamName:<26} "
@@ -158,7 +186,7 @@ class NBATeam:
             + f"{self.away_wins:>2d}-{self.away_losses:<2d}   "
             + f"{0 if self.games_played == 0 else self.points_for/self.games_played:>5.1f}   "
             + f"{0 if self.games_played == 0 else self.points_against/self.games_played:>5.1f}   "
-            + f"{0 if self.away_games_played == 0 else (self.points_for - self.points_against)/self.games_played:>+5.1f}     "
-            + f"{'W' if self.streak >= 0 else 'L'}{abs(self.streak):<2d}  "  # this may not work for streaks longer than 10, but we'll see...
-            + f"{last10[0]:>2d}-{last10[1]:<2d}"
+            + f"{0 if self.away_games_played == 0 else (self.points_for - self.points_against)/self.games_played:>+5.1f}    "
+            + f"{' ' if abs(self.streak) < 10 else ''}{'W' if self.streak >= 0 else 'L'}{abs(self.streak):<2d}  "
+            + f"{' ' if abs(last10[0]) >= 10 else ''}{last10[0]:>2d}-{last10[1]:<2d}"
         )

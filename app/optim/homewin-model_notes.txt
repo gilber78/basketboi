@@ -1,0 +1,93 @@
+<< coefficients for home win probability >>
+
+NUM  Variable Name                       current   notes
+---------------------------------------------------------------------
+01   HOME_WIN_PERCENTAGE,                    | 1 | 
+02   HOME_POINTS_FOR_PER_GAME,               | 3 | 
+03   HOME_POINTS_AGAINST_PER_GAME,           | 3 | 
+04   HOME_STREAK,                            | 3 | 
+05   HOME_LAST10_W,                          | 1 | 
+06   HOME_LAST10_L,                          | 1 | 
+07   HOME_HOME_WIN_PERCENTAGE,               | 3 | 
+08   HOME_HOME_POINTS_FOR_PER_GAME,          | 3 | 
+09   HOME_HOME_POINTS_AGAINST_PER_GAME,      | 3 | 
+10   HOME_HOME_STREAK,                       | 3 | 
+11   HOME_HOME_LAST10_W,                     | 1 | 
+12   HOME_HOME_LAST10_L,                     | 1 | 
+13   HOME_WIN_POINTS_FOR_PER_GAME,           | X | ?
+14   HOME_WIN_POINTS_AGAINST_PER_GAME,       | X | ?
+15   HOME_LOSS_POINTS_FOR_PER_GAME,          | X | ?
+16   HOME_LOSS_POINTS_AGAINST_PER_GAME,      | X | ?
+17   HOME_HOMEWIN_POINTS_FOR_PER_GAME,       | X | ?
+18   HOME_HOMEWIN_POINTS_AGAINST_PER_GAME,   | X | ?
+19   HOME_HOMELOSS_POINTS_FOR_PER_GAME,      | X | ?
+20   HOME_HOMELOSS_POINTS_AGAINST_PER_GAME,  | X | ?
+
+21   AWAY_WIN_PERCENTAGE,                    | 1 | 
+22   AWAY_POINTS_FOR_PER_GAME,               | 3 |
+23   AWAY_POINTS_AGAINST_PER_GAME,           | 3 | 
+24   AWAY_STREAK,                            | 3 | 
+25   AWAY_LAST10_W,                          | 1 | 
+26   AWAY_LAST10_L,                          | 1 | 
+27   AWAY_AWAY_WIN_PERCENTAGE,               | 3 | 
+28   AWAY_AWAY_POINTS_FOR_PER_GAME,          | 3 | 
+29   AWAY_AWAY_POINTS_AGAINST_PER_GAME,      | 3 | 
+30   AWAY_AWAY_STREAK,                       | 3 | 
+31   AWAY_AWAY_LAST10_W,                     | 1 | 
+32   AWAY_AWAY_LAST10_L,                     | 1 | 
+33   AWAY_WIN_POINTS_FOR_PER_GAME,           | X | ?
+34   AWAY_WIN_POINTS_AGAINST_PER_GAME,       | X | ?
+35   AWAY_LOSS_POINTS_FOR_PER_GAME,          | X | ?
+36   AWAY_LOSS_POINTS_AGAINST_PER_GAME,      | X | ?
+37   AWAY_AWAYWIN_POINTS_FOR_PER_GAME,       | X | ?
+38   AWAY_AWAYWIN_POINTS_AGAINST_PER_GAME,   | X | ?
+39   AWAY_AWAYLOSS_POINTS_FOR_PER_GAME,      | X | ?
+40   AWAY_AWAYLOSS_POINTS_AGAINST_PER_GAME,  | X | ?
+
+Quadratic fit doesn't make sense for our purposes. We are either okay with different behavior at the extremes of the data or not.
+There's not really a situation where the probability of winning goes *up* at the extremes, it's always an odd function.
+5th degree doesn't make sense either, since there's usually only 0 or 2 critical points.
+This limits us to linear or cubic fits. We'll keep plotting quadratic to make it clear when linear is the better fit, since all 3 will be extremely close in value.
+
+Based on the R^2 sin^2(2 * arctan(m)) fitness scores, 0.17594335277687914 (Fig28) is the smallest fitness currently used.
+Considering the low strength of signal scores for all 16 X? parameters, and the fact that they are dependent on the home team winning, i'ts not a good idea to use them for homewin
+Save this for a split spread/total model that takes the form p * M1 + (1 - p) * M2
+
+
+<< Parameters for home win probability to optimize againts >>
+Weight function z
+Weight function b
+year is set at 2020 for the 2026-27 season, with 2024 being the initial test year
+
+OPTIM CONFIRMED 9/12/2026
+========= 2020 -100 1 =========
+ECE: 0.016943674976915974
+Slope: 0.9939056803752294
+Intercept: -0.002941081314795937
+AUC:  0.7194096889412311
+Brier: 0.21208003449776117
+Model variance: 0.2180626815046621
+Model stdev: 0.4669718208892932
+0.0 - 0.05 | 4
+0.05 - 0.1 | 10
+0.1 - 0.15 | 13
+0.15 - 0.2 | 37
+0.2 - 0.25 | 49
+0.25 - 0.3 | 101
+0.3 - 0.35 | 102
+0.35 - 0.4 | 143
+0.4 - 0.45 | 180
+0.45 - 0.5 | 212
+0.5 - 0.55 | 228
+0.55 - 0.6 | 231
+0.6 - 0.65 | 206
+0.65 - 0.7 | 183
+0.7 - 0.75 | 157
+0.75 - 0.8 | 114
+0.8 - 0.85 | 88
+0.85 - 0.9 | 46
+0.9 - 0.95 | 62
+0.95 - 1.0 | 0
+
+TODO run all years for homeWin, make sure more data is not more better with this new model. But we'll wait to do that a little bit longer.
+WE do know that even weight is worse by ever so slightly.
