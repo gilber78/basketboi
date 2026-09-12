@@ -1,3 +1,10 @@
+"""
+BASKETBOI
+
+Copyright © 2026 Your Name. All rights reserved.
+See LICENSE.md for permitted use.
+"""
+
 import os
 import sys
 import json
@@ -34,6 +41,9 @@ ARGS = parser.parse_args()
 
 
 def get_cli_inputs(i, pred):
+    """
+    get inputs from CLI regarding the odds being laid for a game
+    """
     # set up cli strings to print
     gameDict = validate_game_tag(pred["gameTag"])
     away_living_string = f"      {pred['awayTeam']}        "
@@ -100,6 +110,9 @@ def get_cli_inputs(i, pred):
 
 
 def main():
+    """
+    main CLI basketboi end-to-end function
+    """
     print("===== WELCOME TO BASKETBOI! =====")
 
     # update the data models

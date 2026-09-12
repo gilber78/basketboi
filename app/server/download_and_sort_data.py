@@ -1,3 +1,10 @@
+"""
+BASKETBOI
+
+Copyright © 2026 Your Name. All rights reserved.
+See LICENSE.md for permitted use.
+"""
+
 import os
 import json
 import kaggle
@@ -6,7 +13,7 @@ import datetime
 import pandas as pd
 from server.NBASeason import NBASeason
 
-from server.constants import MAXSIZE
+from sys import maxsize as MAXSIZE
 from server.functions import DATA_DATE_FORMAT_STRING, DATA_TIME_FORMAT_STRING, get_season_year
 
 with open(os.path.join("app", "data", "team_data.json"), "r") as file:
@@ -30,12 +37,19 @@ GAMES_COLUMNS_TO_KEEP = [
 
 
 def download_csv(path, file_name, download_time_filepath, dataset, quiet=False):
+    """
+    Download csv of raw data from Kaggle
+    """
     kaggle.api.dataset_download_file(dataset=dataset, file_name=file_name, path=path, force=True, quiet=quiet)
     with open(download_time_filepath, "w") as file:
         file.write(datetime.datetime.now(datetime.timezone.utc).isoformat())
 
 
 def sort_data_by_season(games_df: pd.DataFrame, path, min_season_year, reset_time_filepath, full=False):
+    """
+    Take raw dataset and break it up by season for easier retrieval/storage/organization.
+    Creates season object and full dataset with the additional statistics the models require.
+    """
     # loop throught raw dataframe, save raw data to a folder named after the year(s) in question
     os.makedirs(path, exist_ok=True)
     current_season_year = get_season_year()
@@ -67,6 +81,9 @@ def sort_data_by_season(games_df: pd.DataFrame, path, min_season_year, reset_tim
 
 ### MAIN FUNCTION/PROCESS FOR THIS FILE
 def download_and_sort_data(config):
+    """
+    Main function for this file, that runs the whole routine to retrieve the raw data and place it in folder(s)
+    """
     # read from config
     DOWNLOAD_TIME_FILEPATH = os.path.join(config["DATA_DOWNLOAD_PATH"], "last_download")
     RESET_TIME_FILEPATH = os.path.join(config["DATA_DOWNLOAD_PATH"], "last_reset")

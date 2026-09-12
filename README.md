@@ -3,6 +3,18 @@ Otherwise known as: BASKETBOI!
 
 This program is a pet project meant to improve my full-stack development. Its *secondary* purpose is to provide a model for sports betting on NBA games. The model(s) present take historical information about team performance heading into a game (wins/losses, points per game, current streak, etc) and make predictions based on the average expected performance of both teams. It assigns probabilities and takes user inputs about betting odds being laid, and informs the user which wagers are most favorable for their bankroll and how much money to place on each.
 
+## Licensing
+
+BASKETBOI is proprietary software.
+
+Copyright © 2026 Eric Gilbertson. All rights reserved.
+
+The source code is available for personal, non-commercial use under the terms described in [`LICENSE.md`](LICENSE.md).
+
+You may run and inspect the software for personal, educational, or research purposes. You may not redistribute, commercially exploit, or present modified versions of the software as your own without prior written permission.
+
+See [`LICENSE.md`](LICENSE.md) for the complete terms.
+
 ## Setup - API credentials
 To use the Kaggle API, sign up for a Kaggle account at https://www.kaggle.com. Then go to the 'Account' tab of your user profile settings and select 'Generate New Token'. Copy the generated token, paste and save it to a file named /app/data/access_token. This will allow you to connect to Kaggle and download the database when the program is run.
 
@@ -39,6 +51,7 @@ In order to properly calibrate the model before each season start (and possibly 
 ## Extra note
 - Before pushing to git, make sure all of the following run (this is my really bad version of "regression test", if it were...):
     - `black .`
+    - `pylint /app`
     - `python app/client/main.py`
     - `time python3 app/optim/optimize.py --model homeWin -o -dpr -dpl` or equivalent command as desired
     - `python app/server/basketboi_server.py` (both from cli and uvicorn, in concert with `python app/client/basketboi_client.py`)

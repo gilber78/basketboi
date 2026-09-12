@@ -1,3 +1,10 @@
+"""
+BASKETBOI
+
+Copyright © 2026 Your Name. All rights reserved.
+See LICENSE.md for permitted use.
+"""
+
 import sys
 import requests
 from pathlib import Path
@@ -7,12 +14,11 @@ sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 
 from server.functions import validate_game_tag
 
-"""
-Documentation goes here for client
-"""
-
 
 def process_server_output_json(output_json):
+    """
+    Takes returned json from server and adds supplemental information/calculation, as needed
+    """
     # this function takes the minimal json returned from the server and fleshes it out with more complete data for each game available
     if output_json["predictions"] is None:
         return output_json

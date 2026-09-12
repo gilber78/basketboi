@@ -1,3 +1,10 @@
+"""
+BASKETBOI
+
+Copyright © 2026 Your Name. All rights reserved.
+See LICENSE.md for permitted use.
+"""
+
 import numpy as np
 import matplotlib.pyplot as plt
 
@@ -5,6 +12,9 @@ import statistics as stats
 
 
 def plot_2d_histogram(x, y, title, binwidth=1, xlabel="Predicted values", ylabel="True values"):
+    """
+    Plot a 2d histogram of a dataset x and y
+    """
     plt.figure()
     plt.title(title, wrap=True)
     plt.xlabel(xlabel)
@@ -14,6 +24,9 @@ def plot_2d_histogram(x, y, title, binwidth=1, xlabel="Predicted values", ylabel
 
 
 def plot_pdf_function(x, y, title, binwidth=0.05, bounds=(0, 1), xlabel="Predicted Probability", ylabel="True Probability", std=None):
+    """
+    Plot probability distribution function for a dataset x and y based on supplied bin sizes
+    """
     xvals, yvals, m, b = stats.calc_calibrated_slope_intercept(x, y, binwidth, bounds, True)
     liney = m * xvals + b
     plt.figure()
@@ -35,6 +48,9 @@ def plot_pdf_function(x, y, title, binwidth=0.05, bounds=(0, 1), xlabel="Predict
 
 
 def plot_ROC_curve(x, y, title, binwidth=0.01, bounds=(0, 1), xlabel="FPR", ylabel="TPR"):
+    """
+    Plot receiver operating characteristic curve
+    """
     TPR, FPR, _ = stats.calc_ROC_curve(x, y, binwidth, bounds)
     plt.figure()
     plt.title(title, wrap=True)
@@ -47,6 +63,9 @@ def plot_ROC_curve(x, y, title, binwidth=0.01, bounds=(0, 1), xlabel="FPR", ylab
 
 
 def plot_pdf_function_DEBUG(x, y, title, binwidth, bounds, xlabel="Input Term", ylabel="Output Model Value"):
+    """
+    Plot pdf function in tandem with linear and cubic fits. For debug/model tuning only
+    """
     bins = np.linspace(bounds[0], bounds[1], int((bounds[1] - bounds[0]) / binwidth) + 1)
     xvals = [(bins[i] + bins[i - 1]) / 2 for i in range(1, len(bins))]
     yvals = []

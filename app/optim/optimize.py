@@ -1,3 +1,10 @@
+"""
+BASKETBOI
+
+Copyright © 2026 Your Name. All rights reserved.
+See LICENSE.md for permitted use.
+"""
+
 import os
 import sys
 import json
@@ -14,13 +21,60 @@ with open(config["KAGGLE_API_TOKEN_PATH"], "r") as file:
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 
 import pandas as pd
+import numpy as np
 import matplotlib.pyplot as plt
 from functools import partial
 from bayes_opt import BayesianOptimization
 
 import statistics as stats
 import plotting as plotting
-from server.Models import *
+from server.Models import (
+    Model,
+    recency_weight_function,
+    MODEL_HOME_WIN_PR,
+    MODEL_HOME_SPREAD,
+    MODEL_TOTAL_SCORE,
+    HOME_WIN_PERCENTAGE,
+    HOME_POINTS_FOR_PER_GAME,
+    HOME_POINTS_AGAINST_PER_GAME,
+    HOME_STREAK,
+    HOME_LAST10_W,
+    HOME_LAST10_L,
+    HOME_HOME_WIN_PERCENTAGE,
+    HOME_HOME_POINTS_FOR_PER_GAME,
+    HOME_HOME_POINTS_AGAINST_PER_GAME,
+    HOME_HOME_STREAK,
+    HOME_HOME_LAST10_W,
+    HOME_HOME_LAST10_L,
+    HOME_WIN_POINTS_FOR_PER_GAME,
+    HOME_WIN_POINTS_AGAINST_PER_GAME,
+    HOME_LOSS_POINTS_FOR_PER_GAME,
+    HOME_LOSS_POINTS_AGAINST_PER_GAME,
+    HOME_HOMEWIN_POINTS_FOR_PER_GAME,
+    HOME_HOMEWIN_POINTS_AGAINST_PER_GAME,
+    HOME_HOMELOSS_POINTS_FOR_PER_GAME,
+    HOME_HOMELOSS_POINTS_AGAINST_PER_GAME,
+    AWAY_WIN_PERCENTAGE,
+    AWAY_POINTS_FOR_PER_GAME,
+    AWAY_POINTS_AGAINST_PER_GAME,
+    AWAY_STREAK,
+    AWAY_LAST10_W,
+    AWAY_LAST10_L,
+    AWAY_AWAY_WIN_PERCENTAGE,
+    AWAY_AWAY_POINTS_FOR_PER_GAME,
+    AWAY_AWAY_POINTS_AGAINST_PER_GAME,
+    AWAY_AWAY_STREAK,
+    AWAY_AWAY_LAST10_W,
+    AWAY_AWAY_LAST10_L,
+    AWAY_WIN_POINTS_FOR_PER_GAME,
+    AWAY_WIN_POINTS_AGAINST_PER_GAME,
+    AWAY_LOSS_POINTS_FOR_PER_GAME,
+    AWAY_LOSS_POINTS_AGAINST_PER_GAME,
+    AWAY_AWAYWIN_POINTS_FOR_PER_GAME,
+    AWAY_AWAYWIN_POINTS_AGAINST_PER_GAME,
+    AWAY_AWAYLOSS_POINTS_FOR_PER_GAME,
+    AWAY_AWAYLOSS_POINTS_AGAINST_PER_GAME,
+)
 from server.functions import print_current_season
 from server.download_and_sort_data import download_and_sort_data  # this import has to come last
 
@@ -116,6 +170,9 @@ TITLES_LAMBDA = lambda title_string: [
 
 
 def get_args():
+    """
+    Get args for running optim.py
+    """
     parser = argparse.ArgumentParser(
         description="""optimize.py ::: contains the backend utilities necessary to improve and fine-tune all the NBA models that BASKETBOI runs"""
     )
@@ -215,7 +272,14 @@ ARGS = get_args()
 
 
 class BaseOptimizer:
+    """
+    Base class that contains essentials for all the optimizers and/or solving model code
+    """
+
     def __init__(self, MODEL: Model, config_data_column: str, sample_data_column: str, debug_debug_fig_title: str, debug_debug_fig_path: str):
+        """
+        Store variables used for all the optimization. Child classes pass their default values here.
+        """
         self.MODEL = MODEL
         self.config_data_column = config_data_column
         self.sample_data_column = sample_data_column
@@ -223,6 +287,9 @@ class BaseOptimizer:
         self.debug_debug_fig_path = debug_debug_fig_path
 
     def _get_pred_and_true_array(self, year, z, b, daybyday_prints=False):
+        """
+        Run through the reference data day-by-day and get predictions and truths for later use
+        """
         # get reference data based on min year parameter
         ref_data = pd.concat(
             [
@@ -271,9 +338,15 @@ class BaseOptimizer:
         return pred, true
 
     def objective_function_tuple(self):
+        """
+        Placeholder function for all the stats needed for the Optimizer classes to calculate
+        """
         raise NotImplementedError("Subclass must modify this function.")
 
     def objective_function_scalar(self):
+        """
+        Placeholder function for the scalar objective function for the Optimizer classes
+        """
         raise NotImplementedError("Subclass must modify this function.")
 
     def optim_models_daybyday(
@@ -288,6 +361,9 @@ class BaseOptimizer:
         from_file: str | None = None,
         to_file="app/optim/bo-optimizer.json",
     ):
+        """
+        Run bayesian optimization
+        """
         # initialize BO object (if from file or from scratch)
         optimizer = BayesianOptimization(
             f=self.objective_function_scalar,
@@ -326,6 +402,9 @@ class BaseOptimizer:
             return optimizer.max, optimizer.suggest()
 
     def _gen_debug_debug_plots(self):
+        """
+        Generate single-variable plots used for assessing polynomial model degree
+        """
         # read sample data
         sample_data = pd.concat(
             [
@@ -369,10 +448,17 @@ class BaseOptimizer:
 
 class HomeSpreadOptimizer(BaseOptimizer):
     # reference the other completed optimizer(s) to implement this class
+    """
+    Optimizer class for home team spread
+    """
     pass
 
 
 class HomeWinOptimizer(BaseOptimizer):
+    """
+    Optimizer class for home win probability
+    """
+
     def __init__(
         self,
         MODEL=MODEL_HOME_WIN_PR,
@@ -387,7 +473,7 @@ class HomeWinOptimizer(BaseOptimizer):
         pred_win, true_win = self._get_pred_and_true_array(year, z, b, daybyday_prints)
         _, _, AUC = stats.calc_ROC_curve(pred_win, true_win)
         BRIER = stats.calc_brier_score(pred_win, true_win)
-        ECE = stats.calc_ECE_score(pred_win, true_win)
+        ECE = stats.calc_ECE_score_binned(pred_win, true_win)
         _, _, M, B = stats.calc_calibrated_slope_intercept(pred_win, true_win)
 
         # debug ouputs, based on the optional parameters
@@ -417,10 +503,16 @@ class HomeWinOptimizer(BaseOptimizer):
 
 class TotalScoreOptimizer(BaseOptimizer):
     # reference the other completed optimizer(s) to implement this class
+    """
+    Optimizer class for total game score
+    """
     pass
 
 
 def optimize(optimizer):
+    """
+    main end-to-end solving/optimization function
+    """
     print("----- WELCOME TO THE OPTIMIZER -----")
 
     if ARGS.optimize:

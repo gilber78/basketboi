@@ -1,3 +1,10 @@
+"""
+BASKETBOI
+
+Copyright © 2026 Your Name. All rights reserved.
+See LICENSE.md for permitted use.
+"""
+
 import os
 import pickle
 import pandas as pd
@@ -5,12 +12,18 @@ from server.Models import Model, MODEL_HOME_WIN_PR  # , MODEL_HOME_SPREAD, MODEL
 
 
 def save_model_to_disk(model: Model, path: str):
+    """
+    Pickle model class and save it to file
+    """
     with open(path, "wb") as file:
         pickle.dump(model, file, pickle.HIGHEST_PROTOCOL)
         print(f"Saved {model} model data to {path}")
 
 
 def build_models(config):
+    """
+    Train model class and send it to be saved and retrieved for later
+    """
     # get reference data
     ref_data = pd.concat(
         [

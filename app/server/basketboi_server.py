@@ -1,4 +1,11 @@
 """
+BASKETBOI
+
+Copyright © 2026 Your Name. All rights reserved.
+See LICENSE.md for permitted use.
+"""
+
+"""
 TO BUILD OUT THE SERVER:
 - each endpoint needs the @app.get() or @app.post() decorator, depending on which the endpoint is expecting to accept for the endpoint. This defines the url the client(s) can hit
 - / is root
@@ -28,20 +35,32 @@ with open(os.path.join("app", "data", "config.json"), "r") as file:
 
 @app.get("/")
 def root():
+    """
+    Root server return function
+    """
     return {"message": "Hello from the Basketboi server!", "name": __name__}
 
 
 @app.get("/echo/")
 def echo(message: str):
+    """
+    Echo server return function
+    """
     return {"message": message}
 
 
 @app.get("/predictions/")
 def get_predictions_full(date: str, games: List[str] = Query(None)):
+    """
+    Server-client invocation of predictions_from_date (allows for both CLI and requests versions)
+    """
     return predictions_from_date(date, games)
 
 
 def predictions_from_date(date: str, gameTags: list = None):  # strictly for debugging purposes
+    """
+    Take input json querying games, calculate predictions for all three models
+    """
     # get necessary input data from pickled season class
     try:
         year = get_season_year(date)

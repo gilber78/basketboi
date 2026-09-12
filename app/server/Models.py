@@ -1,3 +1,10 @@
+"""
+BASKETBOI
+
+Copyright © 2026 Your Name. All rights reserved.
+See LICENSE.md for permitted use.
+"""
+
 import os
 import json
 import copy
@@ -14,6 +21,9 @@ with open(os.path.join("app", "data", "config.json"), "r") as file:
 
 
 def recency_weight_function(x, z, b):
+    """
+    Historic weight function that takes a fractional year (x) and parameters z and b and calculates a downscaling factor
+    """
     if x < z:
         val = 0
     elif x < z / 2:
@@ -36,21 +46,37 @@ EVEN_WEIGHT_FUNCTION = lambda x: 1
 
 
 class Term:
+    """
+    Class that acts as a term inside a regression model
+    """
+
     def __init__(self, constant_names, num_names, den_names):
         # class that holds how to calculate a model term from either the reference dataframe or a team object
         # uses a list of lists approach. Terms are added inside each list, multiplied across sublists. Can only nest 2 deep
+        """
+        Stores the names of columns for a constant term k, numerator n, denominator d, and degree a. Full term takes the form (kn/d)^a.
+        """
         self.constant_names = constant_names
         self.num_names = num_names
         self.den_names = den_names
         self.degree = int(1)
 
     def value(self, ref_series: pd.Series):
+        """
+        Calculates the value of a term based on an input data series
+        """
         constant = self._sub_value(self.constant_names, ref_series)
         num = self._sub_value(self.num_names, ref_series)
         den = self._sub_value(self.den_names, ref_series)
         return (constant * num / den) ** self.degree
 
     def _sub_value(self, item_list, ref_series=pd.DataFrame):
+        """
+        Handles the recursive relationship of these term lists.
+        Terms inside the same list are added. Terms in different lists are multiplied together.
+        For example, the term (1+2)*(3-4) gets read as [[1, 2], [3, -4]]
+        This function dives deep and handles this recursion.
+        """
         if item_list == []:
             return pd.Series([1] * len(ref_series))
         else:
@@ -67,11 +93,21 @@ class Term:
             return subval
 
     def set_degree(self, val):
+        """
+        Sets degree (exponent) of term
+        """
         self.degree = int(val)
 
 
 class Model:
+    """
+    Main model class that handles the behavior of combining many many terms and producing one prediction
+    """
+
     def __init__(self, terms: list, target: str, bounds=[None, None], weight_func=EVEN_WEIGHT_FUNCTION):
+        """
+        Stores all needed values and initializes others for the Model class
+        """
         self.terms = terms
         self.target = target
         self.bounds = bounds
@@ -83,6 +119,9 @@ class Model:
         self.weight_func = weight_func
 
     def calculate_model(self, ref_data: pd.DataFrame):
+        """
+        Calculates all the coefficients required of the Model class based on reference data
+        """
         # create values
         self.ref_date = np.max(ref_data["GAME_gameDate"])
         weights = np.array([self.weight_func(fractional_year_since(x["GAME_gameDate"], self.ref_date)) for _, x in ref_data.iterrows()])
@@ -118,6 +157,9 @@ class Model:
         self.std = np.sqrt(self.var)
 
     def value(self, input_data: pd.Series, apply_mask=False):
+        """
+        Calculates the vlaue of the model (prediction) for a given data series
+        """
         vals = (np.nan_to_num(np.vstack([term.value(input_data).to_numpy() for term in self.terms]).T) @ self.coeffs).T[0]
         if apply_mask:
             vals = vals * self.m + self.b
