@@ -87,10 +87,11 @@ def predictions_from_date(date: str, gameTags: list = None):  # strictly for deb
     # calculate predictions and store in dict to return
     predictions_list = []
     for _, row in predictions_df.iterrows():
+        p = MODEL_HOME_WIN_PR.value(row, apply_mask=True)[0]
         predictions_list.append(
             {
                 "gameTag": row["GAME_gameTag"],
-                "home_win_pr": MODEL_HOME_WIN_PR.value(row, apply_mask=True)[0],
+                "home_win_pr": p,
                 # MODEL_HOME_SPREAD
                 # MODEL_TOTAL_SCORE
             }

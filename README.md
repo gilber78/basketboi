@@ -51,7 +51,7 @@ In order to properly calibrate the model before each season start (and possibly 
 ## Extra note
 - Before pushing to git, make sure all of the following run (this is my really bad version of "regression test", if it were...):
     - `black .`
-    - `pylint /app`
+    - `pylint app/`
     - `python app/client/main.py`
     - `time python3 app/optim/optimize.py --model homeWin -o -dpr -dpl` or equivalent command as desired
     - `python app/server/basketboi_server.py` (both from cli and uvicorn, in concert with `python app/client/basketboi_client.py`)

@@ -30,6 +30,7 @@ import statistics as stats
 import plotting as plotting
 from server.Models import (
     Model,
+    DependentModel,
     recency_weight_function,
     MODEL_HOME_WIN_PR,
     MODEL_HOME_SPREAD,
@@ -276,7 +277,14 @@ class BaseOptimizer:
     Base class that contains essentials for all the optimizers and/or solving model code
     """
 
-    def __init__(self, MODEL: Model, config_data_column: str, sample_data_column: str, debug_debug_fig_title: str, debug_debug_fig_path: str):
+    def __init__(
+        self,
+        MODEL: Model | DependentModel,
+        config_data_column: str,
+        sample_data_column: str,
+        debug_debug_fig_title: str,
+        debug_debug_fig_path: str,
+    ):
         """
         Store variables used for all the optimization. Child classes pass their default values here.
         """
@@ -329,11 +337,11 @@ class BaseOptimizer:
             if daybyday_prints:
                 print(">>>", game_date)
             for _, row in test_data[test_data["GAME_gameDate"] == game_date].iterrows():
-                pred.append(self.MODEL.value(row, apply_mask=True)[0])
+                pred.append(self.MODEL.value(row, apply_mask=True)[0])  # TODO figure out how to get the proper p in this statement
                 ref_data.loc[len(ref_data)] = row
             MODEL_HOME_WIN_PR.calculate_model(ref_data)
         pred = np.array(pred)
-        true = test_data["GAME_homeWin"].to_numpy()
+        true = test_data[self.sample_data_column].to_numpy()
 
         return pred, true
 
@@ -405,7 +413,7 @@ class BaseOptimizer:
         """
         Generate single-variable plots used for assessing polynomial model degree
         """
-        # read sample data
+        # read sample data, separate based on if the home team wins or loses (for spread/total only)
         sample_data = pd.concat(
             [
                 pd.read_csv(os.path.join(os.environ["SEASON_PATH"], dir, f"{dir}_full.csv"))
@@ -425,7 +433,11 @@ class BaseOptimizer:
             & (sample_data["HOME_home_losses"] != 0)
             & (sample_data["AWAY_away_losses"] != 0)
         ].reset_index()
+        win_data = sample_data[sample_data["GAME_homeWin"] == 1].reset_index()
+        lose_data = sample_data[sample_data["GAME_homeWin"] == 0].reset_index()
         sample_output = sample_data[self.sample_data_column].to_numpy()
+        win_output = win_data[self.sample_data_column].to_numpy()
+        lose_output = lose_data[self.sample_data_column].to_numpy()
 
         # loop through the test terms and generate a tuple of plot metadata
         os.makedirs(self.debug_debug_fig_path, exist_ok=True)
@@ -436,11 +448,25 @@ class BaseOptimizer:
             title = self.titles[i]
             binwidth = 1 if "PERCENTAGE" not in title else 0.05
             term_values = term.value(sample_data)
+            win_term_values = term.value(win_data)
+            lose_term_values = term.value(lose_data)
             bounds = (term_values.min(), term_values.max())
 
             # create and save plot
-            print(f"FIGURE {i+1}: ", end="")
-            plotting.plot_pdf_function_DEBUG(term_values, sample_output, title, binwidth, bounds)
+            print(f"FIGURE {i+1}:")
+            if "Home" in title:
+                plotting.plot_pdf_function_DEBUG(term_values, sample_output, title, binwidth, bounds)
+            else:
+                plotting.plot_scatterplot_subplots_DEBUG(
+                    term_values,
+                    sample_output,
+                    win_term_values,
+                    win_output,
+                    lose_term_values,
+                    lose_output,
+                    title,
+                    sos_mult=20 if "Total" in title else 5,  # TODO find proper sos_mult for spread, when ready
+                )
             fig = plt.gcf()
             fig.savefig(f"{self.debug_debug_fig_path}/Figure{i+1:02d}.png")
             plt.close(fig)
@@ -506,7 +532,54 @@ class TotalScoreOptimizer(BaseOptimizer):
     """
     Optimizer class for total game score
     """
-    pass
+
+    def __init__(
+        self,
+        MODEL=MODEL_TOTAL_SCORE,
+        config_data_column="TOTAL_SCORE_PARAMETERS",
+        sample_data_column="GAME_total",
+        debug_debug_fig_title="Total Score",
+        debug_debug_fig_path=os.path.join(config["OPTIM_SAVE_PATH"], "total_score_figs"),
+    ):
+        super().__init__(MODEL, config_data_column, sample_data_column, debug_debug_fig_title, debug_debug_fig_path)
+
+    def objective_function_tuple(self, year, z, b, daybyday_prints=False, debug_prints=False, debug_plots=False, debug_debug_plots=False):
+        pred_score, true_score = self._get_pred_and_true_array(year, z, b, daybyday_prints)
+        # put in actual stats calc for total score
+
+        # debug ouputs, based on the optional parameters
+        if debug_prints:
+            print("=========", year, z, b, "=========")
+            print("TODO put in actual stats calc for total score")  # TODO put in actual stats calc for total score
+            print("Model variance:", self.MODEL.var)
+            print("Model stdev:", self.MODEL.std)
+
+        if debug_debug_plots:
+            self._gen_debug_debug_plots()
+
+        if debug_plots:
+            plotting.plot_2d_histogram(
+                pred_score,
+                true_score,
+                "Predicted vs Actual Total Score of NBA games",
+                xlabel="Predicted Total",
+                ylabel="True Total",
+                std=self.MODEL.std,
+            )
+            plotting.plot_1d_histogram_subplots(
+                pred_score,
+                true_score,
+                "Histograms of Predicted/True Total Scores of NBA games",
+                sgxtitle="Predicted Score",
+                sgytitle="True Score",
+                sgxytitle="Pred-True Score Difference",
+                std=self.MODEL.std,
+            )
+
+        return None  # TODO put back return statement
+
+    def objective_function_scalar(self, year, z, b):
+        raise NotImplementedError
 
 
 def optimize(optimizer):
@@ -566,11 +639,14 @@ if __name__ == "__main__":
 
     # if uncommented, only calls the debug debug plots then exits
     # HomeWinOptimizer()._gen_debug_debug_plots()
+    # TotalScoreOptimizer()._gen_debug_debug_plots()
     # exit()
 
     # call optimize with the correct object based on specified args
     if ARGS.model == "homeWin":
         optimize(HomeWinOptimizer())
+    elif ARGS.model == "totalScore":
+        optimize(TotalScoreOptimizer())
     else:
         raise NotImplementedError
 

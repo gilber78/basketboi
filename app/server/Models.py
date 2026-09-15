@@ -36,13 +36,8 @@ def recency_weight_function(x, z, b):
 
 
 HOME_WIN_WEIGHT_FUNCTION = partial(recency_weight_function, z=config["HOME_WIN_PR_PARAMETERS"]["z"], b=config["HOME_WIN_PR_PARAMETERS"]["b"])
+TOTAL_SCORE_WEIGHT_FUNCTION = partial(recency_weight_function, z=config["TOTAL_SCORE_PARAMETERS"]["z"], b=config["TOTAL_SCORE_PARAMETERS"]["b"])
 EVEN_WEIGHT_FUNCTION = lambda x: 1
-
-
-# TODO when ready for spread/total, create the ability to have a plit p*M1 + (1-p)*M2 type of structure
-# - need the ability to train model on either all wins, all losses, or *ALL* data (default)
-# - need a container class that can take a p value and do the p/1-p splits for the models as the "final form"
-# Maybe call this DependentModel?
 
 
 class Term:
@@ -166,6 +161,36 @@ class Model:
         if self.bounds[0] or self.bounds[1]:
             vals = np.clip(vals, a_min=self.bounds[0], a_max=self.bounds[1])
         return vals
+
+
+class DependentModel:
+    """
+    Model class that acts as a blend between two base models based on a probability
+    """
+
+    def __init__(self, win_model: Model, lose_model: Model):
+        """
+        Stores the two submodels required for a dependent model
+        """
+        self.win_model = win_model
+        self.lose_model = lose_model
+
+    def calculate_model(self, ref_data: pd.DataFrame):
+        """
+        Calculates both the win and lose models for later valuation
+        """
+        win_data = ref_data[ref_data["GAME_homeWin"] == 1].reset_index()
+        lose_data = ref_data[ref_data["GAME_homeWin"] == 0].reset_index()
+        self.win_model.calculate_model(win_data)
+        self.lose_model.calculate_model(lose_data)
+        self.var = (self.win_model.var + self.lose_model.var) / 2  # use average of both variances
+        self.std = np.sqrt(self.var)
+
+    def value(self, input_data: pd.Series, p=0.5, apply_mask=False):
+        """
+        Calculates the vlaue of the model (prediction) for a given data series and probability p
+        """
+        return p * self.win_model.value(input_data, apply_mask) + (1 - p) * self.lose_model.value(input_data, apply_mask)
 
 
 # term bank, mostly for use inside this file
@@ -390,7 +415,8 @@ MODEL_HOME_SPREAD = Model(
     "GAME_spread",
 )
 
-MODEL_TOTAL_SCORE = Model(
+
+TOTAL_SCORE_WIN_COMPONENT = Model(
     [
         # constant
         CONSTANT,
@@ -401,10 +427,46 @@ MODEL_TOTAL_SCORE = Model(
         HOME_HOME_POINTS_AGAINST_PER_GAME,
         HOME_WIN_POINTS_FOR_PER_GAME,
         HOME_WIN_POINTS_AGAINST_PER_GAME,
-        HOME_LOSS_POINTS_FOR_PER_GAME,
-        HOME_LOSS_POINTS_AGAINST_PER_GAME,
+        # HOME_LOSS_POINTS_FOR_PER_GAME,
+        # HOME_LOSS_POINTS_AGAINST_PER_GAME,
         HOME_HOMEWIN_POINTS_FOR_PER_GAME,
         HOME_HOMEWIN_POINTS_AGAINST_PER_GAME,
+        # HOME_HOMELOSS_POINTS_FOR_PER_GAME,
+        # HOME_HOMELOSS_POINTS_AGAINST_PER_GAME,
+        # away team params
+        AWAY_POINTS_FOR_PER_GAME,
+        AWAY_POINTS_AGAINST_PER_GAME,
+        AWAY_AWAY_POINTS_FOR_PER_GAME,
+        AWAY_AWAY_POINTS_AGAINST_PER_GAME,
+        # AWAY_WIN_POINTS_FOR_PER_GAME,
+        # AWAY_WIN_POINTS_AGAINST_PER_GAME,
+        AWAY_LOSS_POINTS_FOR_PER_GAME,
+        AWAY_LOSS_POINTS_AGAINST_PER_GAME,
+        # AWAY_AWAYWIN_POINTS_FOR_PER_GAME,
+        # AWAY_AWAYWIN_POINTS_AGAINST_PER_GAME,
+        AWAY_AWAYLOSS_POINTS_FOR_PER_GAME,
+        AWAY_AWAYLOSS_POINTS_AGAINST_PER_GAME,
+    ],
+    "GAME_total",
+    [0, None],
+    TOTAL_SCORE_WEIGHT_FUNCTION,
+)
+
+TOTAL_SCORE_LOSE_COMPONENT = Model(
+    [
+        # constant
+        CONSTANT,
+        # home team params
+        HOME_POINTS_FOR_PER_GAME,
+        HOME_POINTS_AGAINST_PER_GAME,
+        HOME_HOME_POINTS_FOR_PER_GAME,
+        HOME_HOME_POINTS_AGAINST_PER_GAME,
+        # HOME_WIN_POINTS_FOR_PER_GAME,
+        # HOME_WIN_POINTS_AGAINST_PER_GAME,
+        HOME_LOSS_POINTS_FOR_PER_GAME,
+        HOME_LOSS_POINTS_AGAINST_PER_GAME,
+        # HOME_HOMEWIN_POINTS_FOR_PER_GAME,
+        # HOME_HOMEWIN_POINTS_AGAINST_PER_GAME,
         HOME_HOMELOSS_POINTS_FOR_PER_GAME,
         HOME_HOMELOSS_POINTS_AGAINST_PER_GAME,
         # away team params
@@ -414,13 +476,16 @@ MODEL_TOTAL_SCORE = Model(
         AWAY_AWAY_POINTS_AGAINST_PER_GAME,
         AWAY_WIN_POINTS_FOR_PER_GAME,
         AWAY_WIN_POINTS_AGAINST_PER_GAME,
-        AWAY_LOSS_POINTS_FOR_PER_GAME,
-        AWAY_LOSS_POINTS_AGAINST_PER_GAME,
+        # AWAY_LOSS_POINTS_FOR_PER_GAME,
+        # AWAY_LOSS_POINTS_AGAINST_PER_GAME,
         AWAY_AWAYWIN_POINTS_FOR_PER_GAME,
         AWAY_AWAYWIN_POINTS_AGAINST_PER_GAME,
-        AWAY_AWAYLOSS_POINTS_FOR_PER_GAME,
-        AWAY_AWAYLOSS_POINTS_AGAINST_PER_GAME,
+        # AWAY_AWAYLOSS_POINTS_FOR_PER_GAME,
+        # AWAY_AWAYLOSS_POINTS_AGAINST_PER_GAME,
     ],
     "GAME_total",
     [0, None],
+    TOTAL_SCORE_WEIGHT_FUNCTION,
 )
+
+MODEL_TOTAL_SCORE = DependentModel(TOTAL_SCORE_WIN_COMPONENT, TOTAL_SCORE_LOSE_COMPONENT)

@@ -1,0 +1,59 @@
+<< coefficients for home win probability >>
+
+NUM  Variable Name                       current   notes
+---------------------------------------------------------------------
+01   HOME_WIN_PERCENTAGE,                    |  -  | 
+02   HOME_POINTS_FOR_PER_GAME,               | 1,1 | 
+03   HOME_POINTS_AGAINST_PER_GAME,           | 1,1 | 
+04   HOME_STREAK,                            |  -  | 
+05   HOME_LAST10_W,                          |  -  | 
+06   HOME_LAST10_L,                          |  -  | 
+07   HOME_HOME_WIN_PERCENTAGE,               |  -  | 
+08   HOME_HOME_POINTS_FOR_PER_GAME,          | 1,1 | 
+09   HOME_HOME_POINTS_AGAINST_PER_GAME,      | 1,1 | 
+10   HOME_HOME_STREAK,                       |  -  | 
+11   HOME_HOME_LAST10_W,                     |  -  | 
+12   HOME_HOME_LAST10_L,                     |  -  | 
+13   HOME_WIN_POINTS_FOR_PER_GAME,           | 1,x |
+14   HOME_WIN_POINTS_AGAINST_PER_GAME,       | 1,x |
+15   HOME_LOSS_POINTS_FOR_PER_GAME,          | x,1 |
+16   HOME_LOSS_POINTS_AGAINST_PER_GAME,      | x,1 |
+17   HOME_HOMEWIN_POINTS_FOR_PER_GAME,       | 1,x |
+18   HOME_HOMEWIN_POINTS_AGAINST_PER_GAME,   | 1,x |
+19   HOME_HOMELOSS_POINTS_FOR_PER_GAME,      | x,1 |
+20   HOME_HOMELOSS_POINTS_AGAINST_PER_GAME,  | x,1 |
+
+21   AWAY_WIN_PERCENTAGE,                    |  -  | 
+22   AWAY_POINTS_FOR_PER_GAME,               | 1,1 |
+23   AWAY_POINTS_AGAINST_PER_GAME,           | 1,1 | 
+24   AWAY_STREAK,                            |  -  | 
+25   AWAY_LAST10_W,                          |  -  | 
+26   AWAY_LAST10_L,                          |  -  | 
+27   AWAY_AWAY_WIN_PERCENTAGE,               |  -  | 
+28   AWAY_AWAY_POINTS_FOR_PER_GAME,          | 1,1 | 
+29   AWAY_AWAY_POINTS_AGAINST_PER_GAME,      | 1,1 | 
+30   AWAY_AWAY_STREAK,                       |  -  | 
+31   AWAY_AWAY_LAST10_W,                     |  -  | 
+32   AWAY_AWAY_LAST10_L,                     |  -  | 
+33   AWAY_WIN_POINTS_FOR_PER_GAME,           | x,1 |
+34   AWAY_WIN_POINTS_AGAINST_PER_GAME,       | x,1 |
+35   AWAY_LOSS_POINTS_FOR_PER_GAME,          | 1,x |
+36   AWAY_LOSS_POINTS_AGAINST_PER_GAME,      | 1,x |
+37   AWAY_AWAYWIN_POINTS_FOR_PER_GAME,       | x,1 |
+38   AWAY_AWAYWIN_POINTS_AGAINST_PER_GAME,   | x,1 |
+39   AWAY_AWAYLOSS_POINTS_FOR_PER_GAME,      | 1,x |
+40   AWAY_AWAYLOSS_POINTS_AGAINST_PER_GAME,  | 1,x |
+
+It looks like, examining these graphs, that linear may be best for all (relevant) variables. Maybe, just maybe, some cubes are useful, but unlikely.
+Variables relating to teams performance (wins, %, etc) all look like they have no utility.
+Performance is different enough in home win vs home loss looks significant enough to warrant two models, a win and lose that combine.
+If we assume p=0.5, then it looks like the delta between prediction and actual follows a normal distribution.
+So, the z-score below a betting line is the probability of the under, and the z-score above a betting line is the probability of the over.
+This needs to be verified with an actual probability passed to the dependent model in optimize.py
+This needs to be fully optimized for z and b, as well as determined if a weight function is useful at all.
+
+
+<< Parameters for home win probability to optimize againts >>
+Weight function z
+Weight function b
+year is set at 2020 for the 2026-27 season, with 2024 being the initial test year

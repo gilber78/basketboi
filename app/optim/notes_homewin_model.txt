@@ -14,14 +14,14 @@ NUM  Variable Name                       current   notes
 10   HOME_HOME_STREAK,                       | 3 | 
 11   HOME_HOME_LAST10_W,                     | 1 | 
 12   HOME_HOME_LAST10_L,                     | 1 | 
-13   HOME_WIN_POINTS_FOR_PER_GAME,           | X | ?
-14   HOME_WIN_POINTS_AGAINST_PER_GAME,       | X | ?
-15   HOME_LOSS_POINTS_FOR_PER_GAME,          | X | ?
-16   HOME_LOSS_POINTS_AGAINST_PER_GAME,      | X | ?
-17   HOME_HOMEWIN_POINTS_FOR_PER_GAME,       | X | ?
-18   HOME_HOMEWIN_POINTS_AGAINST_PER_GAME,   | X | ?
-19   HOME_HOMELOSS_POINTS_FOR_PER_GAME,      | X | ?
-20   HOME_HOMELOSS_POINTS_AGAINST_PER_GAME,  | X | ?
+13   HOME_WIN_POINTS_FOR_PER_GAME,           | - | 
+14   HOME_WIN_POINTS_AGAINST_PER_GAME,       | - | 
+15   HOME_LOSS_POINTS_FOR_PER_GAME,          | - | 
+16   HOME_LOSS_POINTS_AGAINST_PER_GAME,      | - | 
+17   HOME_HOMEWIN_POINTS_FOR_PER_GAME,       | - | 
+18   HOME_HOMEWIN_POINTS_AGAINST_PER_GAME,   | - | 
+19   HOME_HOMELOSS_POINTS_FOR_PER_GAME,      | - | 
+20   HOME_HOMELOSS_POINTS_AGAINST_PER_GAME,  | - | 
 
 21   AWAY_WIN_PERCENTAGE,                    | 1 | 
 22   AWAY_POINTS_FOR_PER_GAME,               | 3 |
@@ -35,14 +35,14 @@ NUM  Variable Name                       current   notes
 30   AWAY_AWAY_STREAK,                       | 3 | 
 31   AWAY_AWAY_LAST10_W,                     | 1 | 
 32   AWAY_AWAY_LAST10_L,                     | 1 | 
-33   AWAY_WIN_POINTS_FOR_PER_GAME,           | X | ?
-34   AWAY_WIN_POINTS_AGAINST_PER_GAME,       | X | ?
-35   AWAY_LOSS_POINTS_FOR_PER_GAME,          | X | ?
-36   AWAY_LOSS_POINTS_AGAINST_PER_GAME,      | X | ?
-37   AWAY_AWAYWIN_POINTS_FOR_PER_GAME,       | X | ?
-38   AWAY_AWAYWIN_POINTS_AGAINST_PER_GAME,   | X | ?
-39   AWAY_AWAYLOSS_POINTS_FOR_PER_GAME,      | X | ?
-40   AWAY_AWAYLOSS_POINTS_AGAINST_PER_GAME,  | X | ?
+33   AWAY_WIN_POINTS_FOR_PER_GAME,           | - | 
+34   AWAY_WIN_POINTS_AGAINST_PER_GAME,       | - | 
+35   AWAY_LOSS_POINTS_FOR_PER_GAME,          | - | 
+36   AWAY_LOSS_POINTS_AGAINST_PER_GAME,      | - | 
+37   AWAY_AWAYWIN_POINTS_FOR_PER_GAME,       | - | 
+38   AWAY_AWAYWIN_POINTS_AGAINST_PER_GAME,   | - | 
+39   AWAY_AWAYLOSS_POINTS_FOR_PER_GAME,      | - | 
+40   AWAY_AWAYLOSS_POINTS_AGAINST_PER_GAME,  | - | 
 
 Quadratic fit doesn't make sense for our purposes. We are either okay with different behavior at the extremes of the data or not.
 There's not really a situation where the probability of winning goes *up* at the extremes, it's always an odd function.

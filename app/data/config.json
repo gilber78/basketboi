@@ -20,5 +20,9 @@
     "HOME_WIN_PR_PARAMETERS": {
         "z": -100,
         "b": 1
+    },
+    "TOTAL_SCORE_PARAMETERS": {
+        "z": -100,
+        "b": 1
     }
 }
