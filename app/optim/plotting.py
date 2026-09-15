@@ -73,28 +73,28 @@ def plot_2d_histogram(x, y, title, binwidth=1, xlabel="Predicted values", ylabel
 
 def plot_1d_histogram_subplots(x, y, title, binwidth=1, sgxtitle="Predicted Value", sgytitle="True Value", sgxytitle="Delta Value", std=None):
     """
-    Plot a system of histograms that show x, x-y, and y series
+    Plot a system of histograms that show x, y-x, and y series
     """
     fig, ax = plt.subplots(1, 3, figsize=(12, 5))
     fig.suptitle(title, wrap=True)
     ax[0].set_title(sgxtitle)
     ax[0].hist(x, bins=int(max(x) - min(x) / binwidth) + 1)
     ax[1].set_title(sgxytitle)
-    ax[1].hist(x - y, bins=int(max(x - y) - min(x - y) / binwidth) + 1)
+    ax[1].hist(y - x, bins=int(max(y - x) - min(y - x) / binwidth) + 1)
     ax[2].set_title(sgytitle)
     ax[2].hist(y, bins=int(max(y) - min(y) / binwidth) + 1)
     if std is not None:
         mult = len(x)
         xsorted_unique = np.unique(np.sort(x))
-        delsorted_unique = np.unique(np.sort(x - y))
+        delsorted_unique = np.unique(np.sort(y - x))
         ysorted_unique = np.unique(np.sort(y))
         ax[0].plot(np.mean(x) - std, 0, "kx")
         ax[0].plot(np.mean(x) + std, 0, "kx")
         ax[0].plot(xsorted_unique, mult * norm.pdf(xsorted_unique, loc=np.mean(x), scale=np.std(x)), "k", alpha=0.6)
-        ax[1].plot(np.mean(x - y) - std, 0, "kx")
-        ax[1].plot(np.mean(x - y) + std, 0, "kx")
+        ax[1].plot(np.mean(y - x) - std, 0, "kx")
+        ax[1].plot(np.mean(y - x) + std, 0, "kx")
         ax[1].plot(delsorted_unique, mult * norm.pdf(delsorted_unique, loc=0, scale=std), "b", alpha=0.75)
-        ax[1].plot(delsorted_unique, mult * norm.pdf(delsorted_unique, loc=np.mean(x - y), scale=np.std(x - y)), "k", alpha=0.6)
+        ax[1].plot(delsorted_unique, mult * norm.pdf(delsorted_unique, loc=np.mean(y - x), scale=np.std(y - x)), "k", alpha=0.6)
         ax[2].plot(np.mean(y) - std, 0, "kx")
         ax[2].plot(np.mean(y) + std, 0, "kx")
         ax[2].plot(ysorted_unique, mult * norm.pdf(ysorted_unique, loc=np.mean(y), scale=np.std(y)), "k", alpha=0.6)
