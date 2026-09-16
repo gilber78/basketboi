@@ -7,7 +7,7 @@ See LICENSE.md for permitted use.
 
 import numpy as np
 import matplotlib.pyplot as plt
-from scipy.stats import norm
+from scipy.stats import norm, probplot
 
 import statistics as stats
 
@@ -16,7 +16,7 @@ def plot_pdf_function(x, y, title, binwidth=0.05, bounds=(0, 1), xlabel="Predict
     """
     Plot probability distribution function for a dataset x and y based on supplied bin sizes
     """
-    xvals, yvals, m, b = stats.calc_calibrated_slope_intercept(x, y, binwidth, bounds, True)
+    xvals, yvals, m, b = stats.calc_calibrated_slope_intercept_binned(x, y, binwidth, bounds, True)
     liney = m * xvals + b
     plt.figure()
     plt.title(title, wrap=True)
@@ -98,6 +98,20 @@ def plot_1d_histogram_subplots(x, y, title, binwidth=1, sgxtitle="Predicted Valu
         ax[2].plot(np.mean(y) - std, 0, "kx")
         ax[2].plot(np.mean(y) + std, 0, "kx")
         ax[2].plot(ysorted_unique, mult * norm.pdf(ysorted_unique, loc=np.mean(y), scale=np.std(y)), "k", alpha=0.6)
+
+
+def plot_qqs(x, y, title, sgxtitle="QQ of Predicted Values", sgytitle="QQ of True Values", sgxytitle="QQ of Residuals"):
+    """
+    Generate Quartile-Quartile plots for continuous xy data
+    """
+    fig, ax = plt.subplots(1, 3, figsize=(12, 5))
+    fig.suptitle(title, wrap=True)
+    probplot(x, dist="norm", plot=ax[0])
+    probplot(y - x, dist="norm", plot=ax[1])
+    probplot(y, dist="norm", plot=ax[2])
+    ax[0].set_title(sgxtitle)
+    ax[1].set_title(sgxytitle)
+    ax[2].set_title(sgytitle)
 
 
 def plot_pdf_function_DEBUG(x, y, title, binwidth, bounds, xlabel="Input Term", ylabel="Output Model Value", sos_mult=1):
@@ -225,7 +239,7 @@ def plot_scatterplot_subplots_DEBUG(x, y, xwin, ywin, xlose, ylose, title, xlabe
     print("    Home Team Loses:", np.round(loseline_strength_of_signal, 4), np.round(losecube_strength_of_signal, 4))
 
     # plotting functionality
-    fig, ax = plt.subplots(1, 3, figsize=(19.5, 5))
+    fig, ax = plt.subplots(1, 3, figsize=(12, 5))
     fig.suptitle(title, wrap=True)
     ax[0].set_xlabel(xlabel)
     ax[0].set_ylabel(ylabel)

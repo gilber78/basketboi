@@ -500,7 +500,7 @@ class HomeWinOptimizer(BaseOptimizer):
         _, _, AUC = stats.calc_ROC_curve(pred_win, true_win)
         BRIER = stats.calc_brier_score(pred_win, true_win)
         ECE = stats.calc_ECE_score_binned(pred_win, true_win)
-        _, _, M, B = stats.calc_calibrated_slope_intercept(pred_win, true_win)
+        _, _, M, B = stats.calc_calibrated_slope_intercept_binned(pred_win, true_win)
 
         # debug ouputs, based on the optional parameters
         if debug_prints:
@@ -545,12 +545,19 @@ class TotalScoreOptimizer(BaseOptimizer):
 
     def objective_function_tuple(self, year, z, b, daybyday_prints=False, debug_prints=False, debug_plots=False, debug_debug_plots=False):
         pred_score, true_score = self._get_pred_and_true_array(year, z, b, daybyday_prints)
-        # put in actual stats calc for total score
+        MAE = stats.calc_mean_absolute_error(pred_score, true_score)
+        RMSE = stats.calc_RMSE(pred_score, true_score)
+        RCE = stats.calc_RCE_score(pred_score, true_score)
+        M, B = stats.calc_calibrated_slope_intercept(pred_score, true_score)
 
         # debug ouputs, based on the optional parameters
         if debug_prints:
             print("=========", year, z, b, "=========")
-            print("TODO put in actual stats calc for total score")  # TODO put in actual stats calc for total score
+            print("ECE:", RCE)
+            print("Slope:", M)
+            print("Intercept:", B)
+            print("MAE: ", MAE)
+            print("RMSE:", RMSE)
             print("Model variance:", self.MODEL.var)
             print("Model stdev:", self.MODEL.std)
 
@@ -575,8 +582,16 @@ class TotalScoreOptimizer(BaseOptimizer):
                 sgxytitle="Pred-True Score Difference",
                 std=self.MODEL.std,
             )
+            plotting.plot_qqs(
+                pred_score,
+                true_score,
+                "QQ Plots for Predicted vs Actual Total Score of NBA games",
+                sgxtitle="Predicted Score",
+                sgytitle="True Score",
+                sgxytitle="Pred-True Score Difference",
+            )
 
-        return None  # TODO put back return statement
+        return RCE, M, B, MAE, RMSE
 
     def objective_function_scalar(self, year, z, b):
         raise NotImplementedError

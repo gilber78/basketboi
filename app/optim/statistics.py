@@ -54,11 +54,38 @@ def calc_brier_score(x, y):
     return brier_score
 
 
-def calc_ECE_score_binned(x, y):
+def calc_mean_absolute_error(x, y):
     """
-    Calculate Estimated Calibrated Error for an xy data series
+    Calculates the mean absolute error of a continuous xy data series
     """
-    raise NotImplementedError
+    return np.sum(np.abs(y - x)) / len(x)
+
+
+def calc_RMSE(x, y):
+    """
+    Calculates the root mean squared error of a continuous xy data series
+    """
+    return np.sqrt(np.sum((y - x) ** 2) / len(x))
+
+
+def calc_RCE_score(x, y, binwidth=1):
+    """
+    Calculate Regression Calibrated Error for a continous xy data series
+    """
+    bounds = (np.min(x), np.max(x))
+    bins = np.linspace(bounds[0], bounds[1], int((bounds[1] - bounds[0]) / binwidth) + 1)
+    vals = []
+    N = len(x)
+    for i in range(1, len(bins)):
+        y_mask = y[(bins[i - 1] < x) & (x <= bins[i])]
+        n_k = len(y_mask)
+        if len(y_mask) == 0:
+            p_k = (bins[i] + bins[i - 1]) / 2  # don't penalize the statistic due to a lack of data
+        else:
+            p_k = sum(y_mask) / len(y_mask)
+        c_k = np.mean([bins[i - 1], bins[i]])
+        vals.append((n_k / N) * np.abs(p_k - c_k))
+    return sum(vals)
 
 
 def calc_ECE_score_binned(x, y, binwidth=0.05, bounds=(0, 1)):
@@ -80,7 +107,15 @@ def calc_ECE_score_binned(x, y, binwidth=0.05, bounds=(0, 1)):
     return sum(vals)
 
 
-def calc_calibrated_slope_intercept(x, y, binwidth=0.05, bounds=(0, 1), print_mask=False):
+def calc_calibrated_slope_intercept(x, y):
+    """
+    Function that spits out slope and intercept for continuous data, absent other needed context
+    """
+    m, b = np.polyfit(x, y, 1)
+    return m, b
+
+
+def calc_calibrated_slope_intercept_binned(x, y, binwidth=0.05, bounds=(0, 1), print_mask=False):
     """
     calculate slope intercept of PDF histogram data
     """
