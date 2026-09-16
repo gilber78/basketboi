@@ -337,7 +337,7 @@ class BaseOptimizer:
             if daybyday_prints:
                 print(">>>", game_date)
             for _, row in test_data[test_data["GAME_gameDate"] == game_date].iterrows():
-                pred.append(self.MODEL.value(row, apply_mask=True)[0])  # TODO figure out how to get the proper p in this statement
+                pred.append(self.MODEL.value(row, apply_mask=True)[0])  # TODO figure out passing probability in daybyday
                 ref_data.loc[len(ref_data)] = row
             MODEL_HOME_WIN_PR.calculate_model(ref_data)
         pred = np.array(pred)
@@ -594,6 +594,7 @@ class TotalScoreOptimizer(BaseOptimizer):
         return RCE, M, B, MAE, RMSE
 
     def objective_function_scalar(self, year, z, b):
+        # TODO design objective function scalar for total score
         raise NotImplementedError
 
 
