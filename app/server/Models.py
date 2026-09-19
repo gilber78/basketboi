@@ -35,9 +35,9 @@ def recency_weight_function(x, z, b):
     return val**b
 
 
+EVEN_WEIGHT_FUNCTION = lambda x: 1
 HOME_WIN_WEIGHT_FUNCTION = partial(recency_weight_function, z=config["HOME_WIN_PR_PARAMETERS"]["z"], b=config["HOME_WIN_PR_PARAMETERS"]["b"])
 TOTAL_SCORE_WEIGHT_FUNCTION = partial(recency_weight_function, z=config["TOTAL_SCORE_PARAMETERS"]["z"], b=config["TOTAL_SCORE_PARAMETERS"]["b"])
-EVEN_WEIGHT_FUNCTION = lambda x: 1
 
 
 class Term:

@@ -289,6 +289,10 @@ class BaseOptimizer:
         Store variables used for all the optimization. Child classes pass their default values here.
         """
         self.MODEL = MODEL
+        if type(MODEL) == DependentModel:
+            self.PROB_MODEL = MODEL_HOME_WIN_PR
+        else:
+            self.PROB_MODEL = None
         self.config_data_column = config_data_column
         self.sample_data_column = sample_data_column
         self.titles = TITLES_LAMBDA(debug_debug_fig_title)
@@ -329,6 +333,8 @@ class BaseOptimizer:
         # evaluate the original model with substituted parameters
         self.MODEL.weight_func = partial(recency_weight_function, z=z, b=b)
         self.MODEL.calculate_model(ref_data)
+        if self.PROB_MODEL is not None:
+            self.PROB_MODEL.calculate_model(ref_data)
 
         # looping mechanism, to check how we do live with updated models after each day of the season
         pred = []
@@ -337,9 +343,15 @@ class BaseOptimizer:
             if daybyday_prints:
                 print(">>>", game_date)
             for _, row in test_data[test_data["GAME_gameDate"] == game_date].iterrows():
-                pred.append(self.MODEL.value(row, apply_mask=True)[0])  # TODO figure out passing probability in daybyday
+                if self.PROB_MODEL is not None:
+                    prob = self.PROB_MODEL.value(row, apply_mask=True)[0]
+                    pred.append(self.MODEL.value(row, p=prob, apply_mask=True)[0])
+                else:
+                    pred.append(self.MODEL.value(row, apply_mask=True)[0])
                 ref_data.loc[len(ref_data)] = row
-            MODEL_HOME_WIN_PR.calculate_model(ref_data)
+            self.MODEL.calculate_model(ref_data)
+            if self.PROB_MODEL is not None:
+                self.PROB_MODEL.calculate_model(ref_data)
         pred = np.array(pred)
         true = test_data[self.sample_data_column].to_numpy()
 
@@ -594,8 +606,8 @@ class TotalScoreOptimizer(BaseOptimizer):
         return RCE, M, B, MAE, RMSE
 
     def objective_function_scalar(self, year, z, b):
-        # TODO design objective function scalar for total score
-        raise NotImplementedError
+        RCE, M, B, MAE, RMSE = self.objective_function_tuple(year, z, b)
+        return (-4 * RMSE**2) + (-4 * (M - 1) ** 2) + (-4 * B**2)
 
 
 def optimize(optimizer):

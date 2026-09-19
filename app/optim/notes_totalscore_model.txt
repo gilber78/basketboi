@@ -57,3 +57,164 @@ This needs to be fully optimized for z and b, as well as determined if a weight 
 Weight function z
 Weight function b
 year is set at 2020 for the 2026-27 season, with 2024 being the initial test year
+
+FIGURE 1:
+    Home Team Wins:  0.0 0.0
+    All Outcomes:    0.0 0.0001
+    Home Team Loses: 0.0004 0.0013
+FIGURE 2:
+    Home Team Wins:  0.161 0.2501
+    All Outcomes:    0.0971 0.134
+    Home Team Loses: 0.0545 0.064
+FIGURE 3:
+    Home Team Wins:  0.1055 0.1234
+    All Outcomes:    0.1082 0.1446
+    Home Team Loses: 0.132 0.1802
+FIGURE 4:
+    Home Team Wins:  0.0001 0.0161
+    All Outcomes:    0.0 0.0006
+    Home Team Loses: 0.0001 0.0002
+FIGURE 5:
+    Home Team Wins:  0.0 0.0017
+    All Outcomes:    0.0 0.0
+    Home Team Loses: 0.0 0.0
+FIGURE 6:
+    Home Team Wins:  0.0 0.0006
+    All Outcomes:    0.0 0.0
+    Home Team Loses: 0.0001 0.0001
+FIGURE 7:
+    Home Team Wins:  0.0 0.0005
+    All Outcomes:    0.0 0.0
+    Home Team Loses: 0.0001 0.0006
+FIGURE 8:
+    Home Team Wins:  0.1575 0.378
+    All Outcomes:    0.0923 0.1524
+    Home Team Loses: 0.05 0.0555
+FIGURE 9:
+    Home Team Wins:  0.0877 0.1417
+    All Outcomes:    0.1042 0.1213
+    Home Team Loses: 0.1463 0.0885
+FIGURE 10:
+    Home Team Wins:  0.0 0.0003
+    All Outcomes:    0.0 0.0002
+    Home Team Loses: 0.0003 0.0017
+FIGURE 11:
+    Home Team Wins:  0.0001 0.0002
+    All Outcomes:    0.0 0.0
+    Home Team Loses: 0.0 0.0001
+FIGURE 12:
+    Home Team Wins:  0.0 0.0
+    All Outcomes:    0.0 0.0001
+    Home Team Loses: 0.0005 0.0013
+FIGURE 13:
+    Home Team Wins:  0.2332 0.1737
+    All Outcomes:    0.2029 0.1207
+    Home Team Loses: 0.1717 0.1022
+FIGURE 14:
+    Home Team Wins:  0.2097 0.1575
+    All Outcomes:    0.203 0.105
+    Home Team Loses: 0.2034 0.1242
+FIGURE 15:
+    Home Team Wins:  0.1557 0.1059
+    All Outcomes:    0.1375 0.0953
+    Home Team Loses: 0.1179 0.0782
+FIGURE 16:
+    Home Team Wins:  0.1743 0.1024
+    All Outcomes:    0.1628 0.1022
+    Home Team Loses: 0.1548 0.171
+FIGURE 17:
+    Home Team Wins:  0.1518 0.1092
+    All Outcomes:    0.116 0.067
+    Home Team Loses: 0.0851 0.0582
+FIGURE 18:
+    Home Team Wins:  0.138 0.0895
+    All Outcomes:    0.1308 0.0865
+    Home Team Loses: 0.127 0.0934
+FIGURE 19:
+    Home Team Wins:  0.151 0.4491
+    All Outcomes:    0.1518 0.522
+    Home Team Loses: 0.1526 0.6067
+FIGURE 20:
+    Home Team Wins:  0.0898 0.0779
+    All Outcomes:    0.1043 0.0772
+    Home Team Loses: 0.1299 0.103
+FIGURE 21:
+    Home Team Wins:  0.0 0.0001
+    All Outcomes:    0.0 0.0
+    Home Team Loses: 0.0 0.0
+FIGURE 22:
+    Home Team Wins:  0.1367 0.1789
+    All Outcomes:    0.1118 0.1027
+    Home Team Loses: 0.0978 0.0633
+FIGURE 23:
+    Home Team Wins:  0.1015 0.1018
+    All Outcomes:    0.0981 0.0905
+    Home Team Loses: 0.1027 0.0918
+FIGURE 24:
+    Home Team Wins:  0.0001 0.0059
+    All Outcomes:    0.0 0.0014
+    Home Team Loses: 0.0 0.0003
+FIGURE 25:
+    Home Team Wins:  0.0 0.0001
+    All Outcomes:    0.0 0.0
+    Home Team Loses: 0.0 0.0001
+FIGURE 26:
+    Home Team Wins:  0.0 0.0002
+    All Outcomes:    0.0 0.0001
+    Home Team Loses: 0.0 0.0
+FIGURE 27:
+    Home Team Wins:  0.0001 0.0006
+    All Outcomes:    0.0 0.0002
+    Home Team Loses: 0.0 0.0
+FIGURE 28:
+    Home Team Wins:  0.115 0.1061
+    All Outcomes:    0.0885 0.0629
+    Home Team Loses: 0.0697 0.0424
+FIGURE 29:
+    Home Team Wins:  0.1135 0.1007
+    All Outcomes:    0.1106 0.1289
+    Home Team Loses: 0.1144 0.2538
+FIGURE 30:
+    Home Team Wins:  0.0006 0.001
+    All Outcomes:    0.0001 0.0002
+    Home Team Loses: 0.0 0.0007
+FIGURE 31:
+    Home Team Wins:  0.0 0.0001
+    All Outcomes:    0.0 0.0
+    Home Team Loses: 0.0 0.0
+FIGURE 32:
+    Home Team Wins:  0.0002 0.0014
+    All Outcomes:    0.0 0.0007
+    Home Team Loses: 0.0 0.0008
+FIGURE 33:
+    Home Team Wins:  0.2635 0.2146
+    All Outcomes:    0.2371 0.1684
+    Home Team Loses: 0.2099 0.1276
+FIGURE 34:
+    Home Team Wins:  0.1309 0.1381
+    All Outcomes:    0.1637 0.1094
+    Home Team Loses: 0.216 0.1471
+FIGURE 35:
+    Home Team Wins:  0.4388 0.2959
+    All Outcomes:    0.2935 0.8076
+    Home Team Loses: 0.1749 0.5967
+FIGURE 36:
+    Home Team Wins:  0.2634 0.1895
+    All Outcomes:    0.2254 0.5006
+    Home Team Loses: 0.1829 0.4387
+FIGURE 37:
+    Home Team Wins:  0.1471 0.1001
+    All Outcomes:    0.1252 0.0844
+    Home Team Loses: 0.1013 0.0716
+FIGURE 38:
+    Home Team Wins:  0.0537 0.0702
+    All Outcomes:    0.0825 0.0737
+    Home Team Loses: 0.1389 0.0943
+FIGURE 39:
+    Home Team Wins:  0.1577 0.7299
+    All Outcomes:    0.0999 0.4641
+    Home Team Loses: 0.0555 0.2568
+FIGURE 40:
+    Home Team Wins:  0.1004 0.067
+    All Outcomes:    0.0783 0.0509
+    Home Team Loses: 0.0563 0.0403
