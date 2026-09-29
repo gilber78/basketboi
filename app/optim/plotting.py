@@ -26,7 +26,28 @@ def plot_pdf_function(x, y, title, binwidth=0.05, bounds=(0, 1), xlabel="Predict
     plt.ylim((0, 1))
     plt.scatter(xvals, yvals, alpha=1)
     plt.plot(xvals, liney, alpha=0.6)
-    # this isn't super useful for the win model, but a good-to-have for everything else
+    if std is not None:
+        plt.plot(xvals, liney + std, "g", alpha=0.75)
+        plt.plot(xvals, liney - std, "g", alpha=0.75)
+    plt.plot(xvals, xvals + 0.05, "k", alpha=0.24)
+    plt.plot(xvals, xvals - 0.05, "k", alpha=0.24)
+    plt.plot(xvals, xvals, "k", alpha=0.6)
+    plt.legend([f"m = {m}", f"b = {b}", f"std = {std}"])
+
+
+def plot_conditional_mean(x, y, title, binwidth=1, bounds=(0, 1), xlabel="Predicted Mean", ylabel="True Mean", std=None):
+    """
+    Plot probability distribution function for a dataset x and y based on supplied bin sizes
+    """
+    xvals, yvals, m, b = stats.calc_calibrated_slope_intercept_binned(x, y, binwidth, bounds, True)
+    liney = m * xvals + b
+    plt.figure()
+    plt.title(title, wrap=True)
+    plt.xlabel(xlabel)
+    plt.ylabel(ylabel)
+    plt.xlim(bounds)
+    plt.scatter(xvals, yvals, alpha=1)
+    plt.plot(xvals, liney, alpha=0.6)
     if std is not None:
         plt.plot(xvals, liney + std, "g", alpha=0.75)
         plt.plot(xvals, liney - std, "g", alpha=0.75)
@@ -51,24 +72,16 @@ def plot_ROC_curve(x, y, title, binwidth=0.01, bounds=(0, 1), xlabel="FPR", ylab
     plt.plot(FPR, FPR, "k", alpha=0.6)
 
 
-def plot_2d_histogram(x, y, title, binwidth=1, xlabel="Predicted values", ylabel="True values", std=None):
+def plot_2d_histogram(x, y, title, binwidth=1, xlabel="Predicted values", ylabel="True values"):
     """
     Plot a 2d histogram of a dataset x and y
     """
-    m, b = np.polyfit(x, y, 1)
-    xsorted_unique = np.unique(np.sort(x))
-    liney = m * xsorted_unique + b
+    # TODO put error ellipse around this
     plt.figure()
     plt.title(title, wrap=True)
     plt.xlabel(xlabel)
     plt.ylabel(ylabel)
     plt.hist2d(x, y, bins=[int(max(x) - min(x) / binwidth) + 1, int(max(y) - min(y) / binwidth) + 1])
-    plt.plot(xsorted_unique, liney, "m", alpha=0.6)
-    if std is not None:
-        plt.plot(xsorted_unique, liney + std, "c", alpha=0.75)
-        plt.plot(xsorted_unique, liney - std, "c", alpha=0.75)
-    plt.plot(xsorted_unique, xsorted_unique, "w", alpha=0.6)
-    plt.legend([f"m = {m}", f"b = {b}", f"std = {std}"])
 
 
 def plot_1d_histogram_subplots(x, y, title, binwidth=1, sgxtitle="Predicted Value", sgytitle="True Value", sgxytitle="Delta Value", std=None):
@@ -130,7 +143,7 @@ def plot_pdf_function_DEBUG(x, y, title, binwidth, bounds, xlabel="Input Term", 
     xvals = np.array(xvals)
     yvals = np.array(yvals)
 
-    # SPECIFIC TO DEBUG ONLY!! ::: drop entries below <0.05 and >0.95 PoD mask
+    # drop entries below <0.05 and >0.95 PoD mask
     inds_to_drop = np.where((yvals < 0.05) | (yvals > 0.95))[0]
     xvals = np.delete(xvals, inds_to_drop)
     yvals = np.delete(yvals, inds_to_drop)
@@ -147,8 +160,8 @@ def plot_pdf_function_DEBUG(x, y, title, binwidth, bounds, xlabel="Input Term", 
     cube_slope = (np.max(cubey) - np.min(cubey)) / (xscaled[np.argmax(cubey)] - xscaled[np.argmin(cubey)])
     liner2 = 1 - np.sum((yvals - liney) ** 2) / np.sum((yvals - np.mean(yvals)) ** 2)
     cuber2 = 1 - np.sum((yvals - cubey) ** 2) / np.sum((yvals - np.mean(yvals)) ** 2)
-    line_strength_of_signal = sos_mult * liner2 * np.sin(2 * np.atan(line_slope)) ** 2
-    cube_strength_of_signal = sos_mult * cuber2 * np.sin(2 * np.atan(cube_slope)) ** 2
+    line_strength_of_signal = sos_mult * liner2 * np.sin(2 * np.arctan(line_slope)) ** 2
+    cube_strength_of_signal = sos_mult * cuber2 * np.sin(2 * np.arctan(cube_slope)) ** 2
     print("    All Outcomes:   ", np.round(line_strength_of_signal, 4), np.round(cube_strength_of_signal, 4))
 
     # plotting functionality
@@ -161,6 +174,119 @@ def plot_pdf_function_DEBUG(x, y, title, binwidth, bounds, xlabel="Input Term", 
     plt.plot(xvals, liney, "r")
     plt.plot(xvals, cubey, "g")
     plt.legend(["data points", f"line = {np.round(liner2, 5)}", f"cube = {np.round(cuber2, 5)}"])
+
+
+def plot_conditional_means_subplots_DEBUG(
+    x, y, xwin, ywin, xlose, ylose, title, binwidth, bounds, xlabel="Input Term", ylabel="Output Model Value", sos_mult=1
+):
+    bins = np.linspace(bounds[0], bounds[1], int((bounds[1] - bounds[0]) / binwidth) + 1)
+    xvals = [(bins[i] + bins[i - 1]) / 2 for i in range(1, len(bins))]
+    yvals = []
+    for i in range(1, len(bins)):
+        y_mask = y[(bins[i - 1] <= x) & (x <= bins[i])]
+        if len(y_mask) == 0:
+            yvals.append(0)  # this is 0 so that we don't plot data we don't use
+        else:
+            yvals.append(sum(y_mask) / len(y_mask))
+    xvals = np.array(xvals)
+    yvals = np.array(yvals)
+    xvalswin = [(bins[i] + bins[i - 1]) / 2 for i in range(1, len(bins))]
+    yvalswin = []
+    for i in range(1, len(bins)):
+        y_mask = ywin[(bins[i - 1] <= xwin) & (xwin <= bins[i])]
+        if len(y_mask) == 0:
+            yvalswin.append(0)  # this is 0 so that we don't plot data we don't use
+        else:
+            yvalswin.append(sum(y_mask) / len(y_mask))
+    xvalswin = np.array(xvalswin)
+    yvalswin = np.array(yvalswin)
+    xvalslose = [(bins[i] + bins[i - 1]) / 2 for i in range(1, len(bins))]
+    yvalslose = []
+    for i in range(1, len(bins)):
+        y_mask = ylose[(bins[i - 1] <= xlose) & (xlose <= bins[i])]
+        if len(y_mask) == 0:
+            yvalslose.append(0)  # this is 0 so that we don't plot data we don't use
+        else:
+            yvalslose.append(sum(y_mask) / len(y_mask))
+    xvalslose = np.array(xvalslose)
+    yvalslose = np.array(yvalslose)
+
+    # drop 0 entries completely
+    inds_to_drop = np.where(yvals == 0)[0]
+    xvals = np.delete(xvals, inds_to_drop)
+    yvals = np.delete(yvals, inds_to_drop)
+    inds_to_drop = np.where(yvalswin == 0)[0]
+    xvalswin = np.delete(xvalswin, inds_to_drop)
+    yvalswin = np.delete(yvalswin, inds_to_drop)
+    inds_to_drop = np.where(yvalslose == 0)[0]
+    xvalslose = np.delete(xvalslose, inds_to_drop)
+    yvalslose = np.delete(yvalslose, inds_to_drop)
+
+    # regressions for degree 1 and 3 and respective curves
+    m, b = np.polyfit(xvals, yvals, 1)
+    k3, k2, k1, k0 = np.polyfit(xvals, yvals, 3)
+    liney = m * xvals + b
+    cubey = k3 * xvals**3 + k2 * xvals**2 + k1 * xvals + k0
+    m, b = np.polyfit(xvalswin, yvalswin, 1)
+    k3, k2, k1, k0 = np.polyfit(xvalswin, yvalswin, 3)
+    lineywin = m * xvalswin + b
+    cubeywin = k3 * xvalswin**3 + k2 * xvalswin**2 + k1 * xvalswin + k0
+    m, b = np.polyfit(xvalslose, yvalslose, 1)
+    k3, k2, k1, k0 = np.polyfit(xvalslose, yvalslose, 3)
+    lineylose = m * xvalslose + b
+    cubeylose = k3 * xvalslose**3 + k2 * xvalslose**2 + k1 * xvalslose + k0
+
+    # calculate and return debug-debug fitness score(s) r2 * sin^2(2 * arctan(m))
+    xscaled = (xvals - np.min(x)) / (np.max(x) - np.min(x))
+    line_slope = (np.max(liney) - np.min(liney)) / (xscaled[np.argmax(liney)] - xscaled[np.argmin(liney)])
+    cube_slope = (np.max(cubey) - np.min(cubey)) / (xscaled[np.argmax(cubey)] - xscaled[np.argmin(cubey)])
+    liner2 = 1 - np.sum((yvals - liney) ** 2) / np.sum((yvals - np.mean(yvals)) ** 2)
+    cuber2 = 1 - np.sum((yvals - cubey) ** 2) / np.sum((yvals - np.mean(yvals)) ** 2)
+    line_strength_of_signal = sos_mult * liner2 * np.sin(2 * np.arctan(line_slope)) ** 2
+    cube_strength_of_signal = sos_mult * cuber2 * np.sin(2 * np.arctan(cube_slope)) ** 2
+    xscaled = (xvalswin - np.min(xwin)) / (np.max(xwin) - np.min(xwin))
+    linewin_slope = (np.max(lineywin) - np.min(lineywin)) / (xscaled[np.argmax(lineywin)] - xscaled[np.argmin(lineywin)])
+    cubewin_slope = (np.max(cubeywin) - np.min(cubeywin)) / (xscaled[np.argmax(cubeywin)] - xscaled[np.argmin(cubeywin)])
+    liner2win = 1 - np.sum((yvalswin - lineywin) ** 2) / np.sum((yvalswin - np.mean(yvalswin)) ** 2)
+    cuber2win = 1 - np.sum((yvalswin - cubeywin) ** 2) / np.sum((yvalswin - np.mean(yvalswin)) ** 2)
+    linewin_strength_of_signal = sos_mult * liner2win * np.sin(2 * np.arctan(linewin_slope)) ** 2
+    cubewin_strength_of_signal = sos_mult * cuber2win * np.sin(2 * np.arctan(cubewin_slope)) ** 2
+    xscaled = (xvalslose - np.min(xlose)) / (np.max(xlose) - np.min(xlose))
+    linelose_slope = (np.max(lineylose) - np.min(lineylose)) / (xscaled[np.argmax(lineylose)] - xscaled[np.argmin(lineylose)])
+    cubelose_slope = (np.max(cubeylose) - np.min(cubeylose)) / (xscaled[np.argmax(cubeylose)] - xscaled[np.argmin(cubeylose)])
+    liner2lose = 1 - np.sum((yvalslose - lineylose) ** 2) / np.sum((yvalslose - np.mean(yvalslose)) ** 2)
+    cuber2lose = 1 - np.sum((yvalslose - cubeylose) ** 2) / np.sum((yvalslose - np.mean(yvalslose)) ** 2)
+    linelose_strength_of_signal = sos_mult * liner2lose * np.sin(2 * np.arctan(linelose_slope)) ** 2
+    cubelose_strength_of_signal = sos_mult * cuber2lose * np.sin(2 * np.arctan(cubelose_slope)) ** 2
+    print("  <Conditional means>")
+    print("    Home Team Wins: ", np.round(linewin_strength_of_signal, 4), np.round(cubewin_strength_of_signal, 4))
+    print("    All Outcomes:   ", np.round(line_strength_of_signal, 4), np.round(cube_strength_of_signal, 4))
+    print("    Home Team Loses:", np.round(linelose_strength_of_signal, 4), np.round(cubelose_strength_of_signal, 4))
+
+    # plotting functionality
+    fig, ax = plt.subplots(1, 3, figsize=(12, 5))
+    fig.suptitle(title, wrap=True)
+    ax[0].set_xlabel(xlabel)
+    ax[0].set_ylabel(ylabel)
+    ax[0].set_title("Home Team Wins")
+    ax[0].scatter(xvalswin, yvalswin, alpha=1)
+    ax[0].plot(xvalswin, lineywin, "r")
+    ax[0].plot(xvalswin, cubeywin, "g")
+    ax[0].legend(["data points", f"line = {np.round(liner2win, 5)}", f"cube = {np.round(cuber2win, 5)}"])
+    ax[1].set_xlabel(xlabel)
+    ax[1].set_ylabel(ylabel)
+    ax[1].set_title("All Outcomes")
+    ax[1].scatter(xvals, yvals, alpha=1)
+    ax[1].plot(xvals, liney, "r")
+    ax[1].plot(xvals, cubey, "g")
+    ax[1].legend(["data points", f"line = {np.round(liner2, 5)}", f"cube = {np.round(cuber2, 5)}"])
+    ax[2].set_xlabel(xlabel)
+    ax[2].set_ylabel(ylabel)
+    ax[2].set_title("Home Team Loses")
+    ax[2].scatter(xvalslose, yvalslose, alpha=1)
+    ax[2].plot(xvalslose, lineylose, "r")
+    ax[2].plot(xvalslose, cubeylose, "g")
+    ax[2].legend(["data points", f"line = {np.round(liner2win, 5)}", f"cube = {np.round(cuber2win, 5)}"])
 
 
 def plot_scatterplot_subplots_DEBUG(x, y, xwin, ywin, xlose, ylose, title, xlabel="Input Term", ylabel="Output Model Value", sos_mult=1):
@@ -210,8 +336,8 @@ def plot_scatterplot_subplots_DEBUG(x, y, xwin, ywin, xlose, ylose, title, xlabe
     cubeyscaled = (cubey_unique - np.min(y)) / (np.max(y) - np.min(y))
     line_slope = (np.max(lineyscaled) - np.min(lineyscaled)) / (xscaled[np.argmax(lineyscaled)] - xscaled[np.argmin(lineyscaled)])
     cube_slope = (np.max(cubeyscaled) - np.min(cubeyscaled)) / (xscaled[np.argmax(cubeyscaled)] - xscaled[np.argmin(cubeyscaled)])
-    line_strength_of_signal = sos_mult * liner2 * np.sin(2 * np.atan(line_slope)) ** 2
-    cube_strength_of_signal = sos_mult * cuber2 * np.sin(2 * np.atan(cube_slope)) ** 2
+    line_strength_of_signal = sos_mult * liner2 * np.sin(2 * np.arctan(line_slope)) ** 2
+    cube_strength_of_signal = sos_mult * cuber2 * np.sin(2 * np.arctan(cube_slope)) ** 2
     xwinscaled = (xwinsorted_unique - np.min(x)) / (np.max(x) - np.min(x))
     winlineyscaled = (winliney_unique - np.min(y)) / (np.max(y) - np.min(y))
     wincubeyscaled = (wincubey_unique - np.min(y)) / (np.max(y) - np.min(y))
@@ -221,8 +347,8 @@ def plot_scatterplot_subplots_DEBUG(x, y, xwin, ywin, xlose, ylose, title, xlabe
     wincube_slope = (np.max(wincubeyscaled) - np.min(wincubeyscaled)) / (
         xwinscaled[np.argmax(wincubeyscaled)] - xwinscaled[np.argmin(wincubeyscaled)]
     )
-    winline_strength_of_signal = sos_mult * winliner2 * np.sin(2 * np.atan(winline_slope)) ** 2
-    wincube_strength_of_signal = sos_mult * wincuber2 * np.sin(2 * np.atan(wincube_slope)) ** 2
+    winline_strength_of_signal = sos_mult * winliner2 * np.sin(2 * np.arctan(winline_slope)) ** 2
+    wincube_strength_of_signal = sos_mult * wincuber2 * np.sin(2 * np.arctan(wincube_slope)) ** 2
     xlosescaled = (xlosesorted_unique - np.min(x)) / (np.max(x) - np.min(x))
     loselineyscaled = (loseliney_unique - np.min(y)) / (np.max(y) - np.min(y))
     losecubeyscaled = (losecubey_unique - np.min(y)) / (np.max(y) - np.min(y))
@@ -232,8 +358,9 @@ def plot_scatterplot_subplots_DEBUG(x, y, xwin, ywin, xlose, ylose, title, xlabe
     losecube_slope = (np.max(losecubeyscaled) - np.min(losecubeyscaled)) / (
         xlosescaled[np.argmax(losecubeyscaled)] - xlosescaled[np.argmin(losecubeyscaled)]
     )
-    loseline_strength_of_signal = sos_mult * loseliner2 * np.sin(2 * np.atan(loseline_slope)) ** 2
-    losecube_strength_of_signal = sos_mult * losecuber2 * np.sin(2 * np.atan(losecube_slope)) ** 2
+    loseline_strength_of_signal = sos_mult * loseliner2 * np.sin(2 * np.arctan(loseline_slope)) ** 2
+    losecube_strength_of_signal = sos_mult * losecuber2 * np.sin(2 * np.arctan(losecube_slope)) ** 2
+    print("  <Scatterplots>")
     print("    Home Team Wins: ", np.round(winline_strength_of_signal, 4), np.round(wincube_strength_of_signal, 4))
     print("    All Outcomes:   ", np.round(line_strength_of_signal, 4), np.round(cube_strength_of_signal, 4))
     print("    Home Team Loses:", np.round(loseline_strength_of_signal, 4), np.round(losecube_strength_of_signal, 4))

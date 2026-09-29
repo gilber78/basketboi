@@ -466,9 +466,26 @@ class BaseOptimizer:
 
             # create and save plot
             print(f"FIGURE {i+1}:")
-            if "Home" in title:
+            if "Home Win %" in title:
                 plotting.plot_pdf_function_DEBUG(term_values, sample_output, title, binwidth, bounds)
+                fig = plt.gcf()
+                fig.savefig(f"{self.debug_debug_fig_path}/Figure_{i+1:02d}.png")
+                plt.close(fig)
             else:
+                plotting.plot_conditional_means_subplots_DEBUG(
+                    term_values,
+                    sample_output,
+                    win_term_values,
+                    win_output,
+                    lose_term_values,
+                    lose_output,
+                    title,
+                    binwidth,
+                    bounds,
+                )
+                fig = plt.gcf()
+                fig.savefig(f"{self.debug_debug_fig_path}/Figure-conditional-mean_{i+1:02d}.png")
+                plt.close(fig)
                 plotting.plot_scatterplot_subplots_DEBUG(
                     term_values,
                     sample_output,
@@ -477,19 +494,11 @@ class BaseOptimizer:
                     lose_term_values,
                     lose_output,
                     title,
-                    sos_mult=20 if "Total" in title else 5,  # TODO find proper sos_mult for spread, when ready
+                    sos_mult=20,  # TODO figure out right sos for all things
                 )
-            fig = plt.gcf()
-            fig.savefig(f"{self.debug_debug_fig_path}/Figure{i+1:02d}.png")
-            plt.close(fig)
-
-
-class HomeSpreadOptimizer(BaseOptimizer):
-    # reference the other completed optimizer(s) to implement this class
-    """
-    Optimizer class for home team spread
-    """
-    pass
+                fig = plt.gcf()
+                fig.savefig(f"{self.debug_debug_fig_path}/Figure-scatterplots_{i+1:02d}.png")
+                plt.close(fig)
 
 
 class HomeWinOptimizer(BaseOptimizer):
@@ -577,13 +586,20 @@ class TotalScoreOptimizer(BaseOptimizer):
             self._gen_debug_debug_plots()
 
         if debug_plots:
+            plotting.plot_conditional_mean(
+                pred_score,
+                true_score,
+                "Predicted vs Normalized Total Score of NBA games",
+                binwidth=1,
+                bounds=(np.min(pred_score), np.max(pred_score)),
+                std=self.MODEL.std,
+            )
             plotting.plot_2d_histogram(
                 pred_score,
                 true_score,
                 "Predicted vs Actual Total Score of NBA games",
                 xlabel="Predicted Total",
                 ylabel="True Total",
-                std=self.MODEL.std,
             )
             plotting.plot_1d_histogram_subplots(
                 pred_score,
@@ -608,6 +624,14 @@ class TotalScoreOptimizer(BaseOptimizer):
     def objective_function_scalar(self, year, z, b):
         RCE, M, B, MAE, RMSE = self.objective_function_tuple(year, z, b)
         return (-4 * RMSE**2) + (-4 * (M - 1) ** 2) + (-4 * B**2)
+
+
+class HomeSpreadOptimizer(BaseOptimizer):
+    # reference the other completed optimizer(s) to implement this class
+    """
+    Optimizer class for home team spread
+    """
+    pass
 
 
 def optimize(optimizer):
