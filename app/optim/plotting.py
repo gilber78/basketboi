@@ -286,7 +286,7 @@ def plot_conditional_means_subplots_DEBUG(
     ax[2].scatter(xvalslose, yvalslose, alpha=1)
     ax[2].plot(xvalslose, lineylose, "r")
     ax[2].plot(xvalslose, cubeylose, "g")
-    ax[2].legend(["data points", f"line = {np.round(liner2win, 5)}", f"cube = {np.round(cuber2win, 5)}"])
+    ax[2].legend(["data points", f"line = {np.round(liner2lose, 5)}", f"cube = {np.round(cuber2lose, 5)}"])
 
 
 def plot_scatterplot_subplots_DEBUG(x, y, xwin, ywin, xlose, ylose, title, xlabel="Input Term", ylabel="Output Model Value", sos_mult=1):
