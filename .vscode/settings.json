@@ -1,4 +1,7 @@
 {
+    "[plaintext]": {
+    "editor.wordWrap": "on"
+    },
     "[python]": {
         "editor.defaultFormatter": "ms-python.black-formatter",
         "editor.formatOnSave": true,
