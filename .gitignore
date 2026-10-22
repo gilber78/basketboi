@@ -213,6 +213,8 @@ games/
 models/
 *pat.txt
 Figure*.png
+# input*.json
+# !input_template.json
 
 # optimizer files, when not wanted to be shared
 bo-optimizer.json

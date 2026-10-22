@@ -34,7 +34,7 @@ parser.add_argument(
     "-i",
     dest="input",
     type=str,
-    default=os.path.join("app", "client", "input_template.json"),
+    # default=os.path.join("app", "client", "input_template.json"),
     help="input json from which predictions will be calculated",
 )
 ARGS = parser.parse_args()

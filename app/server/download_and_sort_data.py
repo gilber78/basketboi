@@ -130,12 +130,17 @@ def download_and_sort_data(config):
     games_raw_df = games_raw_df.query("(hometeamId in @id_list) & (awayteamId in @id_list)")
 
     # display the up-to-dateness of the dataset
-    most_recent_game = games_raw_df.iloc[games_raw_df["gameDateTimeEst"].argmax()]
-    print(
-        f">>>\n>>> Most recent game in the raw dataset: {most_recent_game['gameDateTimeEst']}  "
-        + f"{most_recent_game['awayteamCity']} {most_recent_game['awayteamName']} vs. "
-        + f"{most_recent_game['hometeamCity']} {most_recent_game['hometeamName']}\n>>>"
-    )
+    most_recent_games = games_raw_df[
+        games_raw_df["gameDateTimeEst"].str.contains(games_raw_df.iloc[games_raw_df["gameDateTimeEst"].argmax()].str.split(" ").iloc[0][0], na=False)
+    ]
+    print(f">>>\n>>> Most recent games in the raw dataset:")
+    for _, row in most_recent_games.iterrows():
+        print(
+            f">>>     "
+            + f"{row['awayteamCity']} {row['awayteamName']}  {row['awayScore']} - "
+            + f"{row['homeScore']}  {row['hometeamCity']} {row['hometeamName']}"
+        )
+    print(">>>")
 
     if skip_download and not full_download:
         return  # just goes back to the logic with download csv
