@@ -130,10 +130,9 @@ def download_and_sort_data(config):
     games_raw_df = games_raw_df.query("(hometeamId in @id_list) & (awayteamId in @id_list)")
 
     # display the up-to-dateness of the dataset
-    most_recent_games = games_raw_df[
-        games_raw_df["gameDateTimeEst"].str.contains(games_raw_df.iloc[games_raw_df["gameDateTimeEst"].argmax()].str.split(" ").iloc[0][0], na=False)
-    ]
-    print(f">>>\n>>> Most recent games in the raw dataset:")
+    most_recent_date = games_raw_df.iloc[games_raw_df["gameDateTimeEst"].argmax()].str.split(" ").iloc[0][0]
+    most_recent_games = games_raw_df[games_raw_df["gameDateTimeEst"].str.contains(most_recent_date, na=False)]
+    print(f">>>\n>>> Most recent games in the raw dataset: {most_recent_date}")
     for _, row in most_recent_games.iterrows():
         print(
             f">>>     "

@@ -189,10 +189,12 @@ class NBASeason:
                     homeTeam = next(team for team in self.teamList if team.teamId == game.homeTeamId)
                     awayTeam.update_game(game)
                     homeTeam.update_game(game)
+                if current_day == self.endDate:
+                    break  # we don't want to increment the loop PAST this, since it messes up with live day-to-day use of basketboi
                 current_day = increment_day(current_day)
 
         # conditional logic, for selecting appropriate teams in slate
-        if current_day == date:  # for games that definitely happened
+        if current_day == date:  # for games that already happened
             for game in current_game_list:
                 awayTeam = next(team for team in self.teamList if team.teamId == game.awayTeamId)
                 homeTeam = next(team for team in self.teamList if team.teamId == game.homeTeamId)
