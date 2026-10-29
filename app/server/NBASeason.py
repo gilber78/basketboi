@@ -163,7 +163,15 @@ class NBASeason:
             for game in current_game_list:
                 awayTeam = next(team for team in self.teamList if team.teamId == game.awayTeamId)
                 homeTeam = next(team for team in self.teamList if team.teamId == game.homeTeamId)
-                df = pd.concat([df, create_game_data_series(awayTeam=awayTeam, homeTeam=homeTeam, game=game)], ignore_index=True)
+                df = pd.concat(
+                    [
+                        df,
+                        create_game_data_series(
+                            awayTeam=awayTeam, homeTeam=homeTeam, game=game, gameTag=awayTeam.teamAbbreviation + " @ " + homeTeam.teamAbbreviation
+                        ),
+                    ],
+                    ignore_index=True,
+                )
                 awayTeam.update_game(game)
                 homeTeam.update_game(game)
             # to move to the next day in the sequence
