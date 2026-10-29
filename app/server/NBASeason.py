@@ -224,7 +224,17 @@ class NBASeason:
                     ignore_index=True,
                 )
 
-        # make sure that the df isn't empty, return none otherwise
+        # make sure that the df isn't empty or contains undefined games, return none otherwise
+        df = df[
+            (df["HOME_games_played"] != 0)
+            & (df["AWAY_games_played"] != 0)
+            & (df["HOME_wins"] != 0)
+            & (df["AWAY_wins"] != 0)
+            & (df["HOME_home_wins"] != 0)
+            & (df["AWAY_away_wins"] != 0)
+            & (df["HOME_home_losses"] != 0)
+            & (df["AWAY_away_losses"] != 0)
+        ].reset_index()
         if not df.empty:
             return df
 
