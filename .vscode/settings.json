@@ -8,5 +8,9 @@
         "editor.formatOnSaveMode": "file"
     },
     "black-formatter.importStrategy": "fromEnvironment",
-    "black-formatter.args": ["--config", "${workspaceFolder}/pyproject.toml"]
+    "black-formatter.args": [
+        "--config",
+        "${workspaceFolder}/pyproject.toml"
+    ],
+    "python-envs.defaultEnvManager": "ms-python.python:system"
 }
